@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>搭建博客 | 困而学之 学思并重</title>
+<title>主成分分析PCA | 困而学之 学思并重</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1584186232563">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,17 +87,79 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    搭建博客
+                    主成分分析PCA
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2020-03-14 ·
+                        · 2020-03-11 ·
                     </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/mqb9tpf2i/" class="post-tags">
+                            # Python
+                        </a>
                     
                 </div>
                 <div class="post-content">
-                    <p>步骤：<br>
-😀</p>
+                    <p>主成分分析PCA（Principal Component Analysis）：</p>
+<ul>
+<li>无监督方法</li>
+<li>保留数据分布</li>
+</ul>
+<p>PCA通过以下步骤来完成目标：</p>
+<ul>
+<li>将数据集标准化成为均值为0；</li>
+<li>找出数据集的相关矩阵和单位标准偏差值；</li>
+<li>将相关矩阵分解为特征向量和特征值；</li>
+<li>基于降序的特征值选择Top-N特征向量；</li>
+<li>投射输入的特征向量矩阵到一个新的子空间。</li>
+</ul>
+<p>对于一维数据，可用方差来衡量数据的分布或散步情况。在多维的场景里，我们很容易将变量之间的相关性表示为矩阵，专业名词是<strong>协方差矩阵</strong>。用标准差对其数值进行归一化处理后，就得到了<strong>相关矩阵</strong>。</p>
+<p>执行特征值分解的时候，先得获得协方差矩阵的<strong>特征向量</strong>和<strong>特征值</strong>。<strong>主特征向量</strong>，也就是具有最大的特征值的向量，指示了原始数据的最大变化方向。</p>
+<p>一个数据集（n<em>m），有n个实例，m个维度，PCA将它投射成一个小得多的子空间（n</em>d），其中d&lt;&lt;m。值得注意的是PCA的计算代价非常高。</p>
+<p>##操作方法<br>
+我们使用iris数据集来学习如何高效使用PCA进行降维，从4维降为2维。</p>
+<pre><code>import numpy as np
+from sklearn.datasets import load_iris
+from sklearn.preprocessing import scale
+import scipy
+import matplotlib.pyplot as plt
+
+data = load_iris()
+x = data['data']
+y = data['target']
+
+#标准化  缩放成均值为0，标准差为1
+x_s = scale(x, with_mean=True, with_std=True, axis=0)#这里用到了scale函数，它可以完成中心化、缩放和标准化等功能。
+#中心化：将单个值减去平均值；
+#缩放：将每个值除以变量的标准差；
+#标准化：先中心化，然后进行放缩。
+
+#计算相关矩阵
+x_c = np.corrcoef(x_s.T)
+
+#从相关矩阵中，找到特征值和特征向量
+eig_val, eig_vec = scipy.linalg.eig(x_c)
+
+#选择前两个特征向量
+w = eig_vec[:,0:2]
+
+#用合适的特征向量将原来4维的数据集降为2维
+x_rd = x_s.dot(w)
+
+#画出新的2维的散点图
+plt.figure(1)
+plt.scatter(x_rd[:,0], x_rd[:,1], c=y)
+plt.xlabel('component 1')
+plt.ylabel('component 2')
+
+
+if __name__ == '__main__':
+    plt.show()
+
+</code></pre>
+<center>
+![这里写图片描述](https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcwNjMwMTEyMDI5NDYx?x-oss-process=image/format,png)
+<p>可看到，在x周和y轴上绘制出主成分，并根据目标变量给它们区分颜色。这样成分1和成分2能够区分出鸢尾花的3个类别。这样，就用PCA有效地将维度从4降为2，并保持了区分鸢尾花不同类别实例的能力。</p>
 
                 </div>
             </article>
@@ -106,8 +168,8 @@
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://DoCherish.github.io/post/PCA/" class="post-title gt-a-link">
-                    主成分分析PCA
+                <a href="https://DoCherish.github.io/post/feature-zoom/" class="post-title gt-a-link">
+                    特征缩放
                 </a>
             </div>
         

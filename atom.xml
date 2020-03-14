@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>困而学之 学思并重</title>
-    <updated>2020-03-14T11:24:00.188Z</updated>
+    <updated>2020-03-14T11:49:11.658Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -11,37 +11,53 @@
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, 困而学之 学思并重</rights>
     <entry>
-        <title type="html"><![CDATA[主成分分析PCA]]></title>
-        <id>https://DoCherish.github.io/PCA/</id>
-        <link href="https://DoCherish.github.io/PCA/">
-        </link>
-        <updated>2020-03-14T11:22:32.000Z</updated>
-    </entry>
-    <entry>
         <title type="html"><![CDATA[特征缩放]]></title>
-        <id>https://DoCherish.github.io/feature-zoom/</id>
-        <link href="https://DoCherish.github.io/feature-zoom/">
+        <id>https://DoCherish.github.io/post/te-zheng-suo-fang/</id>
+        <link href="https://DoCherish.github.io/post/te-zheng-suo-fang/">
         </link>
         <updated>2020-03-14T11:15:01.000Z</updated>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[特征缩放]]></title>
-        <id>https://DoCherish.github.io/te-zheng-suo-fang/</id>
-        <link href="https://DoCherish.github.io/te-zheng-suo-fang/">
-        </link>
-        <updated>2020-03-14T11:15:01.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="特征缩放feature-scaling">特征缩放(<code>Feature Scaling</code>)</h2>
+<ul>
+<li><strong>特征缩放</strong>是数据预处理过程中时长被忽略的关键的一步。</li>
+<li><strong>决策树</strong>和<strong>随机森林</strong>是机器学习算法中为数不多的两个不需要进行特征缩放的算法。</li>
+<li>大部分机器学习算法和优化算法在进行特征缩放后的数据上能够有刚好的表现。</li>
+<li>在多指标评价体系中，由于各评价指标的性质不同，通常具有<strong>不同的量纲和数量级</strong>。当各指标间的水平相差很大时，如果直接用原始指标值进行分析，就会突出数值较高的指标在综合分析中的作用，相对削弱数值水平较低指标的作用。因此，为了保证结果的可靠性，需要对原始指标数据进行标准化处理。</li>
+<li>特征缩放的<strong>优点</strong>：</li>
+<li>提高模型收敛速度</li>
+<li>提高模型精度</li>
+</ul>
+<h2 id="特征缩放的方法">特征缩放的方法</h2>
+<ul>
+<li><strong>归一化</strong>(<code>normalization</code>)： 归一化是一种简化计算的方式，即将有量纲的表达式，经过变换，化为无量纲的表达式，成为纯量。变换后将特征值缩放到[0,1]区间。</li>
+</ul>
+<pre><code>from sklearn.preprocessing import MinMaxScaler
+mms = MinMaxScaler()
+X_train_norm = mms.fit_transform(X_train)
+X_test_norm = mms.transform(X_test)
+</code></pre>
+<ul>
+<li><strong>标准化</strong>(<code>standardization</code>)：将某变量中的观察值减去该变量的平均数，然后除以该变量的标准差。经过标准差标准化后，各变量将有约一半观察值的数值小于0，另一半观察值的数值大于0，变量的<strong>均值为0</strong>，<strong>标准差为1</strong>。经标准化的数据都是没有单位的纯数量。对变量进行的标准差标准化可以消除量纲（单位）影响和变量自身变异的影响。</li>
+</ul>
+<pre><code>from sklearn.preprocessing import StandardScaler
+stdsc = StandardScaler()
+X_train_std = stdsc.fit_transform(X_train)
+X_test_std = stdsc.transform(X_test)
+</code></pre>
+]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[申请域名]]></title>
-        <id>https://DoCherish.github.io/shen-qing-yu-ming/</id>
-        <link href="https://DoCherish.github.io/shen-qing-yu-ming/">
+        <id>https://DoCherish.github.io/post/shen-qing-yu-ming/</id>
+        <link href="https://DoCherish.github.io/post/shen-qing-yu-ming/">
         </link>
         <updated>2020-03-14T08:35:46.000Z</updated>
+        <content type="html"><![CDATA[<p>😀</p>
+]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[学习Flink]]></title>
-        <id>https://DoCherish.github.io/xue-xi-flink/</id>
-        <link href="https://DoCherish.github.io/xue-xi-flink/">
+        <id>https://DoCherish.github.io/post/xue-xi-flink/</id>
+        <link href="https://DoCherish.github.io/post/xue-xi-flink/">
         </link>
         <updated>2020-03-13T16:15:39.000Z</updated>
         <summary type="html"><![CDATA[<p>窗口函数<br>
@@ -49,19 +65,126 @@
 ]]></summary>
         <content type="html"><![CDATA[<p>窗口函数<br>
 原理机制</p>
+<!-- more -->
 ]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[搭建博客]]></title>
-        <id>https://DoCherish.github.io/da-jian-bo-ke/</id>
-        <link href="https://DoCherish.github.io/da-jian-bo-ke/">
+        <id>https://DoCherish.github.io/post/da-jian-bo-ke/</id>
+        <link href="https://DoCherish.github.io/post/da-jian-bo-ke/">
         </link>
         <updated>2020-03-13T16:13:50.000Z</updated>
+        <content type="html"><![CDATA[<p>步骤：<br>
+😀</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[主成分分析PCA]]></title>
+        <id>https://DoCherish.github.io/post/PCA/</id>
+        <link href="https://DoCherish.github.io/post/PCA/">
+        </link>
+        <updated>2020-03-11T11:22:32.000Z</updated>
+        <content type="html"><![CDATA[<p>主成分分析PCA（Principal Component Analysis）：</p>
+<ul>
+<li>无监督方法</li>
+<li>保留数据分布</li>
+</ul>
+<p>PCA通过以下步骤来完成目标：</p>
+<ul>
+<li>将数据集标准化成为均值为0；</li>
+<li>找出数据集的相关矩阵和单位标准偏差值；</li>
+<li>将相关矩阵分解为特征向量和特征值；</li>
+<li>基于降序的特征值选择Top-N特征向量；</li>
+<li>投射输入的特征向量矩阵到一个新的子空间。</li>
+</ul>
+<p>对于一维数据，可用方差来衡量数据的分布或散步情况。在多维的场景里，我们很容易将变量之间的相关性表示为矩阵，专业名词是<strong>协方差矩阵</strong>。用标准差对其数值进行归一化处理后，就得到了<strong>相关矩阵</strong>。</p>
+<p>执行特征值分解的时候，先得获得协方差矩阵的<strong>特征向量</strong>和<strong>特征值</strong>。<strong>主特征向量</strong>，也就是具有最大的特征值的向量，指示了原始数据的最大变化方向。</p>
+<p>一个数据集（n<em>m），有n个实例，m个维度，PCA将它投射成一个小得多的子空间（n</em>d），其中d&lt;&lt;m。值得注意的是PCA的计算代价非常高。</p>
+<p>##操作方法<br>
+我们使用iris数据集来学习如何高效使用PCA进行降维，从4维降为2维。</p>
+<pre><code>import numpy as np
+from sklearn.datasets import load_iris
+from sklearn.preprocessing import scale
+import scipy
+import matplotlib.pyplot as plt
+
+data = load_iris()
+x = data['data']
+y = data['target']
+
+#标准化  缩放成均值为0，标准差为1
+x_s = scale(x, with_mean=True, with_std=True, axis=0)#这里用到了scale函数，它可以完成中心化、缩放和标准化等功能。
+#中心化：将单个值减去平均值；
+#缩放：将每个值除以变量的标准差；
+#标准化：先中心化，然后进行放缩。
+
+#计算相关矩阵
+x_c = np.corrcoef(x_s.T)
+
+#从相关矩阵中，找到特征值和特征向量
+eig_val, eig_vec = scipy.linalg.eig(x_c)
+
+#选择前两个特征向量
+w = eig_vec[:,0:2]
+
+#用合适的特征向量将原来4维的数据集降为2维
+x_rd = x_s.dot(w)
+
+#画出新的2维的散点图
+plt.figure(1)
+plt.scatter(x_rd[:,0], x_rd[:,1], c=y)
+plt.xlabel('component 1')
+plt.ylabel('component 2')
+
+
+if __name__ == '__main__':
+    plt.show()
+
+</code></pre>
+<center>
+![这里写图片描述](https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcwNjMwMTEyMDI5NDYx?x-oss-process=image/format,png)
+<p>可看到，在x周和y轴上绘制出主成分，并根据目标变量给它们区分颜色。这样成分1和成分2能够区分出鸢尾花的3个类别。这样，就用PCA有效地将维度从4降为2，并保持了区分鸢尾花不同类别实例的能力。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[特征缩放]]></title>
+        <id>https://DoCherish.github.io/post/feature-zoom/</id>
+        <link href="https://DoCherish.github.io/post/feature-zoom/">
+        </link>
+        <updated>2020-03-05T11:15:01.000Z</updated>
+        <content type="html"><![CDATA[<p>##特征缩放(<code>Feature Scaling</code>)</p>
+<ul>
+<li><strong>特征缩放</strong>是数据预处理过程中时长被忽略的关键的一步。</li>
+<li><strong>决策树</strong>和<strong>随机森林</strong>是机器学习算法中为数不多的两个不需要进行特征缩放的算法。</li>
+<li>大部分机器学习算法和优化算法在进行特征缩放后的数据上能够有刚好的表现。</li>
+<li>在多指标评价体系中，由于各评价指标的性质不同，通常具有<strong>不同的量纲和数量级</strong>。当各指标间的水平相差很大时，如果直接用原始指标值进行分析，就会突出数值较高的指标在综合分析中的作用，相对削弱数值水平较低指标的作用。因此，为了保证结果的可靠性，需要对原始指标数据进行标准化处理。</li>
+<li>特征缩放的<strong>优点</strong>：</li>
+<li>提高模型收敛速度</li>
+<li>提高模型精度</li>
+</ul>
+<p>##特征缩放的方法</p>
+<ul>
+<li><strong>归一化</strong>(<code>normalization</code>)： 归一化是一种简化计算的方式，即将有量纲的表达式，经过变换，化为无量纲的表达式，成为纯量。变换后将特征值缩放到**[0,1]**区间。</li>
+</ul>
+<pre><code>from sklearn.preprocessing import MinMaxScaler
+mms = MinMaxScaler()
+X_train_norm = mms.fit_transform(X_train)
+X_test_norm = mms.transform(X_test)
+</code></pre>
+<ul>
+<li><strong>标准化</strong>(<code>standardization</code>)：将某变量中的观察值减去该变量的平均数，然后除以该变量的标准差。经过标准差标准化后，各变量将有约一半观察值的数值小于0，另一半观察值的数值大于0，变量的<strong>均值为0</strong>，<strong>标准差为1</strong>。经标准化的数据都是没有单位的纯数量。对变量进行的标准差标准化可以消除量纲（单位）影响和变量自身变异的影响。</li>
+</ul>
+<pre><code>from sklearn.preprocessing import StandardScaler
+stdsc = StandardScaler()
+X_train_std = stdsc.fit_transform(X_train)
+X_test_std = stdsc.transform(X_test)
+</code></pre>
+]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[Hello Gridea]]></title>
-        <id>https://DoCherish.github.io/hello-gridea/</id>
-        <link href="https://DoCherish.github.io/hello-gridea/">
+        <id>https://DoCherish.github.io/post/hello-gridea/</id>
+        <link href="https://DoCherish.github.io/post/hello-gridea/">
         </link>
         <updated>2018-12-11T16:00:00.000Z</updated>
         <summary type="html"><![CDATA[<p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
@@ -69,6 +192,25 @@
 ]]></summary>
         <content type="html"><![CDATA[<p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
 ✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
+<!-- more -->
+<p><a href="https://github.com/getgridea/gridea">Github</a><br>
+<a href="https://gridea.dev/">Gridea 主页</a><br>
+<a href="http://fehey.com/">示例网站</a></p>
+<h2 id="特性">特性👇</h2>
+<p>📝  你可以使用最酷的 <strong>Markdown</strong> 语法，进行快速创作</p>
+<p>🌉  你可以给文章配上精美的封面图和在文章任意位置插入图片</p>
+<p>🏷️  你可以对文章进行标签分组</p>
+<p>📋  你可以自定义菜单，甚至可以创建外部链接菜单</p>
+<p>💻  你可以在 <strong>Windows</strong>，<strong>MacOS</strong> 或 <strong>Linux</strong> 设备上使用此客户端</p>
+<p>🌎  你可以使用 <strong>𝖦𝗂𝗍𝗁𝗎𝖻 𝖯𝖺𝗀𝖾𝗌</strong> 或 <strong>Coding Pages</strong> 向世界展示，未来将支持更多平台</p>
+<p>💬  你可以进行简单的配置，接入 <a href="https://github.com/gitalk/gitalk">Gitalk</a> 或 <a href="https://github.com/SukkaW/DisqusJS">DisqusJS</a> 评论系统</p>
+<p>🇬🇧  你可以使用<strong>中文简体</strong>或<strong>英语</strong></p>
+<p>🌁  你可以任意使用应用内默认主题或任意第三方主题，强大的主题自定义能力</p>
+<p>🖥  你可以自定义源文件夹，利用 OneDrive、百度网盘、iCloud、Dropbox 等进行多设备同步</p>
+<p>🌱 当然 <strong>Gridea</strong> 还很年轻，有很多不足，但请相信，它会不停向前 🏃</p>
+<p>未来，它一定会成为你离不开的伙伴</p>
+<p>尽情发挥你的才华吧！</p>
+<p>😘 Enjoy~</p>
 ]]></content>
     </entry>
 </feed>

@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>搭建博客 | 困而学之 学思并重</title>
+<title>特征缩放 | 困而学之 学思并重</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1584186232563">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,17 +87,42 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    搭建博客
+                    特征缩放
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2020-03-14 ·
+                        · 2020-03-05 ·
                     </time>
                     
                 </div>
                 <div class="post-content">
-                    <p>步骤：<br>
-😀</p>
+                    <p>##特征缩放(<code>Feature Scaling</code>)</p>
+<ul>
+<li><strong>特征缩放</strong>是数据预处理过程中时长被忽略的关键的一步。</li>
+<li><strong>决策树</strong>和<strong>随机森林</strong>是机器学习算法中为数不多的两个不需要进行特征缩放的算法。</li>
+<li>大部分机器学习算法和优化算法在进行特征缩放后的数据上能够有刚好的表现。</li>
+<li>在多指标评价体系中，由于各评价指标的性质不同，通常具有<strong>不同的量纲和数量级</strong>。当各指标间的水平相差很大时，如果直接用原始指标值进行分析，就会突出数值较高的指标在综合分析中的作用，相对削弱数值水平较低指标的作用。因此，为了保证结果的可靠性，需要对原始指标数据进行标准化处理。</li>
+<li>特征缩放的<strong>优点</strong>：</li>
+<li>提高模型收敛速度</li>
+<li>提高模型精度</li>
+</ul>
+<p>##特征缩放的方法</p>
+<ul>
+<li><strong>归一化</strong>(<code>normalization</code>)： 归一化是一种简化计算的方式，即将有量纲的表达式，经过变换，化为无量纲的表达式，成为纯量。变换后将特征值缩放到**[0,1]**区间。</li>
+</ul>
+<pre><code>from sklearn.preprocessing import MinMaxScaler
+mms = MinMaxScaler()
+X_train_norm = mms.fit_transform(X_train)
+X_test_norm = mms.transform(X_test)
+</code></pre>
+<ul>
+<li><strong>标准化</strong>(<code>standardization</code>)：将某变量中的观察值减去该变量的平均数，然后除以该变量的标准差。经过标准差标准化后，各变量将有约一半观察值的数值小于0，另一半观察值的数值大于0，变量的<strong>均值为0</strong>，<strong>标准差为1</strong>。经标准化的数据都是没有单位的纯数量。对变量进行的标准差标准化可以消除量纲（单位）影响和变量自身变异的影响。</li>
+</ul>
+<pre><code>from sklearn.preprocessing import StandardScaler
+stdsc = StandardScaler()
+X_train_std = stdsc.fit_transform(X_train)
+X_test_std = stdsc.transform(X_test)
+</code></pre>
 
                 </div>
             </article>
@@ -106,8 +131,8 @@
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://DoCherish.github.io/post/PCA/" class="post-title gt-a-link">
-                    主成分分析PCA
+                <a href="https://DoCherish.github.io/post/hello-gridea/" class="post-title gt-a-link">
+                    Hello Gridea
                 </a>
             </div>
         
