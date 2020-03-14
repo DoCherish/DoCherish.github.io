@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>困而学之 学思并重</title>
-    <updated>2020-03-14T11:49:11.658Z</updated>
+    <updated>2020-03-14T17:02:53.967Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -51,7 +51,26 @@ X_test_std = stdsc.transform(X_test)
         <link href="https://DoCherish.github.io/post/shen-qing-yu-ming/">
         </link>
         <updated>2020-03-14T08:35:46.000Z</updated>
-        <content type="html"><![CDATA[<p>😀</p>
+        <summary type="html"><![CDATA[<p>最新活动产品分类企业应用中心解决方案云市场支持与服务合作伙伴与生态开发者云栖号了解阿里</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>最新活动产品分类企业应用中心解决方案云市场支持与服务合作伙伴与生态开发者云栖号了解阿里</p>
+<!-- more -->
+<p>弹性计算<br>
+云服务器 ECS轻量应用服务器<br>
+数据库<br>
+MySQLSQL ServerRedis<br>
+域名与网站<br>
+域名注册网站建设云虚拟主机<br>
+存储与网络<br>
+对象存储 OSS共享带宽CDN<br>
+云安全<br>
+SSL 证书云安全中心Web应用防火墙<br>
+物联网与云通信<br>
+物联网服务短信服务<br>
+大数据与人工智能<br>
+MaxCompute 智能语音交互<br>
+企业应用服务<br>
+工商注册商标注册企业邮箱</p>
 ]]></content>
     </entry>
     <entry>
@@ -60,12 +79,8 @@ X_test_std = stdsc.transform(X_test)
         <link href="https://DoCherish.github.io/post/xue-xi-flink/">
         </link>
         <updated>2020-03-13T16:15:39.000Z</updated>
-        <summary type="html"><![CDATA[<p>窗口函数<br>
-原理机制</p>
-]]></summary>
         <content type="html"><![CDATA[<p>窗口函数<br>
 原理机制</p>
-<!-- more -->
 ]]></content>
     </entry>
     <entry>
