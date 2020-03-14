@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>困而学之 学思并重</title>
-    <updated>2020-03-14T11:07:17.647Z</updated>
+    <updated>2020-03-14T11:16:46.467Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,20 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, 困而学之 学思并重</rights>
+    <entry>
+        <title type="html"><![CDATA[特征缩放]]></title>
+        <id>https://DoCherish.github.io/feature-zoom/</id>
+        <link href="https://DoCherish.github.io/feature-zoom/">
+        </link>
+        <updated>2020-03-14T11:15:01.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[特征缩放]]></title>
+        <id>https://DoCherish.github.io/te-zheng-suo-fang/</id>
+        <link href="https://DoCherish.github.io/te-zheng-suo-fang/">
+        </link>
+        <updated>2020-03-14T11:15:01.000Z</updated>
+    </entry>
     <entry>
         <title type="html"><![CDATA[申请域名]]></title>
         <id>https://DoCherish.github.io/shen-qing-yu-ming/</id>
