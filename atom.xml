@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2020-03-16T16:03:11.419Z</updated>
+    <updated>2020-03-17T15:45:08.070Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,13 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Do&apos;s blog</rights>
+    <entry>
+        <title type="html"><![CDATA[kafka生产者——kafkaProducer]]></title>
+        <id>https://DoCherish.github.io/post/kafka-sheng-chan-zhe-kafkaproducer/</id>
+        <link href="https://DoCherish.github.io/post/kafka-sheng-chan-zhe-kafkaproducer/">
+        </link>
+        <updated>2020-03-17T15:26:41.000Z</updated>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Hello Gridea]]></title>
         <id>https://DoCherish.github.io/post/hello-gridea/</id>

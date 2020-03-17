@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Do&#39;s blog</title>
+<title>kafka生产者——kafkaProducer | Do&#39;s blog</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1584459197707">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -30,11 +30,11 @@
 
 
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
 </head>
 <body>
 <div class="main gt-bg-theme-color-first">
-    <div class="main-content">
-        <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-lg">
     <div class="navbar-brand">
         <img class="user-avatar" src="/images/avatar.png" alt="头像">
         <div class="site-name gt-c-content-color-first">
@@ -83,50 +83,83 @@
         </div>
     </div>
 </nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    kafka生产者——kafkaProducer
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2020-03-17 ·
+                    </time>
+                    
+                </div>
+                <div class="post-content">
+                    <pre><code>package com.ourhome.flink.test
+
+import java.text.SimpleDateFormat
+import java.util.{Date, Properties}
+
+import org.apache.kafka.clients.producer.{Callback, KafkaProducer, ProducerRecord, RecordMetadata}
+import org.apache.kafka.common.serialization.StringSerializer
+import org.apache.log4j.Logger
+
+import scala.io.Source
+
+object kafkaProducer {
+  private val KAFKA_BROKERS = &quot;host1:port1,host2:port2,post3:port3&quot;
+  private val logger = Logger.getLogger(this.getClass)
+
+  def main(args: Array[String]): Unit = {
+    val kfkProperties: Properties = new Properties()
+
+    kfkProperties.setProperty(&quot;bootstrap.servers&quot;, KAFKA_BROKERS)
+    kfkProperties.setProperty(&quot;key.serializer&quot;, classOf[StringSerializer].getName)
+    kfkProperties.setProperty(&quot;value.serializer&quot;, classOf[StringSerializer].getName)
+    kfkProperties.setProperty(&quot;acks&quot;, &quot;1&quot;)
+    kfkProperties.setProperty(&quot;retries&quot;, &quot;3&quot;)
+    kfkProperties.setProperty(&quot;batch.size&quot;, &quot;16384&quot;)
+
+    val producer: KafkaProducer[String, String] = new KafkaProducer[String, String](kfkProperties)
+    val lines: Iterator[String] = Source.fromFile(&quot;C:\\Users\\10244615\\Desktop\\hardcodecscan\\file.txt&quot;).getLines()
+    lines.foreach(
+      line =&gt; {
+        println(line)
+        val record: ProducerRecord[String, String] = new ProducerRecord[String, String](&quot;kafka_producer_test&quot;, line)
+        producer.send(record, new Callback {
+          override def onCompletion(metadata: RecordMetadata, exception: Exception): Unit = {
+            if (metadata != null) {
+              println(&quot;发送成功&quot;)
+              println(new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;).format(new Date))
+            }
+            if (exception != null) {
+              println(&quot;消息发送失败&quot;)
+            }
+          }
+        })
+      }
+    )
+    producer.close()
+  }
+}
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1584459189878.png" alt="" loading="lazy"></figure>
+
+                </div>
+            </article>
+        </div>
 
         
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/hello-gridea/" class="post-title gt-a-link">
+                    Hello Gridea
+                </a>
+            </div>
+        
 
-<div class="archives-container">
-    
-        <h2 class="year gt-c-cotent-color-first">2020</h2>
         
-            
-                <article class="post">
-                    <a href="https://DoCherish.github.io/post/kafka-sheng-chan-zhe-kafkaproducer/">
-                        <div class="post-title gt-c-content-color-first">
-                            <small><b>2020-03-17&nbsp;&nbsp;·&nbsp;&nbsp;</b></small>
-                            kafka生产者——kafkaProducer
-                        </div>
-                    </a>
-                </article>
-            
-        
-            
-        
-    
-        <h2 class="year gt-c-cotent-color-first">2018</h2>
-        
-            
-        
-            
-                <article class="post">
-                    <a href="https://DoCherish.github.io/post/hello-gridea/">
-                        <div class="post-title gt-c-content-color-first">
-                            <small><b>2018-12-12&nbsp;&nbsp;·&nbsp;&nbsp;</b></small>
-                            Hello Gridea
-                        </div>
-                    </a>
-                </article>
-            
-        
-    
-</div>
-
-        <div class="pagination-container">
-    
-    
-</div>
-
 
         <div class="site-footer gt-c-content-color-first">
     <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
@@ -155,6 +188,7 @@
 <script>
     hljs.initHighlightingOnLoad()
 </script>
+
 
     </div>
 </div>
