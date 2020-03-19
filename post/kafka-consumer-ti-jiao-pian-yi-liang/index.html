@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>kafka——Producer | Do&#39;s blog</title>
+<title>Kafka——Consumer提交偏移量 | Do&#39;s blog</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1584633819123">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,11 +87,11 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    kafka——Producer
+                    Kafka——Consumer提交偏移量
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2020-03-17 ·
+                        · 2020-03-19 ·
                     </time>
                     
                         <a href="https://DoCherish.github.io/tag/kafka/" class="post-tags">
@@ -100,51 +100,138 @@
                     
                 </div>
                 <div class="post-content">
-                    <pre><code>package com.ourhome.flink.test
+                    <p>Kafka提交偏移量的方式：</p>
+<ul>
+<li>自动提交</li>
+<li>手动提交——同步</li>
+<li>手动提交——异步</li>
+</ul>
+<h2 id="自动提交">自动提交</h2>
+<pre><code>package test.kafka
 
-import java.text.SimpleDateFormat
-import java.util.{Date, Properties}
+import java.util.Properties
 
-import org.apache.kafka.clients.producer.{Callback, KafkaProducer, ProducerRecord, RecordMetadata}
 import org.apache.kafka.common.serialization.StringSerializer
-import org.apache.log4j.Logger
 
-import scala.io.Source
+class kafkaProperities {
+  private val KFK_BROKERS = &quot;host1:port1,host2:port2,post3:port3&quot;
 
-object kafkaProducer {
-  private val KAFKA_BROKERS = &quot;host1:port1,host2:port2,post3:port3&quot;
-  private val logger = Logger.getLogger(this.getClass)
+  def getKakConPros:Properties = {
+    val kfkConProps: Properties = new Properties()
+    kfkConProps.setProperty(&quot;bootstrap.servers&quot;, KFK_BROKERS)
+    kfkConProps.setProperty(&quot;group.id&quot;, &quot;kafka_consumer&quot;)
+    kfkConProps.setProperty(&quot;enable.auto.commit&quot;, &quot;true&quot;)
+    kfkConProps.setProperty(&quot;auto.commit.interval.ms&quot;, &quot;5000&quot;)
+    kfkConProps.setProperty(&quot;key.deserializer&quot;, classOf[StringSerializer].getName)
+    kfkConProps.setProperty(&quot;value.deserializer&quot;, classOf[StringSerializer].getName)
+
+    kfkConProps
+  }
+}
+</code></pre>
+<pre><code>package test.kafka.kafkaconsumer
+
+import java.util
+import java.util.Properties
+
+import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords, KafkaConsumer}
+import test.kafka.kafkaProperities
+
+object autoCommitOffsets {
+  private val KAFKA_PROPERITIES = new kafkaProperities()
 
   def main(args: Array[String]): Unit = {
-    val kfkProperties: Properties = new Properties()
-
-    kfkProperties.setProperty(&quot;bootstrap.servers&quot;, KAFKA_BROKERS)
-    kfkProperties.setProperty(&quot;key.serializer&quot;, classOf[StringSerializer].getName)
-    kfkProperties.setProperty(&quot;value.serializer&quot;, classOf[StringSerializer].getName)
-    kfkProperties.setProperty(&quot;acks&quot;, &quot;1&quot;)
-    kfkProperties.setProperty(&quot;retries&quot;, &quot;3&quot;)
-    kfkProperties.setProperty(&quot;batch.size&quot;, &quot;16384&quot;)
-
-    val producer: KafkaProducer[String, String] = new KafkaProducer[String, String](kfkProperties)
-    val lines: Iterator[String] = Source.fromFile(&quot;C:\\Users\\10244615\\Desktop\\hardcodecscan\\file.txt&quot;).getLines()
-    lines.foreach(
-      line =&gt; {
-        println(line)
-        val record: ProducerRecord[String, String] = new ProducerRecord[String, String](&quot;kafka_producer_test&quot;, line)
-        producer.send(record, new Callback {
-          override def onCompletion(metadata: RecordMetadata, exception: Exception): Unit = {
-            if (metadata != null) {
-              println(&quot;发送成功&quot;)
-              println(new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;).format(new Date))
-            }
-            if (exception != null) {
-              println(&quot;消息发送失败&quot;)
-            }
-          }
-        })
+    val kfkConProps: Properties = KAFKA_PROPERITIES.getKakConPros
+    val consumer: KafkaConsumer[String, String] = new KafkaConsumer(kfkConProps)
+    consumer.subscribe(util.Arrays.asList(KAFKA_PROPERITIES.TOPIC))
+    try {
+      while(true) {
+        val consumerRecords: ConsumerRecords[String, String] = consumer.poll(100)
+        val records: util.Iterator[ConsumerRecord[String, String]] = consumerRecords.iterator()
+        while (records.hasNext){
+          val record: ConsumerRecord[String, String] = records.next()
+          println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
+        }
       }
-    )
-    producer.close()
+    } finally {
+      consumer.close()
+    }
+  }
+}
+</code></pre>
+<h2 id="手动提交同步">手动提交——同步</h2>
+<p>修改getKakConPros的参数：</p>
+<pre><code>	kfkConProps.setProperty(&quot;enable.auto.commit&quot;, &quot;false&quot;)
+    //kfkConProps.setProperty(&quot;auto.commit.interval.ms&quot;, &quot;5000&quot;)
+</code></pre>
+<pre><code>package test.kafka.kafkaconsumer
+
+import java.util
+import java.util.Properties
+import java.util.logging.Logger
+
+import org.apache.kafka.clients.consumer.{CommitFailedException, ConsumerRecord, ConsumerRecords, KafkaConsumer}
+import test.kafka.kafkaProperities
+
+object syncCommitOffsets {
+  private val KAFKA_PROPERITIES = new kafkaProperities()
+  def main(args: Array[String]): Unit = {
+    val kfkConProps: Properties = KAFKA_PROPERITIES.getKakConPros
+    val consumer: KafkaConsumer[String, String] = new KafkaConsumer(kfkConProps)
+    consumer.subscribe(util.Arrays.asList(KAFKA_PROPERITIES.TOPIC))
+    while(true) {
+      val consumerRecords: ConsumerRecords[String, String] = consumer.poll(100)
+      val records: util.Iterator[ConsumerRecord[String, String]] = consumerRecords.iterator()
+      while (records.hasNext) {
+        val record: ConsumerRecord[String, String] = records.next()
+        println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
+      }
+    }
+    try {
+      consumer.commitSync()
+    } catch {
+      case e: CommitFailedException =&gt; {
+        println(&quot;commit failed!&quot; + e)
+      }
+    }
+  }
+}
+</code></pre>
+<h2 id="手动提交异步提交">手动提交——异步提交</h2>
+<pre><code>package test.kafka.kafkaconsumer
+
+import java.util
+import java.util.Properties
+
+import org.apache.kafka.clients.consumer._
+import org.apache.kafka.common.TopicPartition
+import test.kafka.kafkaProperities
+
+object asyncCommitOffsets {
+  private val KAFKA_PROPERITIES = new kafkaProperities()
+  def main(args: Array[String]): Unit = {
+    val kfkConProps: Properties = KAFKA_PROPERITIES.getKakConPros
+    val consumer: KafkaConsumer[String, String] = new KafkaConsumer(kfkConProps)
+    consumer.subscribe(util.Arrays.asList(KAFKA_PROPERITIES.TOPIC))
+    while(true) {
+      val consumerRecords: ConsumerRecords[String, String] = consumer.poll(100)
+      val records: util.Iterator[ConsumerRecord[String, String]] = consumerRecords.iterator()
+      while (records.hasNext){
+        val record: ConsumerRecord[String, String] = records.next()
+        println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
+      }
+    }
+    //consumer.commitAsync()
+    //也支持回调
+    consumer.commitAsync(new OffsetCommitCallback {
+      override def onComplete(offsets: util.Map[TopicPartition, OffsetAndMetadata], exception: Exception): Unit = {
+        if (exception != null) {
+          println(&quot;commmit failed for offset &quot; + offsets.values().iterator().next().offset())
+        } else {
+          println(&quot;commit succeeded!&quot;)
+        }
+      }
+    })
   }
 }
 </code></pre>
@@ -156,8 +243,8 @@ object kafkaProducer {
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://DoCherish.github.io/post/hello-gridea/" class="post-title gt-a-link">
-                    Hello Gridea
+                <a href="https://DoCherish.github.io/post/kafka-sheng-chan-zhe-kafkaproducer/" class="post-title gt-a-link">
+                    kafka——Producer
                 </a>
             </div>
         
