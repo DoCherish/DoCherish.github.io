@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Kafka——Consumer提交偏移量 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1584633908826">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1584718424583">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -186,13 +186,13 @@ object syncCommitOffsets {
         val record: ConsumerRecord[String, String] = records.next()
         println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
       }
-    }
     try {
       consumer.commitSync()
     } catch {
       case e: CommitFailedException =&gt; {
         println(&quot;commit failed!&quot; + e)
       }
+    }
     }
   }
 }
@@ -220,18 +220,18 @@ object asyncCommitOffsets {
         val record: ConsumerRecord[String, String] = records.next()
         println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
       }
-    }
     //consumer.commitAsync()
     //也支持回调
     consumer.commitAsync(new OffsetCommitCallback {
       override def onComplete(offsets: util.Map[TopicPartition, OffsetAndMetadata], exception: Exception): Unit = {
         if (exception != null) {
-          println(&quot;commmit failed for offset &quot; + offsets.values().iterator().next().offset())
+          println(&quot;Commit failed for offset &quot; + offsets.values().iterator().next().offset())
         } else {
-          println(&quot;commit succeeded!&quot;)
+          println(&quot;Commit succeeded!&quot;)
         }
       }
     })
+    }
   }
 }
 </code></pre>
