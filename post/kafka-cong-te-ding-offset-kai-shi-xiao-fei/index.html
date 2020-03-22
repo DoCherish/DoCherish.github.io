@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Kafka——Consumer提交偏移量 | Do&#39;s blog</title>
+<title>Kafka——从特定offset开始消费 | Do&#39;s blog</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1584861542643">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,11 +87,11 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    Kafka——Consumer提交偏移量
+                    Kafka——从特定offset开始消费
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2020-03-19 ·
+                        · 2020-03-22 ·
                     </time>
                     
                         <a href="https://DoCherish.github.io/tag/kafka/" class="post-tags">
@@ -100,141 +100,134 @@
                     
                 </div>
                 <div class="post-content">
-                    <p>Kafka提交偏移量的方式：</p>
-<ul>
-<li>自动提交</li>
-<li>手动提交——同步</li>
-<li>手动提交——异步</li>
+                    <ul>
+<li>指定分区从头消费</li>
+<li>指定分区从最新offset消费</li>
+<li>指定分区、offset消费</li>
 </ul>
 <!-- more -->
-<h2 id="自动提交">自动提交</h2>
-<pre><code>package test.kafka
-
-import java.util.Properties
-
-import org.apache.kafka.common.serialization.StringSerializer
-
-class kafkaProperities {
-  private val KFK_BROKERS = &quot;host1:port1,host2:port2,post3:port3&quot;
-
-  def getKakConPros:Properties = {
-    val kfkConProps: Properties = new Properties()
-    kfkConProps.setProperty(&quot;bootstrap.servers&quot;, KFK_BROKERS)
-    kfkConProps.setProperty(&quot;group.id&quot;, &quot;kafka_consumer&quot;)
-    kfkConProps.setProperty(&quot;enable.auto.commit&quot;, &quot;true&quot;)
-    kfkConProps.setProperty(&quot;auto.commit.interval.ms&quot;, &quot;5000&quot;)
-    kfkConProps.setProperty(&quot;key.deserializer&quot;, classOf[StringSerializer].getName)
-    kfkConProps.setProperty(&quot;value.deserializer&quot;, classOf[StringSerializer].getName)
-
-    kfkConProps
-  }
-}
-</code></pre>
+<h2 id="指定分区从头消费">指定分区从头消费</h2>
 <pre><code>package test.kafka.kafkaconsumer
 
-import java.util
 import java.util.Properties
+import java.{lang, util}
 
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords, KafkaConsumer}
+import org.apache.kafka.common.TopicPartition
 import test.kafka.kafkaProperities
 
-object autoCommitOffsets {
-  private val KAFKA_PROPERITIES = new kafkaProperities()
+import scala.collection.JavaConversions._
 
+object ConsumerSpecificOffsets {
+  private val KAFKA_PROPERITIES = new kafkaProperities()
   def main(args: Array[String]): Unit = {
-    val kfkConProps: Properties = KAFKA_PROPERITIES.getKakConPros
-    val consumer: KafkaConsumer[String, String] = new KafkaConsumer(kfkConProps)
+    val kakConPros: Properties = KAFKA_PROPERITIES.getKakConPros
+    val consumer: KafkaConsumer[String, String] = new KafkaConsumer[String, String](kakConPros)
     consumer.subscribe(util.Arrays.asList(KAFKA_PROPERITIES.TOPIC))
-    try {
-      while(true) {
-        val consumerRecords: ConsumerRecords[String, String] = consumer.poll(100)
-        val records: util.Iterator[ConsumerRecord[String, String]] = consumerRecords.iterator()
-        while (records.hasNext){
-          val record: ConsumerRecord[String, String] = records.next()
-          println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
-        }
-      }
-    } finally {
-      consumer.close()
+
+    var assignment: scala.collection.Set[TopicPartition] = Set()
+    // 在poll()方法内部执行分区分配逻辑，该循环确保分区已被分配
+    // 当分区消息为0时进入此循环，如果不为0，则说明已经成功分配到了分区
+    while (assignment.isEmpty) {
+      consumer.poll(1000)
+      // assignment()方法是用来获取消费者所分配到的分区消息的
+      assignment = consumer.assignment()
     }
-  }
-}
-</code></pre>
-<h2 id="手动提交同步">手动提交——同步</h2>
-<p>修改getKakConPros的参数：</p>
-<pre><code>	kfkConProps.setProperty(&quot;enable.auto.commit&quot;, &quot;false&quot;)
-    //kfkConProps.setProperty(&quot;auto.commit.interval.ms&quot;, &quot;5000&quot;)
-</code></pre>
-<pre><code>package test.kafka.kafkaconsumer
-
-import java.util
-import java.util.Properties
-import java.util.logging.Logger
-
-import org.apache.kafka.clients.consumer.{CommitFailedException, ConsumerRecord, ConsumerRecords, KafkaConsumer}
-import test.kafka.kafkaProperities
-
-object syncCommitOffsets {
-  private val KAFKA_PROPERITIES = new kafkaProperities()
-  def main(args: Array[String]): Unit = {
-    val kfkConProps: Properties = KAFKA_PROPERITIES.getKakConPros
-    val consumer: KafkaConsumer[String, String] = new KafkaConsumer(kfkConProps)
-    consumer.subscribe(util.Arrays.asList(KAFKA_PROPERITIES.TOPIC))
-    while(true) {
+    println(&quot;assignment: &quot; + assignment)
+    //-----------------------------------------------------------------------------------------------
+    // 指定分区从头消费
+    val beginningOffsets: util.Map[TopicPartition, lang.Long] = consumer.beginningOffsets(assignment)
+    assignment.foreach(
+      topicPartition =&gt; {
+        val offsets: lang.Long = beginningOffsets.get(topicPartition)
+        println(&quot;分区&quot; + topicPartition + &quot;从&quot; + offsets + &quot;开始消费！&quot;)
+        consumer.seek(topicPartition, offsets)
+      }
+    )
+    //-----------------------------------------------------------------------------------------------
+    while (true) {
       val consumerRecords: ConsumerRecords[String, String] = consumer.poll(100)
       val records: util.Iterator[ConsumerRecord[String, String]] = consumerRecords.iterator()
       while (records.hasNext) {
         val record: ConsumerRecord[String, String] = records.next()
         println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
       }
-    try {
-      consumer.commitSync()
-    } catch {
-      case e: CommitFailedException =&gt; {
-        println(&quot;commit failed!&quot; + e)
-      }
-    }
     }
   }
 }
 </code></pre>
-<h2 id="手动提交异步提交">手动提交——异步提交</h2>
-<pre><code>package test.kafka.kafkaconsumer
-
-import java.util
-import java.util.Properties
-
-import org.apache.kafka.clients.consumer._
-import org.apache.kafka.common.TopicPartition
-import test.kafka.kafkaProperities
-
-object asyncCommitOffsets {
-  private val KAFKA_PROPERITIES = new kafkaProperities()
-  def main(args: Array[String]): Unit = {
-    val kfkConProps: Properties = KAFKA_PROPERITIES.getKakConPros
-    val consumer: KafkaConsumer[String, String] = new KafkaConsumer(kfkConProps)
-    consumer.subscribe(util.Arrays.asList(KAFKA_PROPERITIES.TOPIC))
-    while(true) {
-      val consumerRecords: ConsumerRecords[String, String] = consumer.poll(100)
-      val records: util.Iterator[ConsumerRecord[String, String]] = consumerRecords.iterator()
-      while (records.hasNext){
-        val record: ConsumerRecord[String, String] = records.next()
-        println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
+<p>输出：</p>
+<pre><code>assignment: Set(kafka_producer_test-1, kafka_producer_test-0, kafka_producer_test-2)
+分区kafka_producer_test-1从108开始消费！
+分区kafka_producer_test-0从45开始消费！
+分区kafka_producer_test-2从47开始消费！
+topic: kafka_producer_test partition: 1 offset: 108
+topic: kafka_producer_test partition: 1 offset: 109
+topic: kafka_producer_test partition: 1 offset: 110
+topic: kafka_producer_test partition: 1 offset: 111
+topic: kafka_producer_test partition: 1 offset: 112
+topic: kafka_producer_test partition: 1 offset: 113
+topic: kafka_producer_test partition: 1 offset: 114
+topic: kafka_producer_test partition: 1 offset: 115
+topic: kafka_producer_test partition: 1 offset: 116
+topic: kafka_producer_test partition: 2 offset: 47
+topic: kafka_producer_test partition: 2 offset: 48
+topic: kafka_producer_test partition: 2 offset: 49
+topic: kafka_producer_test partition: 2 offset: 50
+topic: kafka_producer_test partition: 2 offset: 51
+topic: kafka_producer_test partition: 2 offset: 52
+topic: kafka_producer_test partition: 2 offset: 53
+topic: kafka_producer_test partition: 2 offset: 54
+topic: kafka_producer_test partition: 2 offset: 55
+topic: kafka_producer_test partition: 2 offset: 56
+topic: kafka_producer_test partition: 2 offset: 57
+topic: kafka_producer_test partition: 0 offset: 45
+topic: kafka_producer_test partition: 0 offset: 46
+topic: kafka_producer_test partition: 0 offset: 47
+topic: kafka_producer_test partition: 0 offset: 48
+topic: kafka_producer_test partition: 0 offset: 49
+topic: kafka_producer_test partition: 0 offset: 50
+topic: kafka_producer_test partition: 0 offset: 51
+topic: kafka_producer_test partition: 0 offset: 52
+topic: kafka_producer_test partition: 0 offset: 53
+topic: kafka_producer_test partition: 0 offset: 54
+</code></pre>
+<p>其中，</p>
+<pre><code>val beginningOffsets: util.Map[TopicPartition, lang.Long] = consumer.beginningOffsets(assignment)
+    assignment.foreach(
+      topicPartition =&gt; {
+        val offsets: lang.Long = beginningOffsets.get(topicPartition)
+        println(&quot;分区&quot; + topicPartition + &quot;从&quot; + offsets + &quot;开始消费！&quot;)
+        consumer.seek(topicPartition, offsets)
       }
-    //consumer.commitAsync()
-    //也支持回调
-    consumer.commitAsync(new OffsetCommitCallback {
-      override def onComplete(offsets: util.Map[TopicPartition, OffsetAndMetadata], exception: Exception): Unit = {
-        if (exception != null) {
-          println(&quot;Commit failed for offset &quot; + offsets.values().iterator().next().offset())
-        } else {
-          println(&quot;Commit succeeded!&quot;)
-        }
+    )
+</code></pre>
+<p>可简化为：</p>
+<pre><code>consumer.seekToBeginning(assignment)
+</code></pre>
+<h2 id="指定分区从最新offset消费">指定分区从最新offset消费</h2>
+<p>用以下代码替换掉“//------”:</p>
+<pre><code>val endOffsets: util.Map[TopicPartition, lang.Long] = consumer.endOffsets(assignment)
+    assignment.foreach(
+      topicPartition =&gt; {
+        val offsets: lang.Long = endOffsets.get(topicPartition)
+        println(&quot;分区&quot; + topicPartition + &quot;从&quot; + offsets + &quot;开始消费！&quot;)
+        consumer.seek(topicPartition, offsets)
       }
-    })
-    }
-  }
-}
+    )
+</code></pre>
+<p>并可简化为：</p>
+<pre><code>consumer.seekToEnd(assignment)
+</code></pre>
+<h2 id="指定分区-offset消费">指定分区、offset消费</h2>
+<p>指定从每个分区offset=20的位置开始消费：</p>
+<pre><code>assignment.foreach(
+      topicPartition =&gt; {
+        val offsets: lang.Long = 20
+        println(&quot;分区&quot; + topicPartition + &quot;从&quot; + offsets + &quot;开始消费！&quot;)
+        consumer.seek(topicPartition, offsets)
+      }
+    )
 </code></pre>
 
                 </div>
@@ -244,8 +237,8 @@ object asyncCommitOffsets {
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://DoCherish.github.io/post/kafka-sheng-chan-zhe-kafkaproducer/" class="post-title gt-a-link">
-                    kafka——Producer
+                <a href="https://DoCherish.github.io/post/kafka-zai-jun-heng-jian-ting-qi/" class="post-title gt-a-link">
+                    Kafka——再均衡监听器
                 </a>
             </div>
         
