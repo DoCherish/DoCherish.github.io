@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <id>http://DoCherish.github.io</id>
+    <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2020-03-26T12:23:45.449Z</updated>
+    <updated>2020-03-26T12:24:54.690Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="http://DoCherish.github.io"/>
-    <link rel="self" href="http://DoCherish.github.io/atom.xml"/>
+    <link rel="alternate" href="https://DoCherish.github.io"/>
+    <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
     <subtitle>困而学之 学思并重</subtitle>
-    <logo>http://DoCherish.github.io/images/avatar.png</logo>
-    <icon>http://DoCherish.github.io/favicon.ico</icon>
+    <logo>https://DoCherish.github.io/images/avatar.png</logo>
+    <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Do&apos;s blog</rights>
     <entry>
         <title type="html"><![CDATA[Kafka——可靠的数据传递]]></title>
-        <id>http://DoCherish.github.io/post/kafka-ke-kao-de-shu-ju-chuan-di/</id>
-        <link href="http://DoCherish.github.io/post/kafka-ke-kao-de-shu-ju-chuan-di/">
+        <id>https://DoCherish.github.io/post/kafka-ke-kao-de-shu-ju-chuan-di/</id>
+        <link href="https://DoCherish.github.io/post/kafka-ke-kao-de-shu-ju-chuan-di/">
         </link>
         <updated>2020-03-23T16:03:46.000Z</updated>
     </entry>
     <entry>
         <title type="html"><![CDATA[Kafka——从特定offset开始消费]]></title>
-        <id>http://DoCherish.github.io/post/kafka-cong-te-ding-offset-kai-shi-xiao-fei/</id>
-        <link href="http://DoCherish.github.io/post/kafka-cong-te-ding-offset-kai-shi-xiao-fei/">
+        <id>https://DoCherish.github.io/post/kafka-cong-te-ding-offset-kai-shi-xiao-fei/</id>
+        <link href="https://DoCherish.github.io/post/kafka-cong-te-ding-offset-kai-shi-xiao-fei/">
         </link>
         <updated>2020-03-22T06:39:05.000Z</updated>
         <summary type="html"><![CDATA[<ul>
@@ -38,8 +38,8 @@
     </entry>
     <entry>
         <title type="html"><![CDATA[Kafka——再均衡监听器]]></title>
-        <id>http://DoCherish.github.io/post/kafka-zai-jun-heng-jian-ting-qi/</id>
-        <link href="http://DoCherish.github.io/post/kafka-zai-jun-heng-jian-ting-qi/">
+        <id>https://DoCherish.github.io/post/kafka-zai-jun-heng-jian-ting-qi/</id>
+        <link href="https://DoCherish.github.io/post/kafka-zai-jun-heng-jian-ting-qi/">
         </link>
         <updated>2020-03-20T15:28:33.000Z</updated>
         <summary type="html"><![CDATA[<p>在为消费者分配新分区或者移除旧分区时，可以通过消费者API执行一些应用程序代码，在调用subscribe方法时，传进去一个ConsumerRebalanceListener实例就可以了。ConsumerRebalanceListener有两个需要实现的方法。</p>
@@ -49,8 +49,8 @@
     </entry>
     <entry>
         <title type="html"><![CDATA[Kafka——Consumer提交偏移量]]></title>
-        <id>http://DoCherish.github.io/post/kafka-consumer-ti-jiao-pian-yi-liang/</id>
-        <link href="http://DoCherish.github.io/post/kafka-consumer-ti-jiao-pian-yi-liang/">
+        <id>https://DoCherish.github.io/post/kafka-consumer-ti-jiao-pian-yi-liang/</id>
+        <link href="https://DoCherish.github.io/post/kafka-consumer-ti-jiao-pian-yi-liang/">
         </link>
         <updated>2020-03-19T15:38:49.000Z</updated>
         <summary type="html"><![CDATA[<p>Kafka提交偏移量的方式：</p>
@@ -70,15 +70,15 @@
     </entry>
     <entry>
         <title type="html"><![CDATA[kafka——Producer]]></title>
-        <id>http://DoCherish.github.io/post/kafka-sheng-chan-zhe-kafkaproducer/</id>
-        <link href="http://DoCherish.github.io/post/kafka-sheng-chan-zhe-kafkaproducer/">
+        <id>https://DoCherish.github.io/post/kafka-sheng-chan-zhe-kafkaproducer/</id>
+        <link href="https://DoCherish.github.io/post/kafka-sheng-chan-zhe-kafkaproducer/">
         </link>
         <updated>2020-03-17T15:26:41.000Z</updated>
     </entry>
     <entry>
         <title type="html"><![CDATA[Hello Gridea]]></title>
-        <id>http://DoCherish.github.io/post/hello-gridea/</id>
-        <link href="http://DoCherish.github.io/post/hello-gridea/">
+        <id>https://DoCherish.github.io/post/hello-gridea/</id>
+        <link href="https://DoCherish.github.io/post/hello-gridea/">
         </link>
         <updated>2018-12-11T16:00:00.000Z</updated>
         <summary type="html"><![CDATA[<p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
