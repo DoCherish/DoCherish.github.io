@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>关于 | Do&#39;s blog</title>
+<title>Kafka——日志存储原理 | Do&#39;s blog</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1585668333255">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,33 +87,72 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    关于
+                    Kafka——日志存储原理
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2019-01-25 ·
+                        · 2020-03-31 ·
                     </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/kafka/" class="post-tags">
+                            # Kafka
+                        </a>
                     
                 </div>
                 <div class="post-content">
-                    <blockquote>
-<p>Welcome to my station. Nice to meet you！😄</p>
+                    <h2 id="kafka底层数据存储设计">Kafka底层数据存储设计</h2>
+<blockquote>
+<p>topic——&gt;partitions——&gt;segments——&gt;.index&amp;.log</p>
 </blockquote>
-<h2 id="name">Name</h2>
-<p>Do</p>
-<h2 id="i-am">I Am</h2>
-<p>A Program Developer<br>
-2015-2018 studied in Xi'an University of Posts and Telecommunications<br>
-Entered the big data platform development team of a company in 2018<br>
-Research direction: real-time computing</p>
-<h2 id="contact">Contact</h2>
-<p>GitHub:https://github.com/DoCherish<br>
-Email:mrduxu@163.com</p>
+<ul>
+<li>
+<p>Kafka中的消息是以<strong>topic</strong>为基本单位进行组织和分类；</p>
+</li>
+<li>
+<p>每个topic分为多个<strong>partition</strong>，partition是以文件的形式存储在文件系统中，由参数<code>log.dir</code>配置。如创建了名为<code>first_topic</code>的topic，共有3个分区，那么在其数据目录中就会自动创建3个目录：<code>first_topic-0</code>、<code>first_topic-1</code>、<code>first_topic-2</code>。partition命名规范：<code>topic_name+”-“+partition_id</code>；</p>
+</li>
+<li>
+<p>每个partition又被分为多个大小相等的<strong>segment</strong>，由参数<code>log.segment.bytes</code>配置，默认1GB。Kafka中写入日志的方式是以<strong>顺序追加</strong>的方式写入的，当日志文件达到一定大小就会做切分，形成一个新的日志文件，这里可以把一个一个的日志文件作为一个日志段。日志段的引入方便了Kafka数据的查询(二分查找)与定位。日志段分为活跃日志段和非活跃日志段，只有活跃日志段(当前日志段，一个分区只可能存在一个)可以被写入和读取，非活跃日志段只能被读取；</p>
+</li>
+<li>
+<p><strong>segment</strong>主要由两部分组成：</p>
+<ul>
+<li><strong>索引文件</strong>：后缀为<code>.index</code>的文件；</li>
+<li><strong>日志文件</strong>：后缀为<code>.log</code>的文件。</li>
+</ul>
+<p>segment 文件命名规则：partition 全局的第一个 segment从 0 开始，后续每个 segment 文件名为上一个 segment文件最后一条消息的 offset 值进行递增。数值最大为 64 位long 大小，20 位数字字符长度，没有数字用 0 填充。如：</p>
+<blockquote>
+<p>第一个 log 文件的最后一个 offset 为:5376，下一个segment 的文件命名为： 00000000000000005376.log</p>
+<p>00000000000000005376.index。</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="kafka查询数据策略">Kafka查询数据策略</h2>
+<p>如果每个partition只有一个数据文件，在数据量较大的情况下查找某个offset对应的数据时，由于是顺序查找，查询效率就很低。那Kafka是如何解决查询效率低的问题呢？</p>
+<ul>
+<li><strong>分段</strong>：将数据文件分段，每段放在一个单独的数据文件里，由于文件命名与offset有关，所以在查找指定offset的数据时，使用二分查找法可快速定位到segment；</li>
+<li><strong>索引</strong>：数据文件分段使得可以在一个较小的数据文件中查找对应offset的数据了，但是这依然需要顺序扫描整个文件。为了进一步提高查找的效率，Kafka为每个分段后的数据文件建立了索引文件。其包含两个部分：
+<ul>
+<li>相对offset：这里的相对offset和log文件里的offset不同，相对offset是每个segment都从1开始的，而绝对offset在整个partition中都是唯一的。举例：分段后的一个数据文件的offset是从20开始，那么offset为25的数据在index文件中的相对offset就是25-20 = 5。<strong>存储相对offset可以减小索引文件占用的空间</strong>。</li>
+<li>position：表示该条数据在数据文件中的绝对位置。只要打开文件并移动文件指针到这个position就可以读取对应的数据了。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>index文件中并没有为数据文件中的每条数据建立索引，而是采用了<strong>稀疏存储</strong>的方式，每隔一定字节的数据建立一条索引。<strong>这样避免了索引文件占用过多的空间，从而可以将索引文件保留在内存中</strong>。但缺点是没有建立索引的数据也不能一次定位到其在数据文件的位置，从而需要做一次顺序扫描，但是这次顺序扫描的范围就很小了。</p>
+</blockquote>
 
                 </div>
             </article>
         </div>
 
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/kafka-jian-jie-yu-jia-gou/" class="post-title gt-a-link">
+                    Kafka——简介与架构
+                </a>
+            </div>
         
 
         
