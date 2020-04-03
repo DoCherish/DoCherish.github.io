@@ -1,0 +1,288 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Flume——简介及架构 | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1585925258886">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Flume——简介及架构
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2020-04-03 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/flume/" class="post-tags">
+                            # Flume
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <h2 id="简介">简介</h2>
+<p>Apache Flume是一个分布式、高可用、高可靠的系统，可以有效地从许多不同的源收集、聚合和移动海量日志数据到集中式数据存储。</p>
+<p>Flume可用于传输大量事件数据：</p>
+<ul>
+<li>日志数据</li>
+<li>网络流量数据</li>
+<li>社交媒体数据</li>
+<li>电子邮件消息</li>
+<li>……</li>
+</ul>
+<h2 id="优势">优势</h2>
+<ul>
+<li>支持将数据存储到任何集中存储器中，比如HDFS，Hive，HBase；</li>
+<li>当传入数据的速率超过可以将数据写入目标的速率时，flume充当数据生产者和集中存储之间的中介，并在它们之间提供稳定的数据流；</li>
+<li>channel是<strong>基于事务</strong>，保证了数据在传送和接收时的一致性；</li>
+<li>可靠的，容错性高的，可扩展的，易管理的，并且可定制的；</li>
+<li>支持各种接入数据的类型以及接出数据类型；</li>
+<li>支持多路径流量，多管道接入流量，多管道接出流量，上下文路由等；</li>
+<li>支持水平扩展。</li>
+</ul>
+<h2 id="组成">组成</h2>
+<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1585925005095.png" alt="" loading="lazy"></figure>
+<ul>
+<li><code>agent</code>：agent是一个<code>JVM</code>进程，它以事件的形式将数据从源头送至目的地。由三个部分组成：
+<ul>
+<li>source</li>
+<li>channel</li>
+<li>sink</li>
+</ul>
+</li>
+<li><code>event</code>：<strong>数据传输的基本单元</strong>，带有一个可选的消息头。如果是文本文件，通常是一行记录；event从source，流向channel，再到sink；</li>
+<li><code>source</code>：负责接收数据到agent的组件，支持处理各种类型、各种格式的日志数据；</li>
+<li><code>channel</code>：主要提供一个队列的功能，是位于source和sink之间的缓冲区。自带两种channel：
+<ul>
+<li><code>Memory Channel</code>：基于内存缓存，在不需要关心数据丢失的情境下适用；</li>
+<li><code>File Channel</code>：Flume的持久化channel。在程序关闭或机器宕机的情况下不会丢失数据。</li>
+</ul>
+</li>
+<li><code>sink</code>：sink不断地<strong>轮询</strong>channel中的事件且批量地<strong>移除</strong>它们。并将这些事件批量写入到存储或索引系统、或者被发送到另一个flume agent。</li>
+</ul>
+<h2 id="flume事务">Flume事务</h2>
+<p><img src="https://DoCherish.github.io/post-images/1585925159832.png" alt="" loading="lazy"><br>
+Flume的事务性主要体现在两个方面：</p>
+<ul>
+<li><code>put事务</code>：从source到channel的事件传输过程叫Put事务。通过doPut将批数据先写入临时缓冲区putList；再通过doCommit将批数据提交给channel。一旦事务中的所有事件全部传递到channel且提交成功，那么source就将其标记为完成。如果因为某种原因事件传递失败，那么事务将会回滚。</li>
+<li><code>take事务</code>：从channel拉取事件数据到sink的过程叫take事务。通过doTake先将数据取到临时缓冲区takeList；再通过doCommit将事件数据发送到sink。如果数据全部发送数据成功，则清除临时缓冲区takeList。如果数据发送过程中出现异常，rollback将临时缓冲区takeList中的数据归还给channel内存序列。</li>
+</ul>
+<h2 id="flume配置文件配置流程">Flume配置文件配置流程</h2>
+<p>Flume配置文件是具有键值对的Java属性文件，配置分为5步：</p>
+<ul>
+<li>Name the components of the current agent.</li>
+<li>Describe/Configure the source.</li>
+<li>Describe/Configure the sink.</li>
+<li>Describe/Configure the channel.</li>
+<li>Bind the source and the sink to the channel.</li>
+</ul>
+<blockquote>
+<p>Demo-1：<code>TAILDIR——file channel——HdfsSink</code></p>
+</blockquote>
+<pre><code class="language-shell"># 1 agent
+a1.sources = r1
+a1.channels = c1
+a1.sinks = k1
+
+# 2 source
+a1.sources.r1.type = TAILDIR
+a1.sources.r1.positionFile = /var/log/flume/taildir_position.json
+a1.sources.r1.filegroups = f1 f2
+a1.sources.r1.filegroups.f1 = /var/log/test1/example.log
+a1.sources.r1.filegroups.f2 = /var/log/test2/.*log.*
+a1.sources.r1.fileHeader = true
+a1.sources.ri.maxBatchCount = 1000
+
+# 3 channel
+a1.channels.c1.type = file
+a1.channels.c1.checkpointDir = /mnt/flume/checkpoint
+a1.channels.c1.dataDirs = /mnt/flume/data
+
+# 4 sink
+a1.sinks.k1.type = hdfs
+a1.sinks.k1.hdfs.path = /flume/events/%y-%m-%d/%H%M/%S
+a1.sinks.k1.hdfs.filePrefix = FlumeData-
+a1.sinks.k1.hdfs.round = true
+a1.sinks.k1.hdfs.roundValue = 10
+a1.sinks.k1.hdfs.roundUnit = minute
+
+# 5 bind
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+</code></pre>
+<blockquote>
+<p>Demo-2：<code>TAILDIR——file channel——KafkaSink</code></p>
+</blockquote>
+<pre><code class="language-shell"># 1 agent
+a1.sources = r1
+a1.channels = c1
+a1.sinks = k1
+
+# 2 source
+a1.sources.r1.type = TAILDIR
+a1.sources.r1.positionFile = /var/log/flume/taildir_position.json
+a1.sources.r1.filegroups = f1 f2
+
+a1.sources.r1.filegroups.f1 = /var/log/test1/example.log
+a1.sources.r1.headers.f1.topic = topic_a
+
+a1.sources.r1.filegroups.f2 = /var/log/test2/.*log.*
+a1.sources.r1.headers.f1.topic = topic_b
+
+a1.sources.r1.fileHeader = false
+a1.sources.r1.maxBatchCount = 1000
+
+# 3 channel
+a1.channels.c1.type = file
+a1.channels.c1.checkpointDir = /mnt/flume/checkpoint
+a1.channels.c1.dataDirs = /mnt/flume/data
+
+# 4 sink
+# sink to hdfs
+a1.sinks.k1.type = hdfs
+a1.sinks.k1.hdfs.path = /flume/events/%y-%m-%d/%H%M/%S
+a1.sinks.k1.hdfs.filePrefix = events-
+a1.sinks.k1.hdfs.round = true
+a1.sinks.k1.hdfs.roundValue = 10
+a1.sinks.k1.hdfs.roundUnit = minute
+
+# sink to kafka
+a1.sinks.k1.type = org.apache.flume.sink.kafka.KafkaSink
+a1.sinks.k1.kafka.bootstrap.servers = list[ip:host]
+a1.sinks.k1.kafka.flumeBatchSize = 100
+a1.sinks.k1.kafka.producer.acks = 1
+a1.sinks.k1.kafka.producer.compression.type = snappy
+
+# 5 bind
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+</code></pre>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/kafka-ri-zhi-cun-chu-yuan-li/" class="post-title gt-a-link">
+                    Kafka——日志存储原理
+                </a>
+            </div>
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
