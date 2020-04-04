@@ -3,8 +3,8 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Flume——简介及架构 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1585925258886">
+<title>Flume——简介及原理 | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586017020434">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -87,7 +87,7 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    Flume——简介及架构
+                    Flume——简介及原理
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
@@ -100,7 +100,17 @@
                     
                 </div>
                 <div class="post-content">
-                    <h2 id="简介">简介</h2>
+                    <p>主要内容：</p>
+<ul>
+<li>简介</li>
+<li>优势</li>
+<li>组成</li>
+<li>事务性</li>
+<li>Flume Agent内部原理</li>
+<li>Flume配置文件配置流程</li>
+</ul>
+<!-- more -->
+<h2 id="简介">简介</h2>
 <p>Apache Flume是一个分布式、高可用、高可靠的系统，可以有效地从许多不同的源收集、聚合和移动海量日志数据到集中式数据存储。</p>
 <p>Flume可用于传输大量事件数据：</p>
 <ul>
@@ -147,6 +157,29 @@ Flume的事务性主要体现在两个方面：</p>
 <li><code>put事务</code>：从source到channel的事件传输过程叫Put事务。通过doPut将批数据先写入临时缓冲区putList；再通过doCommit将批数据提交给channel。一旦事务中的所有事件全部传递到channel且提交成功，那么source就将其标记为完成。如果因为某种原因事件传递失败，那么事务将会回滚。</li>
 <li><code>take事务</code>：从channel拉取事件数据到sink的过程叫take事务。通过doTake先将数据取到临时缓冲区takeList；再通过doCommit将事件数据发送到sink。如果数据全部发送数据成功，则清除临时缓冲区takeList。如果数据发送过程中出现异常，rollback将临时缓冲区takeList中的数据归还给channel内存序列。</li>
 </ul>
+<h2 id="flume-agent内部原理">Flume Agent内部原理</h2>
+<p><img src="https://DoCherish.github.io/post-images/1586016648598.png" alt="" loading="lazy"><br>
+Flume agent内部工作流程：</p>
+<ol>
+<li>Source采集数据；</li>
+<li>在Source内部，由<code>EventBuilder.withBody(body)</code>将数据封装成event对象，由<code>source.getChannelProcessor().processEvent(event)</code>将交给Channel处理器；</li>
+<li>Channel 处理器将event传给Interceptor<strong>拦截器链</strong>，进行简单的数据清洗过滤，然后将其返回给Channel 处理器；</li>
+<li>Channel 处理器再将过滤之后的event传给Channel选择器，Channel选择器决定每个event写入哪个Channel，以及哪些Channel时必需的或可选的。Channel选择器分两种：
+<ul>
+<li><code>Replicating Channel Selector</code>：默认，将source过来的event发往所有的channel（相当于复制多份）；</li>
+<li><code>Multiplexing Channel Selector</code>：可以配置source发过来的event具体发往哪些Channel。其工作原理就是根据event的header中的key-value来判断该event该发往哪一个Channel。而event中的header是拦截器过滤好event之后给event加的具体的header，即key-value。所以，一般都是拦截器和<code>Multiplexing Channel Selector</code> 结合起来使用。</li>
+</ul>
+</li>
+<li>Channel选择器返回event的channel列表；</li>
+<li>根据Channel选择器的选择结果，将event写入相应的channel；</li>
+<li>Sink 处理器选择其中一个sink去获取channel中的event，并将获取的event写入下一个阶段。通过配置Sink groups，可以实现sink的负载均衡和故障转移。其中：Sink processor有三种：
+<ul>
+<li><code>DefaultSinkProcessor</code>：默认的，内部无任何逻辑，只是单纯的调用sink；</li>
+<li><code>LoadBalancingSinkProcessor</code>：负载均衡；</li>
+<li><code>FaioverSinkProcessor</code>：容灾恢复。</li>
+</ul>
+</li>
+</ol>
 <h2 id="flume配置文件配置流程">Flume配置文件配置流程</h2>
 <p>Flume配置文件是具有键值对的Java属性文件，配置分为5步：</p>
 <ul>

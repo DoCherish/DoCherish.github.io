@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2020-04-03T14:48:11.859Z</updated>
+    <updated>2020-04-04T16:17:07.516Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -11,11 +11,31 @@
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Do&apos;s blog</rights>
     <entry>
-        <title type="html"><![CDATA[Flume——简介及架构]]></title>
+        <title type="html"><![CDATA[Flume——简介及原理]]></title>
         <id>https://DoCherish.github.io/post/flume-jian-jie-ji-jia-gou/</id>
         <link href="https://DoCherish.github.io/post/flume-jian-jie-ji-jia-gou/">
         </link>
         <updated>2020-04-03T14:41:10.000Z</updated>
+        <summary type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>简介</li>
+<li>优势</li>
+<li>组成</li>
+<li>事务性</li>
+<li>Flume Agent内部原理</li>
+<li>Flume配置文件配置流程</li>
+</ul>
+]]></summary>
+        <content type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>简介</li>
+<li>优势</li>
+<li>组成</li>
+<li>事务性</li>
+<li>Flume Agent内部原理</li>
+<li>Flume配置文件配置流程</li>
+</ul>
+]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[Kafka——日志存储原理]]></title>
