@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Flume——简介及原理 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586017549423">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586146392962">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -189,87 +189,55 @@ Flume agent内部工作流程：</p>
 <li>Describe/Configure the channel.</li>
 <li>Bind the source and the sink to the channel.</li>
 </ul>
-<blockquote>
-<p>Demo-1：<code>TAILDIR——file channel——HdfsSink</code></p>
-</blockquote>
-<pre><code class="language-shell"># 1 agent
-a1.sources = r1
-a1.channels = c1
-a1.sinks = k1
-
-# 2 source
-a1.sources.r1.type = TAILDIR
-a1.sources.r1.positionFile = /var/log/flume/taildir_position.json
-a1.sources.r1.filegroups = f1 f2
-a1.sources.r1.filegroups.f1 = /var/log/test1/example.log
-a1.sources.r1.filegroups.f2 = /var/log/test2/.*log.*
-a1.sources.r1.fileHeader = true
-a1.sources.ri.maxBatchCount = 1000
-
-# 3 channel
-a1.channels.c1.type = file
-a1.channels.c1.checkpointDir = /mnt/flume/checkpoint
-a1.channels.c1.dataDirs = /mnt/flume/data
-
-# 4 sink
-a1.sinks.k1.type = hdfs
-a1.sinks.k1.hdfs.path = /flume/events/%y-%m-%d/%H%M/%S
-a1.sinks.k1.hdfs.filePrefix = FlumeData-
-a1.sinks.k1.hdfs.round = true
-a1.sinks.k1.hdfs.roundValue = 10
-a1.sinks.k1.hdfs.roundUnit = minute
-
-# 5 bind
-a1.sources.r1.channels = c1
-a1.sinks.k1.channel = c1
-</code></pre>
-<blockquote>
-<p>Demo-2：<code>TAILDIR——file channel——KafkaSink</code></p>
-</blockquote>
-<pre><code class="language-shell"># 1 agent
-a1.sources = r1
-a1.channels = c1
-a1.sinks = k1
-
-# 2 source
-a1.sources.r1.type = TAILDIR
-a1.sources.r1.positionFile = /var/log/flume/taildir_position.json
-a1.sources.r1.filegroups = f1 f2
-
-a1.sources.r1.filegroups.f1 = /var/log/test1/example.log
-a1.sources.r1.headers.f1.topic = topic_a
-
-a1.sources.r1.filegroups.f2 = /var/log/test2/.*log.*
-a1.sources.r1.headers.f1.topic = topic_b
-
-a1.sources.r1.fileHeader = false
-a1.sources.r1.maxBatchCount = 1000
-
-# 3 channel
-a1.channels.c1.type = file
-a1.channels.c1.checkpointDir = /mnt/flume/checkpoint
-a1.channels.c1.dataDirs = /mnt/flume/data
-
-# 4 sink
-# sink to hdfs
-a1.sinks.k1.type = hdfs
-a1.sinks.k1.hdfs.path = /flume/events/%y-%m-%d/%H%M/%S
-a1.sinks.k1.hdfs.filePrefix = events-
-a1.sinks.k1.hdfs.round = true
-a1.sinks.k1.hdfs.roundValue = 10
-a1.sinks.k1.hdfs.roundUnit = minute
-
-# sink to kafka
-a1.sinks.k1.type = org.apache.flume.sink.kafka.KafkaSink
-a1.sinks.k1.kafka.bootstrap.servers = list[ip:host]
-a1.sinks.k1.kafka.flumeBatchSize = 100
-a1.sinks.k1.kafka.producer.acks = 1
-a1.sinks.k1.kafka.producer.compression.type = snappy
-
-# 5 bind
-a1.sources.r1.channels = c1
-a1.sinks.k1.channel = c1
-</code></pre>
+<p>Flume支持多种Source、Channel和Sink：</p>
+<p><strong>Source</strong>：</p>
+<ul>
+<li><code>Avro Source</code></li>
+<li><code>Thrift Source</code></li>
+<li><code>Exec Source</code></li>
+<li><code>JMS Source</code></li>
+<li><code>Spooling Directory Source</code></li>
+<li><code>Twitter 1% firehose Source</code></li>
+<li><code>Kafka Source</code></li>
+<li><code>NetCat Source</code></li>
+<li><code>Sequence Generator Source</code></li>
+<li><code>Syslog Sources</code></li>
+<li><code>Syslog TCP Source</code></li>
+<li><code>Multiport Syslog TCP Source</code></li>
+<li><code>Syslog UDP Source</code></li>
+<li><code>HTTP Source</code></li>
+<li><code>Stress Source</code></li>
+<li><code>Legacy Sources</code></li>
+<li><code>Thrift Legacy Source</code></li>
+<li><code>Custom Source</code></li>
+<li><code>Scribe Source</code></li>
+</ul>
+<p><strong>Channel</strong>：</p>
+<ul>
+<li><code>Memory Channel</code></li>
+<li><code>JDBC Channel</code></li>
+<li><code>Kafka Channel</code></li>
+<li><code>File Channel</code></li>
+<li><code>Spillable Memory Channel</code></li>
+<li><code>Pseudo Transaction Channel</code></li>
+</ul>
+<p><strong>Sink</strong>：</p>
+<ul>
+<li><code>HDFS Sink</code></li>
+<li><code>Hive Sink</code></li>
+<li><code>Logger Sink</code></li>
+<li><code>Avro Sink</code></li>
+<li><code>Thrift Sink</code></li>
+<li><code>IRC Sink</code></li>
+<li><code>File Roll Sink</code></li>
+<li><code>Null Sink</code></li>
+<li><code>HBaseSink</code></li>
+<li><code>AsyncHBaseSink</code></li>
+<li><code>MorphlineSolrSink</code></li>
+<li><code>ElasticSearchSink</code></li>
+<li><code>Kite Dataset Sink</code></li>
+<li><code>Kafka Sink</code></li>
+</ul>
 
                 </div>
             </article>
