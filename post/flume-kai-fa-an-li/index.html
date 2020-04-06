@@ -1,0 +1,425 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Flume——开发案例 | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586158254290">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Flume——开发案例
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2020-04-06 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/flume/" class="post-tags">
+                            # Flume
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>主要内容：</p>
+<ul>
+<li>介绍几种常见的Flume使用场景下，如何配置相关的配置文件</li>
+</ul>
+<!-- more -->
+<h2 id="监控端口数据发送到控制台">监控端口数据发送到控制台</h2>
+<blockquote>
+<p>source：netcat</p>
+<p>channel：memory</p>
+<p>sink：logger</p>
+</blockquote>
+<pre><code class="language-shell"># Name the components on this agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# Describe/configure the source
+a1.sources.r1.type = netcat
+a1.sources.r1.bind = localhost
+a1.sources.r1.port = 44444
+
+# Describe/configure the channel
+a1.channels.c1.type = memory
+a1.channels.c1.capacity = 1000
+a1.channels.c1.transactionCapacity = 100
+
+# Describe/configure the sink
+a1.sinks.k1.type = logger
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1  
+</code></pre>
+<h2 id="实时读取本地文件到hdfs">实时读取本地文件到HDFS</h2>
+<p><strong>方案一：</strong>（存在重复数据的风险）</p>
+<blockquote>
+<p>source：exec</p>
+<p>channel：file</p>
+<p>sink：hdfs</p>
+</blockquote>
+<pre><code class="language-shell"># Name the components on this agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# Describe/configure the source
+a1.sources.r1.type = exec
+a1.sources.r1.command = tail -F /opt/module/hive/logs/hive.log
+a1.sources.r1.shell = /bin/bash -c
+
+# Describe/configure the channel
+a1.channels.c1.type = file
+a1.channels.c1.checkpointDir = /mnt/flume/checkpoint
+a1.channels.c1.dataDirs = /mnt/flume/data
+
+# Describe/configure the sink
+a1.sinks.k1.type = hdfs
+a1.sinks.k1.hdfs.path = hdfs://ip:host/flume/%Y%m%d/%H
+#上传文件的前缀
+a1.sinks.k1.hdfs.filePrefix = logs-
+#是否按照时间滚动文件夹
+a1.sinks.k1.hdfs.round = true
+#多少时间单位创建一个新的文件夹
+a1.sinks.k1.hdfs.roundValue = 1
+#重新定义时间单位
+a1.sinks.k1.hdfs.roundUnit = hour
+#是否使用本地时间戳
+a1.sinks.k1.hdfs.useLocalTimeStamp = true
+#积攒多少个 Event 才 flush 到 HDFS 一次
+a1.sinks.k1.hdfs.batchSize = 1000
+#设置文件类型，可支持压缩
+a1.sinks.k1.hdfs.fileType = DataStream
+#多久生成一个新的文件
+a1.sinks.k1.hdfs.rollInterval = 600
+#设置每个文件的滚动大小
+a1.sinks.k1.hdfs.rollSize = 134217700
+#文件的滚动与 Event 数量无关
+a1.sinks.k1.hdfs.rollCount = 0
+#最小冗余数
+a1.sinks.k1.hdfs.minBlockReplicas = 1
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+</code></pre>
+<p><strong>方案二：</strong>（安全，不丢数据）</p>
+<blockquote>
+<p>source：TAILDIR</p>
+<p>channel：file</p>
+<p>sink：hdfs</p>
+</blockquote>
+<pre><code class="language-shell"># Name the components on this agent
+a1.sources = r1
+a1.channels = c1
+a1.sinks = k1
+
+# Describe/configure the source
+a1.sources.r1.type = TAILDIR
+a1.sources.r1.positionFile = /var/log/flume/taildir_position.json
+a1.sources.r1.filegroups = f1 f2
+a1.sources.r1.filegroups.f1 = /var/log/test1/example.log
+a1.sources.r1.filegroups.f2 = /var/log/test2/.*log.*
+a1.sources.r1.fileHeader = true
+a1.sources.ri.maxBatchCount = 1000
+
+# Describe/configure the channel
+a1.channels.c1.type = file
+a1.channels.c1.checkpointDir = /mnt/flume/checkpoint
+a1.channels.c1.dataDirs = /mnt/flume/data
+
+# Describe/configure the sink
+a1.sinks.k1.type = hdfs
+a1.sinks.k1.hdfs.path = /flume/events/%y-%m-%d/%H%M/%S
+a1.sinks.k1.hdfs.filePrefix = FlumeData-
+a1.sinks.k1.hdfs.round = true
+a1.sinks.k1.hdfs.roundValue = 10
+a1.sinks.k1.hdfs.roundUnit = minute
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+</code></pre>
+<h2 id="实时读取目录下文件到hdfs">实时读取目录下文件到HDFS</h2>
+<blockquote>
+<p>source：spooldir</p>
+<p>channel：file</p>
+<p>sink：hdfs</p>
+</blockquote>
+<pre><code class="language-shell"># Name the components on this agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# Describe/configure the source
+a1.sources.r1.type = spooldir
+a1.sources.r1.spoolDir = /opt/module/flume/upload
+a1.sources.r1.fileSuffix = .COMPLETED
+a1.sources.r1.fileHeader = true
+
+# Describe/configure the channel
+a1.channels.c1.type = file
+a1.channels.c1.checkpointDir = /mnt/flume/checkpoint
+a1.channels.c1.dataDirs = /mnt/flume/data
+
+# Describe/configure the sink
+a1.sinks.k1.type = hdfs
+a1.sinks.k1.hdfs.path = hdfs://ip:host/flume/upload/%Y%m%d/%H
+#上传文件的前缀
+a1.sinks.k1.hdfs.filePrefix = upload-
+#是否按照时间滚动文件夹
+a1.sinks.k1.hdfs.round = true
+#多少时间单位创建一个新的文件夹
+a1.sinks.k1.hdfs.roundValue = 1
+#重新定义时间单位
+a1.sinks.k1.hdfs.roundUnit = hour
+#是否使用本地时间戳
+a1.sinks.k1.hdfs.useLocalTimeStamp = true
+#积攒多少个 Event 才 flush 到 HDFS 一次
+a1.sinks.k1.hdfs.batchSize = 100
+#设置文件类型，可支持压缩
+a1.sinks.k1.hdfs.fileType = DataStream
+#多久生成一个新的文件
+a1.sinks.k1.hdfs.rollInterval = 600
+#设置每个文件的滚动大小大概是 128M
+a1.sinks.k1.hdfs.rollSize = 134217700
+#文件的滚动与 Event 数量无关
+a1.sinks.k1.hdfs.rollCount = 0
+#最小冗余数
+a1.sinks.k1.hdfs.minBlockReplicas = 1
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+</code></pre>
+<h2 id="实时读取本地文件到kafka重点">实时读取本地文件到Kafka（重点）</h2>
+<p>场景：所有埋点数据统一发送到NG服务器，经过负载均衡后，均匀发送到3台服务器（数量自行配置），再由每台服务器上Flume将数据采集到Kafka。整体架构如图：</p>
+<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1586158168808.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>source：TAILDIR</p>
+<p>channel：file</p>
+<p>sink：kafka</p>
+</blockquote>
+<pre><code class="language-shell"># Name the components on this agent
+a1.sources = r1
+a1.channels = c1
+a1.sinks = k1
+
+# Describe/configure the source
+a1.sources.r1.type = TAILDIR
+a1.sources.r1.positionFile = /var/log/flume/taildir_position.json
+a1.sources.r1.filegroups = f1 f2
+
+a1.sources.r1.filegroups.f1 = /var/log/test1/example.log
+a1.sources.r1.headers.f1.topic = topic_a
+
+a1.sources.r1.filegroups.f2 = /var/log/test2/.*log.*
+a1.sources.r1.headers.f1.topic = topic_b
+
+a1.sources.r1.fileHeader = false
+a1.sources.r1.maxBatchCount = 1000
+
+# Describe/configure the channel
+a1.channels.c1.type = file
+a1.channels.c1.checkpointDir = /mnt/flume/checkpoint
+a1.channels.c1.dataDirs = /mnt/flume/data
+
+# Describe/configure the sink
+a1.sinks.k1.type = org.apache.flume.sink.kafka.KafkaSink
+a1.sinks.k1.kafka.bootstrap.servers = list[ip:host]
+a1.sinks.k1.kafka.flumeBatchSize = 100
+a1.sinks.k1.kafka.producer.acks = 1
+a1.sinks.k1.kafka.producer.compression.type = snappy
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+</code></pre>
+<h2 id="单数据源多出口sink组故障转移">单数据源多出口（Sink组）——故障转移</h2>
+<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1586158211211.png" alt="" loading="lazy"></figure>
+<p>Flume-1为单source，单channel，多Sink，即Sink组。在Flume-2或者Flume-3发生故障时，可实现故障转移。其中，Flume-1的配置可参考：</p>
+<pre><code class="language-shell"># Name the components on this agent
+a1.sources = r1
+a1.channels = c1
+a1.sinks = k1 k2
+a1.sinkgroups = g1
+
+# Describe/configure the source
+a1.sources.r1.type = TAILDIR
+a1.sources.r1.positionFile = /var/log/flume/taildir_position.json
+a1.sources.r1.filegroups = f1 f2
+a1.sources.r1.filegroups.f1 = /var/log/test1/example.log
+a1.sources.r1.filegroups.f2 = /var/log/test2/.*log.*
+a1.sources.r1.fileHeader = true
+a1.sources.ri.maxBatchCount = 1000
+
+# Describe/configure the channel
+a1.channels.c1.type = file
+a1.channels.c1.checkpointDir = /mnt/flume/checkpoint
+a1.channels.c1.dataDirs = /mnt/flume/data
+
+# Describe/configure the sink
+a1.sinks.k1.type = avro
+a1.sinks.k1.hostname = hadoop1
+a1.sinks.k1.port = 4141
+
+a1.sinks.k2.type = avro
+a1.sinks.k2.hostname = hadoop1
+a1.sinks.k2.port = 4142
+
+# Describe/configure the sink groups
+a1.sinkgroups.g1.sinks = k1 k2
+# &quot;failover&quot;即故障转移策略
+a1.sinkgroups.g1.processor.type = failover
+# 为k1、k2分配权重（优先发k2）
+a1.sinkgroups.g1.processor.priority.k1 = 5
+a1.sinkgroups.g1.processor.priority.k2 = 10
+a1.sinkgroups.g1.processor.maxpenalty = 10000
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+aq.sinkw.k2.channel = c1
+</code></pre>
+<h2 id="单数据源多出口sink组负载均衡">单数据源多出口（Sink组）——负载均衡</h2>
+<figure data-type="image" tabindex="3"><img src="https://DoCherish.github.io/post-images/1586158243105.png" alt="" loading="lazy"></figure>
+<p>Flume-1的配置可参考：（只需要修改上述代码中的“sink group”部分）</p>
+<pre><code class="language-shell"># Describe/configure the sink groups
+a1.sinkgroups.g1.sinks = k1 k2
+# &quot;failover&quot;即故障转移策略
+a1.sinkgroups.g1.processor.type = load_balance
+a1.sinkgroups.g1.processor.backoff = true
+# 发送策略：round_robin, random
+a1.sinkgroups.g1.processor.selector = random
+</code></pre>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/flume-jian-jie-ji-jia-gou/" class="post-title gt-a-link">
+                    Flume——简介及原理
+                </a>
+            </div>
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
