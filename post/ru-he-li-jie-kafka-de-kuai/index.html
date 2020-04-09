@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Kafka——简介与架构 | Do&#39;s blog</title>
+<title>如何理解Kafka的“快”？ | Do&#39;s blog</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586449420941">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,11 +87,11 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    Kafka——简介与架构
+                    如何理解Kafka的“快”？
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2020-03-30 ·
+                        · 2020-04-10 ·
                     </time>
                     
                         <a href="https://DoCherish.github.io/tag/kafka/" class="post-tags">
@@ -100,68 +100,58 @@
                     
                 </div>
                 <div class="post-content">
-                    <h2 id="一-简介">一、简介</h2>
-<h3 id="11-概述">1.1 概述</h3>
+                    <p>据了解，Kafka吞吐量峰值<strong>每秒百万</strong>，就算在内存个CPU都不高的情况下，最高可达每秒十万，并且还能做到持久化存储。Kafka如此高吞吐率的原因是什么？</p>
+<!-- more -->
+<h3 id="1-应用层面的优化">1 应用层面的优化</h3>
+<ul>
+<li><strong>使用批次</strong>：producer和consumer都使用批次进行读写——避免在网络上频繁传输单个消息带来的延迟和宽带开销；</li>
+<li><strong>高效压缩</strong>：将多条消息压缩在一起，而不是分别压缩每条消息，自带压缩方式：<code>GZIP</code>和<code>Snappy</code>。消息在写入时进行压缩，消息在传输和存储均为压缩状态，只有在消费时由consumer解压缩——减少网络传输压力；</li>
+<li><strong>水平扩展</strong>：分区——多分区同时读写。</li>
+</ul>
+<h3 id="2-写得快">2 写得快</h3>
+<ul>
+<li><strong>顺序写磁盘</strong>：大多数传统的数据系统都使用内存存储数据，因其提供了极低的延迟。但由于价格昂贵，持久化等问题，Kafka将消息持久化到磁盘。磁盘读写的快慢，取决于如何使用它，即随机写或顺序写。随机写的寻址过程是一个“机械动作”（相比于内存），也最耗时。为了规避随机写带来的消耗，Kafka就使用顺序写磁盘：每条消息都被append到分区log文件。<strong>顺序写可达<code>400M/S</code></strong>，随机写每秒几十几百K。</li>
+<li><code>MMap（Memory Mapped Files）</code>：内存映射文件，即将一个文件或其他对象映射到进程的地址空间，实现文件磁盘地址和进程虚拟地址中一段虚拟地址的一一映射关系。作用：将磁盘文件映射到进程的内存，用户通过修改内存就能修改磁盘文件，即完成了对文件的操作，而不必再调用read、write等系统调用函数。</li>
+</ul>
+<h3 id="3-读得快">3 读得快</h3>
+<ul>
+<li><strong>零拷贝</strong>：数据直接在内核空间完成输入和输出，不需要拷贝到用户空间。Kafka写数据前，先写到进程的内存空间。零拷贝并非不需要拷贝，而是<strong>减少不必要的拷贝</strong>，主要指在<strong>内核空间</strong>和<strong>用户空间</strong>之间的拷贝，进而提高效率。从磁盘获取数据并通过网络发送数据时，一般流程：</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1586449339527.png" alt="" loading="lazy"></figure>
+<ol>
+<li>
+<p>操作系统将数据从磁盘Copy（<code>DMA Copy</code>）到内核空间缓冲区（<code>Kernel Buffer</code>）；</p>
+</li>
+<li>
+<p>应用程序从内核空间缓冲区（<code>Kernel Buffer</code>）将数据Copy（<code>CPU Copy</code>）到用户空间缓冲区（<code>User Buffer</code>）；</p>
+</li>
+<li>
+<p>应用程序从用户空间缓冲区（<code>User Buffer</code>）将数据Copy（<code>CPU Copy</code>）到Socket缓冲区（<code>Socket Buffer</code>）；</p>
+</li>
+<li>
+<p>操作系统从Socket缓冲区（<code>Socket Buffer</code>）将数据Copy（<code>DMA Copy</code>）到网卡（<code>NIC Buffer</code>），由网卡进行网络传输。</p>
 <blockquote>
-<p>什么是Kafka：</p>
+<p>其中涉及4次copy、4次上下文切换和2次CPU中断，而第2次和第3次的Copy只是把数据Copy到用户空间又原封不动地Copy回来，因此带来了2次CPU Copy和2次上下文切换，这是完全没必要的。零拷贝技术就是为了优化掉这2次不必要的Copy。</p>
 </blockquote>
-<ul>
-<li>最初由Linkedin公司开发，由scala编写，其诞生是为了解决Linkedin的数据管道问题——由于各种缺陷而导致消息阻塞或者服务无法正常访问；</li>
-<li>分布式消息队列。Kafka对消息保存时根据topic进行归类，发送消息者称为producer，消息接受者称为consumer，Kafka集群由多个Kafka实例组成，每个实例（server）称为broker；</li>
-<li>无论是Kafka集群，还是consumer都依赖于Zookeeper集群保存一些meta信息，来保证系统可用性。</li>
-</ul>
+<h3 id="sendfile"><code>sendFile</code></h3>
+<p>Linux内核2.1引入<code>sendFile</code>系统调用：<strong>在内核空间把数据从内核缓冲区直接复制到Socket缓冲区，从而减少不必要的Copy和上下文切换</strong>。引入<code>sendFile</code>后，上述流程简化为：</p>
+</li>
+</ol>
+<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1586449311856.png" alt="" loading="lazy"></figure>
+<ol start="5">
+<li>
+<p>操作系统将数据从磁盘Copy（<code>DMA Copy</code>）到内核空间缓冲区（<code>Kernel Buffer</code>）；</p>
+</li>
+<li>
+<p>应用程序通过<code>sendFile</code>，<strong>在内核空间</strong>，从内核空间缓冲区（<code>Kernel Buffer</code>）将数据Copy（<code>CPU Copy</code>）到Socket缓冲区（<code>Socket Buffer</code>）；</p>
+</li>
+<li>
+<p>操作系统从Socket缓冲区（<code>Socket Buffer</code>）将数据Copy（<code>DMA Copy</code>）到网卡（<code>NIC Buffer</code>），由网卡进行网络传输。</p>
 <blockquote>
-<p>Kafka主要设计目标：</p>
+<p>可见，利用<code>sendFile</code>系统调用后，可以将4次Copy减少到3次，4次上下文切换减少到2次，2次CPU中断减少到1次。</p>
 </blockquote>
-<ul>
-<li>通过O(1)的磁盘数据结构提供消息的<strong>持久化</strong>，对于即使数以TB的消息存储也能够保持长时间的稳定性能；</li>
-<li><strong>高吞吐量</strong> ：即使是非常普通的硬件Kafka也可以支持每秒数百万的消息；</li>
-<li>支持Kafka Server间的消息分区，及分布式消费，同时保证每个partition内的消息顺序传输；</li>
-<li>支持<strong>离线</strong>数据处理和<strong>实时</strong>数据处理；</li>
-<li>使用推送和拉取模型<strong>解耦</strong>生产者和消费者；</li>
-<li>系统可以随着数据流的增长进行<strong>横向扩展</strong>。</li>
-</ul>
-<h3 id="12-消息队列">1.2 消息队列</h3>
-<p>Kafka属于发布-订阅模式。消息传递方式：</p>
-<ul>
-<li><strong>点对点</strong>模式：一对一；一条消息只能被消费一次，消费后清除；</li>
-<li><strong>发布-订阅</strong>模式：一对多；消费者可以订阅一个或多个topic，同一条数据可以被多个消费者消费，消息被消费后不会立马清除。</li>
-</ul>
-<h3 id="13-kafka的优点">1.3 Kafka的优点</h3>
-<ul>
-<li>解耦</li>
-<li>冗余</li>
-<li>扩展性</li>
-<li>灵活性&amp;峰值处理能力</li>
-<li>可恢复性</li>
-<li>顺序保证</li>
-<li>缓冲</li>
-<li>异步通信</li>
-</ul>
-<h2 id="二-kafka基础角色">二、Kafka基础角色</h2>
-<ul>
-<li><code>producer</code>：消息生产者，向消息系统发送消息的客户端；</li>
-<li><code>consumer</code>：消息消费者，从消息系统读取消息的客户端；</li>
-<li><code>topic</code>：主题。是一个逻辑概念。其作用类似于关系型数据库的表；</li>
-<li><code>partition</code>：分区。为了实现扩展性，一个非常大的topic可以分布到多个broker上，一个topic分为多个partition（分布在不同的服务器上，具体在<code>.log</code>文件里），序号从0开始，每个partition是一个有序队列。partition中每条消息都会被分配一个有序的ID（offset）。Kafka只保证一个partition中的消息的有序性，不保证一个topic的多个partition间的顺序；</li>
-<li><code>offset</code>：偏移量。partition中的每个消息都有一个连续的序号，用于partition唯一标识一条消息；<br>
-<img src="https://DoCherish.github.io/post-images/1585577064378.png" alt="" loading="lazy"></li>
-<li><code>consumer group</code>：消费者群组。一个topic可以有多个consumer，每个partition只会把消息发给消费者组中的一个consumer；</li>
-</ul>
-<p><img src="https://DoCherish.github.io/post-images/1585577204804.png" alt="" loading="lazy">!</p>
-<ul>
-<li><code>controller</code>：Kafka是主从式的架构，主节点就叫controller，其余的为从节点，controller是需要和zookeeper进行配合管理整个kafka集群。</li>
-</ul>
-<h2 id="三-kafka架构">三、Kafka架构</h2>
-<blockquote>
-<p>Kafka详细架构图：</p>
-</blockquote>
-<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1585577223966.png" alt="" loading="lazy"></figure>
-<ul>
-<li>一个典型的Kafka集群包含若干个producer、broker、consumer（group）以及一个zookeeper；</li>
-<li>Kafka通过zookeeper管理集群配置，选举leader，以及在consumer group发生变化时进行rebalance；</li>
-<li>producer使用push模式将消息发布到broker，consumer使用pull模式从broker订阅并消费消息。</li>
-</ul>
+</li>
+</ol>
 
                 </div>
             </article>
@@ -170,8 +160,8 @@
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://DoCherish.github.io/post/kafka-ke-kao-de-shu-ju-chuan-di/" class="post-title gt-a-link">
-                    Kafka——可靠的数据传递
+                <a href="https://DoCherish.github.io/post/flume-kai-fa-an-li/" class="post-title gt-a-link">
+                    Flume——开发案例
                 </a>
             </div>
         
