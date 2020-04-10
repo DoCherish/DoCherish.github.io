@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2020-04-10T12:30:33.654Z</updated>
+    <updated>2020-04-10T12:34:29.266Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -11,7 +11,7 @@
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Do&apos;s blog</rights>
     <entry>
-        <title type="html"><![CDATA[如何理解Kafka的“快”？]]></title>
+        <title type="html"><![CDATA[Kafka——如何理解Kafka的“快”？]]></title>
         <id>https://DoCherish.github.io/post/ru-he-li-jie-kafka-de-kuai/</id>
         <link href="https://DoCherish.github.io/post/ru-he-li-jie-kafka-de-kuai/">
         </link>
