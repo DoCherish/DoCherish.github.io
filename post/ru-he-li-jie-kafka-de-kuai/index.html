@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>如何理解Kafka的“快”？ | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586449420941">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586521829147">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -120,7 +120,7 @@
 <figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1586449339527.png" alt="" loading="lazy"></figure>
 <ol>
 <li>
-<p>操作系统将数据从磁盘Copy（<code>DMA Copy</code>）到内核空间缓冲区（<code>Kernel Buffer</code>）；</p>
+<p>操作系统从磁盘将数据Copy（<code>DMA Copy</code>）到内核空间缓冲区（<code>Kernel Buffer</code>）；</p>
 </li>
 <li>
 <p>应用程序从内核空间缓冲区（<code>Kernel Buffer</code>）将数据Copy（<code>CPU Copy</code>）到用户空间缓冲区（<code>User Buffer</code>）；</p>
@@ -138,7 +138,7 @@
 </li>
 </ol>
 <figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1586449311856.png" alt="" loading="lazy"></figure>
-<ol start="5">
+<ol>
 <li>
 <p>操作系统将数据从磁盘Copy（<code>DMA Copy</code>）到内核空间缓冲区（<code>Kernel Buffer</code>）；</p>
 </li>
