@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Flink——从零搭建Flink应用 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586691249461">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586707991807">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -225,6 +225,52 @@ object WordCount {
 (flink,2)
 (scala,2)
 </code></pre>
+<h2 id="初次使用flink请注意">初次使用Flink请注意</h2>
+<ul>
+<li>
+<p>对于使用项目模板生成的项目，项目中的主要参数已被初始化，多以无需额外进行配置，如果用户通过手工进行项目的创建，则需要创建Flink项目并进行相应的基础配置，包括：Maven依赖、Scala版本等配置信息。</p>
+</li>
+<li>
+<p>Flink两大依赖：</p>
+<ul>
+<li><strong>核心依赖</strong>：Flink本身由一组类（DataStream/DataSet API）和运行时需要的依赖构成。当一个Flink程序启动时，Flink核心的这些类和依赖在运行时必须存在；</li>
+<li><strong>应用依赖</strong>：所有的连接器、formats或者类库等用户程序需要的东西。应用程序一般都打包成一个jar包，它包含应用程序代码以及所需要的连接器和库的依赖关系。<strong>Flink应用依赖明确不包含DataStream/DataSet API和运行时依赖，因为这些已经包含在Flink的核心依赖了。</strong></li>
+</ul>
+<p>基于scala开发Flink，核心依赖：</p>
+<pre><code>&lt;dependency&gt;
+	&lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
+	&lt;artifactId&gt;flink-scala_${scala.binary.version}&lt;/artifactId&gt;
+	&lt;version&gt;${flink.version}&lt;/version&gt;
+	&lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+	&lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
+	&lt;artifactId&gt;flink-streaming-scala_${scala.binary.version}&lt;/artifactId&gt;
+	&lt;version&gt;${flink.version}&lt;/version&gt;
+	&lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+	&lt;groupId&gt;org.scala-lang&lt;/groupId&gt;
+	&lt;artifactId&gt;scala-library&lt;/artifactId&gt;
+	&lt;version&gt;${scala.version}&lt;/version&gt;
+	&lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p><strong>请注意</strong>：核心依赖配置的<code>scope</code>为<code>provided</code>，意味着：编译时需要，而打包时不打进去。因为这些依赖时Flink的核心依赖，当启动Flink集群的时候它们已经存在。若没有该参数，轻则会造成所打包过大，重则造成类冲突（因应用程序添加的依赖和集群的依赖版本不同而冲突）。**但是，本地运行时要将该参数改为<code>compile</code>！！！**否则报错——采坑之经验！</p>
+<p>连接器（如Kafka）不是Flink的核心依赖，在运行时必须添加依赖：</p>
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
+    &lt;artifactId&gt;flink-connector-kafka-0.10_2.11&lt;/artifactId&gt;
+    &lt;version&gt;1.4.1&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+</li>
+<li>
+<p>Scala版本：Scala版本（2.10、2.11、2.12等）不是相互兼容的，出于这个原因，flink <code>scala2.11</code> 不能适用于使用<code>scala2.12</code>的应用程序。所有的flink依赖项取决于对应的scala后缀，这个表示使用对应的scala版本进行编译的。例如：<code>flink-streaming-scala_2.11</code> 表示使用<code>scala2.11</code>版本进行编译的。</p>
+</li>
+</ul>
 
                 </div>
             </article>
