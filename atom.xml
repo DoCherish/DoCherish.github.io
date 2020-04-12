@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2020-04-10T12:36:36.888Z</updated>
+    <updated>2020-04-12T11:27:42.830Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,29 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Do&apos;s blog</rights>
+    <entry>
+        <title type="html"><![CDATA[Flink——从零搭建Flink应用]]></title>
+        <id>https://DoCherish.github.io/post/flink-cong-ling-da-jian-flink-ying-yong/</id>
+        <link href="https://DoCherish.github.io/post/flink-cong-ling-da-jian-flink-ying-yong/">
+        </link>
+        <updated>2020-04-12T11:19:52.000Z</updated>
+        <summary type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>环境准备</li>
+<li>创建Flink项目模板</li>
+<li>编写Flink程序</li>
+<li>运行测试</li>
+</ul>
+]]></summary>
+        <content type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>环境准备</li>
+<li>创建Flink项目模板</li>
+<li>编写Flink程序</li>
+<li>运行测试</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Kafka——如何理解Kafka的“快”？]]></title>
         <id>https://DoCherish.github.io/post/ru-he-li-jie-kafka-de-kuai/</id>
@@ -150,12 +173,5 @@
 <li>手动提交——异步</li>
 </ul>
 ]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[kafka——Producer]]></title>
-        <id>https://DoCherish.github.io/post/kafka-sheng-chan-zhe-kafkaproducer/</id>
-        <link href="https://DoCherish.github.io/post/kafka-sheng-chan-zhe-kafkaproducer/">
-        </link>
-        <updated>2020-03-17T15:26:41.000Z</updated>
     </entry>
 </feed>

@@ -1,0 +1,276 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Flink——从零搭建Flink应用 | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586690858454">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Flink——从零搭建Flink应用
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2020-04-12 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/MfKgZU3yj/" class="post-tags">
+                            # Flink
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>主要内容：</p>
+<ul>
+<li>环境准备</li>
+<li>创建Flink项目模板</li>
+<li>编写Flink程序</li>
+<li>运行测试</li>
+</ul>
+<!-- more -->
+<h2 id="环境准备">环境准备</h2>
+<p>Flink执行环境分为本地环境和集群环境，可运行在Linux、Windows和Mac OS上。首先介绍环境依赖：</p>
+<ul>
+<li><code>JDK</code>：版本要求：1.8及以上</li>
+<li><code>Maven</code>：Flink源码目前仅支持通过Maven进行编译，版本要求：3.0.4及以上</li>
+<li><code>Scala</code>：根据开发语言选择是否安装（本教程使用Scala开发，高效简洁）</li>
+<li><code>Hadoop</code>：根据部署方式选择是否安装（若使用On Yarn模式需要安装）</li>
+</ul>
+<p>Java环境：</p>
+<pre><code>$ java -version
+java version &quot;1.8.0_241&quot;
+Java(TM) SE Runtime Environment (build 1.8.0_241-b07)
+Java HotSpot(TM) 64-Bit Server VM (build 25.241-b07, mixed mode)
+</code></pre>
+<p>Maven环境：</p>
+<pre><code>$ mvn -version
+Apache Maven 3.6.3 (cecedd343002696d0abb50b32b541b8a6ba2883f)
+Maven home: D:\Program\ideaMaven\apache-maven-3.6.3
+Java version: 1.8.0_241, vendor: Oracle Corporation, runtime: D:\Program\Java\jdk1.8.0_241\jre
+Default locale: zh_CN, platform encoding: GBK
+OS name: &quot;windows 10&quot;, version: &quot;10.0&quot;, arch: &quot;amd64&quot;, family: &quot;windows&quot;
+</code></pre>
+<p>Flink开发环境：推进使用<code>IntelliJ IDEA</code>：<code>ideaIU-2019.3.4</code>。安装及破解方式请参考：<a href="https://shimo.im/docs/9pJJRJPr6thtPxJd">这里！这里！</a></p>
+<h1 id="创建flink项目模板">创建Flink项目模板</h1>
+<p>使用Flink Maven Archrtype来创建Maven项目。方法及相关信息：</p>
+<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1586690769776.PNG" alt="" loading="lazy"></figure>
+<p>或者命令行：</p>
+<pre><code>mvn archetype:generate                               \
+      -DarchetypeGroupId=org.apache.flink              \
+      -DarchetypeArtifactId=flink-quickstart-scala     \
+      -DarchetypeVersion=1.10.0
+</code></pre>
+<p>创建好的原始项目结构：</p>
+<pre><code>flink-dev
+├── pom.xml
+└── src
+    └── main
+        ├── scala
+        │   └── org.ourhome
+        │       ├── BatchJob.scala       # 批处理程序
+        │       └── StreamingJob.scala   # 流处理程序
+        └── resources
+            └── log4j.properties
+</code></pre>
+<p>目录升级：创建了一个 <code>config.properties</code> 文件来配置项目的常用配置数据；创建一个 <code>env</code> 子目录，并创建两个环境对应的配置文件，不同的环境当中使用不同的配置：<code>config.test.properties</code>：测试环境，<code>config.prod.properties</code>:开发环境。升级后的目录结构：</p>
+<pre><code># resoures 目录
+.
+├── env
+│   ├── config.test.properties
+│   └── config.prod.properties
+└── config.properties
+</code></pre>
+<h2 id="编写flink程序">编写Flink程序</h2>
+<p>Flink程序结构：</p>
+<ul>
+<li>
+<p>设置执行环境：这是一个入口类，可以用来设置参数和创建数据源以及提交任务。</p>
+<ul>
+<li><code>StreamExecutionEnvironment</code>：流处理环境</li>
+<li><code>ExecutionEnvironment</code>：批处理环境</li>
+</ul>
+</li>
+<li>
+<p>初始化数据：将数据引入Flink，<code>ExecutionEnvironment</code>提供多种接口完成数据初始化，可将外部数据装换成<code>DataStream&lt;T&gt;</code>或<code>DataSet&lt;T&gt;</code>。同时Flink也提供了多种从外部读取数据的连接器，包括批量和实时的数据连接器，能够将Flink和第三方系统连接，直接获取外部数据，如Kafka。</p>
+</li>
+<li>
+<p>执行转换操作：转换操作都是通过Operator来实现，每个Operator内部通过实现Function接口完成数据处理逻辑的定义，如map、filter、keyBy、flatMap等。用户只需要定义每种算子执行的函数逻辑，然后在数据转换操作Operator接口中即可。</p>
+</li>
+<li>
+<p>指定计算结果数据位置：数据集经过转换操作之后，形成最终的结果数据集，可存储到外部系统。Flink的DataStream和DataSet接口中定义了基本的数据输出方法：<code>writeAsText()</code>基于文件输出，<code>print()</code>基于控制台输出。同时Flink也定义了大量连接器，通过调用<code>addSink()</code>，可方便用户和外部系统交互。</p>
+</li>
+<li>
+<p>命名并启动任务：通过调用<code>execute()</code>触发应用程序的执行。对于流式程序的开发，需要显式调用<code>execute()</code>方法运行程序，而批处理程序中已包含对<code>execute()</code>方法的调用。</p>
+</li>
+</ul>
+<p>下面是完整的代码：</p>
+<pre><code>package org.ourhome
+
+import org.apache.flink.api.java.utils.ParameterTool
+import org.apache.flink.streaming.api.scala._
+
+object WordCount {
+  def main(args: Array[String]): Unit = {
+
+    val params: ParameterTool = ParameterTool.fromArgs(args)
+    val host: String = params.get(&quot;host&quot;)
+    val port: Int = params.getInt(&quot;port&quot;)
+    // 1 set env
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+    // 2 add data
+    val socketData: DataStream[String] = env.socketTextStream(host, port)
+    // 3 transformation
+    val wordCountData = socketData.flatMap(_.toLowerCase.split(&quot; &quot;))
+      .filter(_.nonEmpty)
+      .map((_, 1))
+      .keyBy(0)
+      .sum(1)
+    // 4 add sink or print
+    wordCountData.print()
+    // 5 name flink job and trigger task
+    env.execute(&quot;wordcount&quot;)
+
+  }
+}
+
+</code></pre>
+<h3 id="运行测试">运行测试</h3>
+<p>提交程序时需要传入两个参数：<code>host</code>和<code>port</code>：</p>
+<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1586690790628.PNG" alt="" loading="lazy"></figure>
+<p>结果：</p>
+<pre><code>(hello,1)
+(scala,1)
+(hello,2)
+(flink,1)
+(flink,2)
+(scala,2)
+</code></pre>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/ru-he-li-jie-kafka-de-kuai/" class="post-title gt-a-link">
+                    Kafka——如何理解Kafka的“快”？
+                </a>
+            </div>
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
