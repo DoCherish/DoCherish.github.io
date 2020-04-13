@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Flink——从零搭建Flink应用 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586708075365">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586781411465">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -162,6 +162,7 @@ OS name: &quot;windows 10&quot;, version: &quot;10.0&quot;, arch: &quot;amd64&qu
 </code></pre>
 <h2 id="编写flink程序">编写Flink程序</h2>
 <p>Flink程序结构：</p>
+<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1586781400232.png" alt="" loading="lazy"></figure>
 <ul>
 <li>
 <p>设置执行环境：这是一个入口类，可以用来设置参数和创建数据源以及提交任务。</p>
@@ -216,7 +217,7 @@ object WordCount {
 </code></pre>
 <h3 id="运行测试">运行测试</h3>
 <p>提交程序时需要传入两个参数：<code>host</code>和<code>port</code>：</p>
-<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1586690790628.PNG" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://DoCherish.github.io/post-images/1586690790628.PNG" alt="" loading="lazy"></figure>
 <p>结果：</p>
 <pre><code>(hello,1)
 (scala,1)
@@ -258,7 +259,7 @@ object WordCount {
 	&lt;scope&gt;provided&lt;/scope&gt;
 &lt;/dependency&gt;
 </code></pre>
-<p><strong>请注意</strong>：核心依赖配置的<code>scope</code>为<code>provided</code>，意味着：编译时需要，而打包时不打进去。因为这些依赖时Flink的核心依赖，当启动Flink集群的时候它们已经存在。若没有该参数，轻则会造成所打包过大，重则造成类冲突（因应用程序添加的依赖和集群的依赖版本不同而冲突）。**但是，本地运行时要将该参数改为<code>compile</code>！！！**否则报错——采坑之经验！</p>
+<p><strong>请注意</strong>：核心依赖配置的<code>scope</code>为<code>provided</code>，意味着：编译时需要，而打包时不打进去。因为这些依赖时Flink的核心依赖，当启动Flink集群的时候它们已经存在。若没有该参数，轻则会造成所打包过大，重则造成类冲突（因应用程序添加的依赖和集群的依赖版本不同而冲突）。**但是，本地运行时要将该参数改为<code>compile</code>！！！**否则报错——踩坑之经验！</p>
 <p>连接器（如Kafka）不是Flink的核心依赖，在运行时必须添加依赖：</p>
 <pre><code>&lt;dependency&gt;
     &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
