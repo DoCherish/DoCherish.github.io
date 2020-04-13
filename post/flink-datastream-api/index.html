@@ -1,0 +1,344 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Flink——DataStream API | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586791917074">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Flink——DataStream API
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2020-04-13 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/MfKgZU3yj/" class="post-tags">
+                            # Flink
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p><img src="https://DoCherish.github.io/post-images/1586791905523.jpg" alt="" loading="lazy"><br>
+主要内容：</p>
+<ul>
+<li>DataSource</li>
+<li>DataStream Transformations</li>
+<li>DataSink</li>
+</ul>
+<!-- more -->
+<p>关于Flink程序的开发流程和具体案例请参考：<a href="https://blog.csdn.net/duxu24/article/details/105474238">Flink——从零搭建Flink应用</a>。</p>
+<h2 id="datasource">DataSource</h2>
+<p>Datasource用于Flink程序读取数据，可通过：<code>StreamExecutionEnvironment.</code>进行配置。</p>
+<h3 id="内置数据源">内置数据源</h3>
+<ul>
+<li>文件数据源：
+<ul>
+<li><code>readTextFile(path)</code>：直接读取文本文件；</li>
+<li><code>readFile(fileInputFormat, path)</code>：读取指定类型的文件；</li>
+<li><code>readFile(fileInputFormat, path, watchType, interval, pathFilter)</code>：可指定读取文件的类型、检测文件变换的时间间隔、文件路径过滤条件等。<code>watchType</code>分为两种模式：
+<ul>
+<li><code>PROCESS_CONTINUOUSLY</code>：一旦检测到文件变化，会将改文件<strong>全部内容</strong>加载到Flink。该模式无法实现<code>Excatly Once</code>；</li>
+<li><code>PROCESS_ONCE</code>：一旦检测到文件变化，只会将<strong>变化的数据</strong>加载到Flink。该模式无法实现<code>Excatly Once</code>。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>socket数据源：
+<ul>
+<li><code>socketTextStream(hostname, port)</code>：从Socket端口传入数据；</li>
+</ul>
+</li>
+<li>集合数据源：
+<ul>
+<li><code>fromCollection(Seq)</code></li>
+<li><code>fromCollection(Iterator)</code></li>
+<li><code>fromElements(elements: _*)</code></li>
+<li><code>fromParallelCollection(SplittableIterator)</code></li>
+<li><code>generateSequence(from, to)</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="外部数据源">外部数据源</h3>
+<p>对于流式计算类型的应用，数据大部分都是从外部第三方系统中获取，为此，Flink通过实现<code>SourceFunction</code>定义了丰富的第三方数据连接器（支持自定义数据源）：</p>
+<ul>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/kafka.html">Apache Kafka</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/kinesis.html">Amazon Kinesis Streams</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/rabbitmq.html">RabbitMQ</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/nifi.html">Apache NiFi</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/twitter.html">Twitter Streaming API</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/pubsub.html">Google PubSub</a></li>
+</ul>
+<h2 id="datastream-transformations">DataStream Transformations</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><code>Operator</code></th>
+<th style="text-align:center"><code>Transformation</code></th>
+<th style="text-align:left"><code>Example</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">map</td>
+<td style="text-align:center">DataStream → DataStream</td>
+<td style="text-align:left">dataStream.map { x =&gt; x * 2 }</td>
+</tr>
+<tr>
+<td style="text-align:center">flatMap</td>
+<td style="text-align:center">DataStream → DataStream</td>
+<td style="text-align:left">dataStream.flatMap { str =&gt; str.split(&quot; &quot;) }</td>
+</tr>
+<tr>
+<td style="text-align:center">filter</td>
+<td style="text-align:center">DataStream → DataStream</td>
+<td style="text-align:left">dataStream.filter { _ != 0 }</td>
+</tr>
+<tr>
+<td style="text-align:center">keyBy</td>
+<td style="text-align:center">DataStream → KeyedStream</td>
+<td style="text-align:left">dataStream.keyBy(&quot;someKey&quot;) // Key by field &quot;someKey&quot; <br />dataStream.keyBy(0) // Key by the first element of a Tuple</td>
+</tr>
+<tr>
+<td style="text-align:center">reduce</td>
+<td style="text-align:center">KeyedStream → DataStream</td>
+<td style="text-align:left">keyedStream.reduce { _ + _ }</td>
+</tr>
+<tr>
+<td style="text-align:center">fold</td>
+<td style="text-align:center">KeyedStream → DataStream</td>
+<td style="text-align:left">val result: DataStream[String] = keyedStream.fold(&quot;start&quot;)((str, i) =&gt; { str + &quot;-&quot; + i })</td>
+</tr>
+<tr>
+<td style="text-align:center">aggregations</td>
+<td style="text-align:center">KeyedStream → DataStream</td>
+<td style="text-align:left">keyedStream.sum(0) <br />keyedStream.sum(&quot;key&quot;) <br />keyedStream.min(0) <br />keyedStream.min(&quot;key&quot;) <br />keyedStream.max(0) <br />keyedStream.max(&quot;key&quot;) <br />keyedStream.minBy(0) <br />keyedStream.minBy(&quot;key&quot;) <br />keyedStream.maxBy(0) <br />keyedStream.maxBy(&quot;key&quot;)</td>
+</tr>
+<tr>
+<td style="text-align:center">window</td>
+<td style="text-align:center">KeyedStream → WindowedStream</td>
+<td style="text-align:left">dataStream.keyBy(0).window(TumblingEventTimeWindows.of(Time.seconds(5))) // Last 5 seconds of data</td>
+</tr>
+<tr>
+<td style="text-align:center">windowAll</td>
+<td style="text-align:center">DataStream → AllWindowedStream</td>
+<td style="text-align:left">dataStream.windowAll(TumblingEventTimeWindows.of(Time.seconds(5))) // Last 5 seconds of data</td>
+</tr>
+<tr>
+<td style="text-align:center">Window Apply</td>
+<td style="text-align:center">WindowedStream → DataStream AllWindowedStream → DataStream</td>
+<td style="text-align:left">windowedStream.apply { WindowFunction }  <br />// applying an AllWindowFunction on non-keyed window stream <br />allWindowedStream.apply { AllWindowFunction }</td>
+</tr>
+<tr>
+<td style="text-align:center">Window Reduce</td>
+<td style="text-align:center">WindowedStream → DataStream</td>
+<td style="text-align:left">windowedStream.reduce { _ + _ }</td>
+</tr>
+<tr>
+<td style="text-align:center">Window Fold</td>
+<td style="text-align:center">WindowedStream → DataStream</td>
+<td style="text-align:left">val result: DataStream[String] =  windowedStream.fold(&quot;start&quot;, (str, i) =&gt; { str + &quot;-&quot; + i })</td>
+</tr>
+<tr>
+<td style="text-align:center">Aggregations on windows</td>
+<td style="text-align:center">WindowedStream → DataStream</td>
+<td style="text-align:left">windowedStream.sum(0) <br />windowedStream.sum(&quot;key&quot;) <br />windowedStream.min(0) <br />windowedStream.min(&quot;key&quot;) <br />windowedStream.max(0) <br />windowedStream.max(&quot;key&quot;) <br />windowedStream.minBy(0) <br />windowedStream.minBy(&quot;key&quot;) <br />windowedStream.maxBy(0) <br />windowedStream.maxBy(&quot;key&quot;)</td>
+</tr>
+<tr>
+<td style="text-align:center">union</td>
+<td style="text-align:center">DataStream* → DataStream</td>
+<td style="text-align:left">dataStream.union(otherStream1, otherStream2, ...)</td>
+</tr>
+<tr>
+<td style="text-align:center">Window Join</td>
+<td style="text-align:center">DataStream,DataStream → DataStream</td>
+<td style="text-align:left">dataStream.join(otherStream)     <br />.where(<key selector>).equalTo(<key selector>)<br />.window(TumblingEventTimeWindows.of(Time.seconds(3)))     <br />.apply { ... }</td>
+</tr>
+<tr>
+<td style="text-align:center">Window CoGroup</td>
+<td style="text-align:center">DataStream,DataStream → DataStream</td>
+<td style="text-align:left">dataStream.coGroup(otherStream)     <br />.where(0).equalTo(1)  <br />.window(TumblingEventTimeWindows.of(Time.seconds(3)))     <br />.apply {}</td>
+</tr>
+<tr>
+<td style="text-align:center">connect</td>
+<td style="text-align:center">DataStream,DataStream → ConnectedStreams</td>
+<td style="text-align:left">someStream : DataStream[Int] = ... <br />otherStream : DataStream[String] = ...  <br />val connectedStreams = someStream.connect(otherStream)</td>
+</tr>
+<tr>
+<td style="text-align:center">CoMap, CoFlatMap</td>
+<td style="text-align:center">ConnectedStreams → DataStream</td>
+<td style="text-align:left">connectedStreams.map(     (_ : Int) =&gt; true,     (_ : String) =&gt; false ) connectedStreams.flatMap(     (_ : Int) =&gt; true,     (_ : String) =&gt; false )</td>
+</tr>
+<tr>
+<td style="text-align:center">split</td>
+<td style="text-align:center">DataStream → SplitStream</td>
+<td style="text-align:left">val split = someDataStream.split(   (num: Int) =&gt;     (num % 2) match {       case 0 =&gt; List(&quot;even&quot;)       case 1 =&gt; List(&quot;odd&quot;)     } )</td>
+</tr>
+<tr>
+<td style="text-align:center">select</td>
+<td style="text-align:center">SplitStream → DataStream</td>
+<td style="text-align:left">val even = split select &quot;even&quot; val odd = split select &quot;odd&quot; val all = split.select(&quot;even&quot;,&quot;odd&quot;)</td>
+</tr>
+<tr>
+<td style="text-align:center">iterate</td>
+<td style="text-align:center">DataStream → IterativeStream → DataStream</td>
+<td style="text-align:left">initialStream.iterate {   iteration =&gt; {     val iterationBody = iteration.map {/<em>do something</em>/}     (iterationBody.filter(_ &gt; 0), iterationBody.filter(_ &lt;= 0))   } }</td>
+</tr>
+<tr>
+<td style="text-align:center">Extract Timestamps</td>
+<td style="text-align:center">DataStream → DataStream</td>
+<td style="text-align:left">stream.assignTimestamps { timestampExtractor }</td>
+</tr>
+</tbody>
+</table>
+<h2 id="datasink">DataSink</h2>
+<p>经过各种数据转换操作之后，形成最终结果数据集。通常情况下，需要将结果输出在外部存储介质或者传输到下游的消息中间件内，在Flink中将DataStream数据输出到外部系统的过程被定义为DataSink操作。可通过：<code>StreamExecutionEnvironment.</code>进行配置。</p>
+<h3 id="内置数据源-2">内置数据源</h3>
+<ul>
+<li><code>writeAsText()</code> / <code>TextOutputFormat</code></li>
+<li><code>writeAsCsv(...)</code> / <code>CsvOutputFormat</code></li>
+<li><code>print()</code> / <code>printToErr()</code></li>
+<li><code>writeUsingOutputFormat()</code> / <code>FileOutputFormat</code></li>
+<li><code>writeToSocket</code></li>
+</ul>
+<h3 id="外部数据源-2">外部数据源</h3>
+<ul>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/kafka.html">Apache Kafka</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/cassandra.html">Apache Cassandra</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/kinesis.html">Amazon Kinesis Streams</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/elasticsearch.html">Elasticsearch</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/filesystem_sink.html">Hadoop FileSystem</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/rabbitmq.html">RabbitMQ</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/nifi.html">Apache NiFi</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/connectors/pubsub.html">Google PubSub</a></li>
+</ul>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/flink-cong-ling-da-jian-flink-ying-yong/" class="post-title gt-a-link">
+                    Flink——从零搭建Flink应用
+                </a>
+            </div>
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
