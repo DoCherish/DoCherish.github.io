@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Kafka——再均衡监听器 | Do&#39;s blog</title>
+<title>Flink——Flink1.10.0整合Kafka | Do&#39;s blog</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586879860647">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,12 +87,16 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    Kafka——再均衡监听器
+                    Flink——Flink1.10.0整合Kafka
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2020-03-20 ·
+                        · 2020-04-14 ·
                     </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/MfKgZU3yj/" class="post-tags">
+                            # Flink
+                        </a>
                     
                         <a href="https://DoCherish.github.io/tag/kafka/" class="post-tags">
                             # Kafka
@@ -100,74 +104,123 @@
                     
                 </div>
                 <div class="post-content">
-                    <p>在为消费者分配新分区或者移除旧分区时，可以通过消费者API执行一些应用程序代码，在调用subscribe方法时，传进去一个ConsumerRebalanceListener实例就可以了。ConsumerRebalanceListener有两个需要实现的方法。</p>
+                    <p>主要内容：基于scala代码实现Flink1.10.0实时消费Kafka数据</p>
 <!-- more -->
-<ul>
-<li>onPartitionsRevoked方法会在再均衡开始之前和消费者停止读取消息之后被调用。如果在这里提交偏移量，下一个接管分区的消费者就知道该从哪里开始读取了。要注意，提交的是最近处理过的偏移量，而不是批次中还在处理的最后一个偏移量。因为分区有可能在我们还在处理消息的时候被撤回。我们要提交所有分区的偏移量，而不只是那些即将失去所有权的分区的偏移量——因为提交的偏移量时已经处理过的，所以不会有什么问题。调用commitSync方法，确保在再均衡发生之前提交偏移量。</li>
-<li>onPartitionsAssigned方法会在重新分配分区之后和消费者开始读取消息之前被调用。</li>
-</ul>
-<pre><code>package test.kafka.kafkaconsumer
-
-import java.util
-
-import org.apache.kafka.clients.consumer.{ConsumerRebalanceListener, KafkaConsumer, OffsetAndMetadata}
-import org.apache.kafka.common.TopicPartition
-
-class HandleRebalance(
-                       consumer:KafkaConsumer[String, String],
-                       currentOffsets: util.HashMap[TopicPartition, OffsetAndMetadata]
-                     ) extends ConsumerRebalanceListener {
-  override def onPartitionsRevoked(partitions: util.Collection[TopicPartition]): Unit = {
-//    println(&quot;Lost partitions in rebalance. Committing current offsets: &quot; + currentOffsets)
-    consumer.commitSync(currentOffsets)
-  }
-  override def onPartitionsAssigned(partitions: util.Collection[TopicPartition]): Unit = {}
-}
+<p>上一篇文章：<a href="https://docherish.com/post/flink-datastream-api/">Flink——DataStream API</a>介绍了DataStream API中内置了大量数据源，如文件、目录、socket以及collections等，但这些在生产环境应用较少。实际应用场景中，大都是从流的<code>Source</code>中实时读取数据，如Kafka。本章将结合<code>Apache Kafka Connector</code>介绍<code>Kafka Source</code>。</p>
+<h2 id="kafka连接器">Kafka连接器</h2>
+<p>Flink内置了Kafka连接器，可用于生产和消费Kafka数据。重要的是，<code>Flink Kafka Consumer</code>集成了Flink的检查点机制，可提供<code>Exactly Once</code>。Flink并不会完全依赖Kafka的offset，而是在内部跟踪和检查这些offset。</p>
+<p>下表为不同版本的Kafka与<code>Flink Kafka Consumer</code>的对应关系：</p>
+<table>
+<thead>
+<tr>
+<th>Maven Dependency</th>
+<th>Supported since</th>
+<th>Consumer and Producer Class name</th>
+<th>Kafka version</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>flink-connector-kafka-0.8_2.11</td>
+<td>1.0.0</td>
+<td>FlinkKafkaConsumer08<br />FlinkKafkaProducer08</td>
+<td>0.8.x</td>
+</tr>
+<tr>
+<td>flink-connector-kafka-0.9_2.11</td>
+<td>1.0.0</td>
+<td>FlinkKafkaConsumer09<br />FlinkKafkaProducer09</td>
+<td>0.9.x</td>
+</tr>
+<tr>
+<td>flink-connector-kafka-0.10_2.11</td>
+<td>1.2.0</td>
+<td>FlinkKafkaConsumer10<br />FlinkKafkaProducer10</td>
+<td>0.10.x</td>
+</tr>
+<tr>
+<td>flink-connector-kafka-0.11_2.11</td>
+<td>1.4.0</td>
+<td>FlinkKafkaConsumer11<br />FlinkKafkaProducer11</td>
+<td>0.11.x</td>
+</tr>
+<tr>
+<td>flink-connector-kafka_2.11</td>
+<td>1.7.0</td>
+<td>FlinkKafkaConsumer<br />FlinkKafkaProducer</td>
+<td>&gt;= 1.0.0</td>
+</tr>
+</tbody>
+</table>
+<p><code>Kafka Consumer</code>根据版本分别叫做<code>FlinkKafkaConsumer08</code>、<code>FlinkKafkaConsumer09</code>等等，而Kafka &gt;= 1.0.0 的版本就叫<code>FlinkKafkaConsumer</code>。另外从<code>Flink1.9.0</code>开始使用<code>Kafka2.2.0</code>客户端。</p>
+<p>首先导入依赖：</p>
+<pre><code class="language-xml">&lt;dependency&gt;
+  &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
+  &lt;artifactId&gt;flink-connector-kafka_2.11&lt;/artifactId&gt;
+  &lt;version&gt;1.10.0&lt;/version&gt;
+&lt;/dependency&gt;
 </code></pre>
-<pre><code>package test.kafka.kafkaconsumer
+<blockquote>
+<p>兼容性：</p>
+<p>从Flink 1.7开始，它不跟踪特定的Kafka主要版本。如果你的Kafka代理版本是1.0.0或更高版本，则应使用此Kafka连接器。如果使用旧版本的Kafka（0.11,0.10,0.9或0.8），则应使用与代理版本对应的连接器。</p>
+</blockquote>
+<p>完整代码：</p>
+<pre><code>package org.ourhome.streamapi
 
-import java.util
 import java.util.Properties
 
-import org.apache.kafka.clients.consumer._
-import org.apache.kafka.common.TopicPartition
-import org.apache.kafka.common.errors.WakeupException
-import test.kafka.kafkaProperities
+import org.apache.flink.api.common.serialization.SimpleStringSchema
+import org.apache.flink.streaming.api.scala._
+import org.apache.flink.api.java.utils.ParameterTool
+import org.apache.flink.runtime.state.filesystem.FsStateBackend
+import org.apache.flink.streaming.api.CheckpointingMode
+import org.apache.flink.streaming.api.windowing.time.Time
+import org.apache.flink.streaming.connectors.kafka.{FlinkKafkaConsumer, FlinkKafkaConsumerBase}
 
-object RebalanceListener {
-  private val KAFKA_PROPERITIES = new kafkaProperities()
+/**
+ * @Author Do
+ * @Date 2020/4/14 23:25
+ */
+object KafkaSource {
+  private val KAFKA_TOPIC: String = &quot;kafka_producer_test&quot;
+  def main(args: Array[String]) {
+    val params: ParameterTool = ParameterTool.fromArgs(args)
+    val runType:String = params.get(&quot;runtype&quot;)
+    println(&quot;runType: &quot; + runType)
 
-  def main(args: Array[String]): Unit = {
-    val kfkConProps: Properties = KAFKA_PROPERITIES.getKakConPros
-    val currentOffsets: util.HashMap[TopicPartition, OffsetAndMetadata] = new util.HashMap[TopicPartition, OffsetAndMetadata]()
+    val properties: Properties = new Properties()
+    properties.setProperty(&quot;bootstrap.servers&quot;, &quot;ip:host&quot;)
+    properties.setProperty(&quot;group.id&quot;, &quot;kafka_consumer&quot;)
 
-    val consumer: KafkaConsumer[String, String] = new KafkaConsumer(kfkConProps)
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+    // exactly-once 语义保证整个应用内端到端的数据一致性
+    env.getCheckpointConfig.setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE)
+    // 开启检查点并指定检查点时间间隔为5s
+    env.enableCheckpointing(5000) // checkpoint every 5000 msecs
+    // 设置StateBackend，并指定状态数据存储位置
+    env.setStateBackend(new FsStateBackend(&quot;file:///D:/Temp/checkpoint/flink/KafkaSource&quot;))
 
-    try {
-      consumer.subscribe(util.Arrays.asList(KAFKA_PROPERITIES.TOPIC), new HandleRebalance(consumer, currentOffsets))
-      while (true) {
-        val consumerRecords: ConsumerRecords[String, String] = consumer.poll(100)
-        val records: util.Iterator[ConsumerRecord[String, String]] = consumerRecords.iterator()
-        while (records.hasNext){
-          val record: ConsumerRecord[String, String] = records.next()
-          println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
-          currentOffsets.put(
-            new TopicPartition(record.topic(), record.partition()),
-            new OffsetAndMetadata(record.offset() + 1, &quot;&quot;))
-        }
-        consumer.commitAsync(currentOffsets, null)
-      }
-    } catch {
-      case e: WakeupException =&gt; println(e)
-      case e: Exception =&gt; println(&quot;Unexpected error:&quot; + e)
-    } finally {
-      try {
-        consumer.commitSync(currentOffsets)
-      } finally {
-        consumer.close()
-      }
-    }
+
+    val dataSource: FlinkKafkaConsumerBase[String] = new FlinkKafkaConsumer(
+      KAFKA_TOPIC,
+      new SimpleStringSchema(),
+      properties)
+      .setStartFromLatest()  // 指定从最新offset开始消费
+
+    env.addSource(dataSource)
+      .flatMap(_.toLowerCase.split(&quot; &quot;))
+      .map((_, 1))
+      .keyBy(0)
+      .timeWindow(Time.seconds(5))
+      .sum(1)
+      .filter(_._2 &gt; 5)
+      .print()
+      .setParallelism(1)
+
+    // execute program
+    env.execute(&quot;Flink Streaming—————KafkaSource&quot;)
   }
+
 }
 
 </code></pre>
@@ -179,8 +232,8 @@ object RebalanceListener {
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://DoCherish.github.io/post/kafka-consumer-ti-jiao-pian-yi-liang/" class="post-title gt-a-link">
-                    Kafka——Consumer提交偏移量
+                <a href="https://DoCherish.github.io/post/flink-datastream-api/" class="post-title gt-a-link">
+                    Flink——DataStream API
                 </a>
             </div>
         
