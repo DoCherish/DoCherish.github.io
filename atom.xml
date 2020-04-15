@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2020-04-15T13:36:06.818Z</updated>
+    <updated>2020-04-15T15:15:03.948Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,17 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Do&apos;s blog</rights>
+    <entry>
+        <title type="html"><![CDATA[Flink——自定义Source]]></title>
+        <id>https://DoCherish.github.io/post/flink-zi-ding-yi-source/</id>
+        <link href="https://DoCherish.github.io/post/flink-zi-ding-yi-source/">
+        </link>
+        <updated>2020-04-15T15:13:40.000Z</updated>
+        <summary type="html"><![CDATA[<p>主要内容：介绍Flink自定义Source的使用方法。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>主要内容：介绍Flink自定义Source的使用方法。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Flink——Flink1.10.0整合Kafka]]></title>
         <id>https://DoCherish.github.io/post/flink-flink1100-zheng-he-kafka/</id>
@@ -154,24 +165,5 @@
         <link href="https://DoCherish.github.io/post/kafka-ke-kao-de-shu-ju-chuan-di/">
         </link>
         <updated>2020-03-23T16:03:46.000Z</updated>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Kafka——从特定offset开始消费]]></title>
-        <id>https://DoCherish.github.io/post/kafka-cong-te-ding-offset-kai-shi-xiao-fei/</id>
-        <link href="https://DoCherish.github.io/post/kafka-cong-te-ding-offset-kai-shi-xiao-fei/">
-        </link>
-        <updated>2020-03-22T06:39:05.000Z</updated>
-        <summary type="html"><![CDATA[<ul>
-<li>指定分区从头消费</li>
-<li>指定分区从最新offset消费</li>
-<li>指定分区、offset消费</li>
-</ul>
-]]></summary>
-        <content type="html"><![CDATA[<ul>
-<li>指定分区从头消费</li>
-<li>指定分区从最新offset消费</li>
-<li>指定分区、offset消费</li>
-</ul>
-]]></content>
     </entry>
 </feed>
