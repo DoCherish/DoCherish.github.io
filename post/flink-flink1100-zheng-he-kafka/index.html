@@ -3,8 +3,8 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Flink——Flink1.10.0整合Kafka | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1586963790971">
+<title>Flink——Flink1.10.0整合Kafka之KafkaSource和KafkaSink | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587050241851">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -87,7 +87,7 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    Flink——Flink1.10.0整合Kafka
+                    Flink——Flink1.10.0整合Kafka之KafkaSource和KafkaSink
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
@@ -106,7 +106,7 @@
                 <div class="post-content">
                     <p>主要内容：基于scala代码实现Flink1.10.0实时消费Kafka数据</p>
 <!-- more -->
-<p>上一篇文章：<a href="https://docherish.com/post/flink-datastream-api/">Flink——DataStream API</a>介绍了DataStream API中内置了大量数据源，如文件、目录、socket以及collections等，但这些在生产环境应用较少。实际应用场景中，大都是从流的<code>Source</code>中实时读取数据，如Kafka。本章将结合<code>Apache Kafka Connector</code>介绍<code>Kafka Source</code>。</p>
+<p>上一篇文章：<a href="https://docherish.com/post/flink-datastream-api/">Flink——DataStream API</a>介绍了DataStream API中内置了大量数据源，如文件、目录、socket以及collections等，但这些在生产环境应用较少。实际应用场景中，大都是从流的<code>Source</code>中实时读取数据，如Kafka。本章将结合<code>Apache Kafka Connector</code>介绍<code>Kafka Source</code>和<code>Kafka Sink</code>。</p>
 <h2 id="kafka连接器">Kafka连接器</h2>
 <p>Flink内置了Kafka连接器，可用于生产和消费Kafka数据。重要的是，<code>Flink Kafka Consumer</code>集成了Flink的检查点机制，可提供<code>Exactly Once</code>。Flink并不会完全依赖Kafka的offset，而是在内部跟踪和检查这些offset。</p>
 <p>下表为不同版本的Kafka与<code>Flink Kafka Consumer</code>的对应关系：</p>
@@ -164,7 +164,10 @@
 <p>兼容性：</p>
 <p>从Flink 1.7开始，它不跟踪特定的Kafka主要版本。如果你的Kafka代理版本是1.0.0或更高版本，则应使用此Kafka连接器。如果使用旧版本的Kafka（0.11,0.10,0.9或0.8），则应使用与代理版本对应的连接器。</p>
 </blockquote>
-<p>完整代码：</p>
+<p>完整代码案例：</p>
+<blockquote>
+<p>KafkaSource</p>
+</blockquote>
 <pre><code>package org.ourhome.streamapi
 
 import java.util.Properties
@@ -221,6 +224,64 @@ object KafkaSource {
     env.execute(&quot;Flink Streaming—————KafkaSource&quot;)
   }
 
+}
+
+</code></pre>
+<blockquote>
+<p>KafkaSink</p>
+</blockquote>
+<pre><code>package org.ourhome.streamapi
+
+import java.util.Properties
+
+import org.apache.flink.api.common.serialization.{SimpleStringSchema}
+import org.apache.flink.streaming.api.scala._
+import org.apache.flink.api.java.utils.ParameterTool
+import org.apache.flink.runtime.state.filesystem.FsStateBackend
+import org.apache.flink.streaming.api.CheckpointingMode
+import org.apache.flink.streaming.connectors.kafka.{FlinkKafkaConsumer, FlinkKafkaConsumerBase, FlinkKafkaProducer}
+
+/**
+ * @Author Do
+ * @Date 2020/4/15 23:22
+ */
+object WriteIntoKafka {
+  private val KAFKA_TOPIC: String = &quot;kafka_producer_test&quot;
+
+  def main(args: Array[String]): Unit = {
+    val params: ParameterTool = ParameterTool.fromArgs(args)
+    val runType:String = params.get(&quot;runtype&quot;)
+    println(&quot;runType: &quot; + runType)
+
+    val properties: Properties = new Properties()
+    properties.setProperty(&quot;bootstrap.servers&quot;, &quot;ip:host&quot;)
+    properties.setProperty(&quot;group.id&quot;, &quot;kafka_consumer&quot;)
+
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+    // exactly-once 语义保证整个应用内端到端的数据一致性
+    env.getCheckpointConfig.setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE)
+    // 开启检查点并指定检查点时间间隔为5s
+    env.enableCheckpointing(5000) // checkpoint every 5000 msecs
+    // 设置StateBackend，并指定状态数据存储位置
+    env.setStateBackend(new FsStateBackend(&quot;file:///D:/Temp/checkpoint/flink/KafkaSource&quot;))
+
+    val dataSource: FlinkKafkaConsumerBase[String] = new FlinkKafkaConsumer(
+      KAFKA_TOPIC,
+      new SimpleStringSchema(),
+      properties)
+      .setStartFromLatest()  // 指定从最新offset开始消费
+
+    val dataStream: DataStream[String] = env.addSource(dataSource)
+    val kafkaSink: FlinkKafkaProducer[String] = new FlinkKafkaProducer[String](
+      &quot;brokerList&quot;,
+      &quot;topic&quot;,
+      new SimpleStringSchema()
+    )
+    dataStream.addSink(kafkaSink)
+
+    // execute program
+    env.execute(&quot;Flink Streaming—————KafkaSource and KafkaSink&quot;)
+  }
 }
 
 </code></pre>
