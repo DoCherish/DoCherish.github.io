@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Flink——Flink1.10.0整合Kafka之KafkaSource和KafkaSink | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587050241851">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587050868846">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -104,7 +104,7 @@
                     
                 </div>
                 <div class="post-content">
-                    <p>主要内容：基于scala代码实现Flink1.10.0实时消费Kafka数据</p>
+                    <p>主要内容：基于scala代码实现Flink1.10.0对接Kafka。</p>
 <!-- more -->
 <p>上一篇文章：<a href="https://docherish.com/post/flink-datastream-api/">Flink——DataStream API</a>介绍了DataStream API中内置了大量数据源，如文件、目录、socket以及collections等，但这些在生产环境应用较少。实际应用场景中，大都是从流的<code>Source</code>中实时读取数据，如Kafka。本章将结合<code>Apache Kafka Connector</code>介绍<code>Kafka Source</code>和<code>Kafka Sink</code>。</p>
 <h2 id="kafka连接器">Kafka连接器</h2>
