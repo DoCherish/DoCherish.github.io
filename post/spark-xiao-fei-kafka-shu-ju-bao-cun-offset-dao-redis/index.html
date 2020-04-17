@@ -1,0 +1,465 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Spark——消费Kafka数据保存Offset到Redis | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587142764077">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Spark——消费Kafka数据保存Offset到Redis
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2020-04-18 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/spark/" class="post-tags">
+                            # Spark
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>主要内容：</p>
+<ul>
+<li>Scala实现SparkStreaming消费Kafka数据保存Offset到Redis，实现自主维护Offset。</li>
+<li>分析部分源码</li>
+</ul>
+<!-- more -->
+<h2 id="sparkstreaming自主维护offset的流程">SparkStreaming自主维护Offset的流程</h2>
+<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1587142624580.png" alt="" loading="lazy"></figure>
+<ol>
+<li>
+<p>SparkStreaming启动时，先请求Redis或Hbase；</p>
+</li>
+<li>
+<p>Redis或Hbase返回请求结果，将结果（Topic、Partition、Offset的组合）封装成<code>collection.Map[TopicPartition, Long]</code>返回给SparkStreaming；</p>
+</li>
+<li>
+<p>SparkStreaming采用createDirectStream方式连接Kafka，并根据请求Redis或Hbase的结果确定ConsumerStrategy策略，而ConsumerStrategy策略由Subscribe决定。具体说来，若<code>collection.Map[TopicPartition, Long]</code>对象为空或不存在时，则不指定offset消费kafka；若<code>collection.Map[TopicPartition, Long]</code>对象不为空，则指定offset消费kafka。下面对部分源码进行解释：</p>
+<p>createDirectStream函数需要三个参数：</p>
+<ul>
+<li><code>ssc</code>：SparkStreaming上下文</li>
+<li><code>locationStrategy</code>：源码中建议传入：<code>LocationStrategies.PreferConsistent</code></li>
+<li><code>consumerStrategy</code>：源码中建议传入：<code>ConsumerStrategies.Subscribe</code></li>
+</ul>
+<pre><code class="language-scala">def createDirectStream[K, V](
+      ssc: StreamingContext,
+      locationStrategy: LocationStrategy,
+      consumerStrategy: ConsumerStrategy[K, V]
+    ): InputDStream[ConsumerRecord[K, V]] = {
+    val ppc = new DefaultPerPartitionConfig(ssc.sparkContext.getConf)
+    createDirectStream[K, V](ssc, locationStrategy, consumerStrategy, ppc)
+  }
+</code></pre>
+<p>Subscribe函数可传入两个或三个参数：</p>
+<ul>
+<li><code>topics</code>：Kafka对应topic</li>
+<li><code>kafkaParams</code>：Kafka相关配置</li>
+<li><code>offsets</code>：可传可不传，若传该参数，表示指定Offset消费Kafka</li>
+</ul>
+<pre><code class="language-scala">def Subscribe[K, V](
+      topics: Iterable[jl.String],
+      kafkaParams: collection.Map[String, Object],
+      offsets: collection.Map[TopicPartition, Long]): ConsumerStrategy[K, V] = {
+    new Subscribe[K, V](
+      new ju.ArrayList(topics.asJavaCollection),
+      new ju.HashMap[String, Object](kafkaParams.asJava),
+      new ju.HashMap[TopicPartition, jl.Long](offsets.mapValues(l =&gt; new jl.Long(l)).asJava))
+  }
+</code></pre>
+</li>
+<li>
+<p>SparkStreaming消费Kafka得到<code>InputDStream[ConsumerRecord[K, V]]</code>对象，其中<code>ConsumerRecord</code>对象：Topic、Partition、Offset等信息：</p>
+<pre><code class="language-java">/**
+     * Creates a record to be received from a specified topic and partition
+     *
+     * @param topic The topic this record is received from
+     * @param partition The partition of the topic this record is received from
+     * @param offset The offset of this record in the corresponding Kafka partition
+     * @param timestamp The timestamp of the record.
+     * @param timestampType The timestamp type
+     * @param checksum The checksum (CRC32) of the full record
+     * @param serializedKeySize The length of the serialized key
+     * @param serializedValueSize The length of the serialized value
+     * @param key The key of the record, if one exists (null is allowed)
+     * @param value The record contents
+     * @param headers The headers of the record.
+     */
+    public ConsumerRecord(String topic,
+                          int partition,
+                          long offset,
+                          long timestamp,
+                          TimestampType timestampType,
+                          Long checksum,
+                          int serializedKeySize,
+                          int serializedValueSize,
+                          K key,
+                          V value,
+                          Headers headers) {
+        if (topic == null)
+            throw new IllegalArgumentException(&quot;Topic cannot be null&quot;);
+        this.topic = topic;
+        this.partition = partition;
+        this.offset = offset;
+        this.timestamp = timestamp;
+        this.timestampType = timestampType;
+        this.checksum = checksum;
+        this.serializedKeySize = serializedKeySize;
+        this.serializedValueSize = serializedValueSize;
+        this.key = key;
+        this.value = value;
+        this.headers = headers;
+    }
+</code></pre>
+</li>
+<li>
+<p>将上述信息返回给SparkStreaming；</p>
+</li>
+<li>
+<p>SparkStreaming将其按一定方式处理后，存入Redis或Hbase；</p>
+</li>
+<li>
+<p>SparkStreaming对消费到的Message作进一步的处理逻辑。</p>
+</li>
+</ol>
+<h2 id="redis数据结构设计">Redis数据结构设计</h2>
+<p>数据结构选择HashTable：</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Filed</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>groupid:topic</td>
+<td>topic:partition</td>
+<td>offset</td>
+</tr>
+</tbody>
+</table>
+<h2 id="代码实现">代码实现</h2>
+<blockquote>
+<p>Redis连接：org.ourhome.utils.RedisUtils</p>
+</blockquote>
+<pre><code class="language-scala">package org.ourhome.utils
+
+import org.ourhome.cons.Constants
+import redis.clients.jedis.Jedis
+/**
+ * @Author Do
+ * @Date 2020/4/17 22:32
+ */
+class RedisUtils extends Serializable {
+  def getJedisConn: Jedis = {
+    new Jedis(Constants.HOST, Constants.PORT, Constants.TIMEOUT)
+  }
+}
+
+</code></pre>
+<blockquote>
+<p>常量：org.ourhome.cons.Constants</p>
+</blockquote>
+<pre><code class="language-scala">package org.ourhome.cons
+
+import org.apache.kafka.common.serialization.StringDeserializer
+
+/**
+ * @Author Do
+ * @Date 2020/4/17 22:36
+ */
+object Constants {
+  val KAFKA_TOPIC: String = &quot;kafka_producer_test&quot;
+
+  private val KAFKA_GROUP_ID: String = &quot;kafka_consumer&quot;
+  val KAFKA_PARAMS = Map[String, Object](
+    &quot;bootstrap.servers&quot; -&gt; &quot;brokerList&quot;,
+    &quot;key.deserializer&quot; -&gt; classOf[StringDeserializer],
+    &quot;value.deserializer&quot; -&gt; classOf[StringDeserializer],
+    &quot;group.id&quot; -&gt; KAFKA_GROUP_ID,
+    &quot;auto.offset.reset&quot; -&gt; &quot;latest&quot;, //earliest  latest
+    &quot;enable.auto.commit&quot; -&gt; (false: java.lang.Boolean)
+  )
+
+  val HOST: String = &quot;host&quot;
+  val PORT: Int = 6379
+  val TIMEOUT: Int = 30000
+
+  val REDIS_KEY: String = KAFKA_GROUP_ID + &quot;:&quot; + KAFKA_TOPIC
+
+}
+
+</code></pre>
+<blockquote>
+<p>主程序：org.ourhome.kafkatest.SaveOffsetToRedis</p>
+</blockquote>
+<pre><code class="language-scala">package org.ourhome.kafkatest
+
+import java.util
+
+import scala.collection.JavaConversions._
+import org.apache.kafka.clients.consumer.{ConsumerRecord, OffsetAndMetadata, OffsetCommitCallback}
+import org.apache.kafka.common.TopicPartition
+import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.streaming.dstream.InputDStream
+import org.apache.spark.streaming.kafka010._
+import org.apache.spark.streaming.{Seconds, StreamingContext}
+import redis.clients.jedis.Jedis
+
+import org.ourhome.utils.RedisUtils
+import org.ourhome.cons.Constants
+
+import scala.collection.mutable
+
+/**
+ * @Author Do
+ * @Date 2020/4/17 22:27
+ */
+object SaveOffsetToRedis {
+
+  def main(args: Array[String]): Unit = {
+    // 创建spark运行环境
+    val conf: SparkConf = new SparkConf().setMaster(&quot;local[2]&quot;).setAppName(&quot;Spark Streaming Kafka&quot;)
+    val sparkSession: SparkSession = SparkSession.builder().config(conf).getOrCreate()
+    val context: SparkContext = sparkSession.sparkContext
+    context.setLogLevel(&quot;WARN&quot;)
+    val streamingContext: StreamingContext = new StreamingContext(context, Seconds(1))
+
+    System.setProperty(&quot;hadoop.home.dir&quot;, &quot;C:\\winutils&quot;)   // 本地启动，解决hadoop报错问题，下载后添加环境变量
+
+    val partitionToLong: mutable.HashMap[TopicPartition, Long] = new mutable.HashMap[TopicPartition, Long]()
+
+    val conn: Jedis = new RedisUtils().getJedisConn
+
+    /**
+     * ConsumerStrategies.Subscribe参数：
+     * topics: ju.Collection[jl.String],
+     * kafkaParams: ju.Map[String, Object],
+     * offsets: ju.Map[TopicPartition, jl.Long]   有此参数，表示指定offset读kafka
+     *
+     * 消费策略：1.不指定offset  2.指定offset
+     * 启动时根据请求redis的结果，确定consumerStrategy消费策略：
+     * 若启动时，redis中键不存在，则不指定offset消费kafka
+     * 若启动时，redis中键存在：
+     *    若partitionToLong为空，即无topic、partition、offset，则不指定offset消费kafka
+     *    若partitionToLong不为空，指定offset消费kafka
+     */
+    val consumerStrategy: ConsumerStrategy[String, String] = if (!conn.exists(Constants.REDIS_KEY)) {
+      printf(&quot;%s不存在，客户端会自动创建！&quot;, Constants.REDIS_KEY)
+      ConsumerStrategies.Subscribe[String, String](Array(Constants.KAFKA_TOPIC), Constants.KAFKA_PARAMS)
+    } else {
+      val redisResult: util.Map[String, String] = conn.hgetAll(Constants.REDIS_KEY)
+      redisResult.keySet().foreach(eachFiled =&gt; {
+        val strings: Array[String] = eachFiled.split(&quot;:&quot;)
+        println(&quot;strings:&quot;)
+        strings.foreach(i =&gt; println(i))
+        val topicPartition: TopicPartition = new TopicPartition(strings(0), strings(1).toInt)
+        val offsetValue: String = redisResult(eachFiled)
+        // 将每个partition中的offset保存在map中，作为subscribe参数
+        partitionToLong.put(topicPartition, offsetValue.toLong)
+      })
+      if (partitionToLong.nonEmpty) {
+        ConsumerStrategies.Subscribe[String, String](
+          Array(Constants.KAFKA_TOPIC),
+          Constants.KAFKA_PARAMS,
+          partitionToLong
+        )
+      } else {
+        ConsumerStrategies.Subscribe[String, String](Array(Constants.KAFKA_TOPIC), Constants.KAFKA_PARAMS)
+      }
+    }
+    conn.close()
+
+    /** KafkaUtils.createDirectStream参数：
+     * ssc: StreamingContext,
+     * locationStrategy: LocationStrategy,
+     * consumerStrategy: ConsumerStrategy[K, V]
+     */
+
+    // 每次从kafka获取到的批数据
+    val dataStream: InputDStream[ConsumerRecord[String, String]] = KafkaUtils.createDirectStream(
+      streamingContext,
+      LocationStrategies.PreferConsistent,
+      consumerStrategy
+    )
+    // 对数据做处理  foreachRDD——foreachPartition——foreach(record)
+    dataStream.foreachRDD(rdd =&gt; {
+      rdd.foreachPartition(partition =&gt; {
+        val conn: Jedis = new RedisUtils().getJedisConn
+        partition.foreach(record =&gt; {
+          println(record.value())
+        })
+        conn.close()
+      })
+
+      /**
+       * 返回一个批次数据中OffsetRange对象的信息
+       * OffsetRange(topic: 'kafka_producer_test', partition: 1, range: [152 -&gt; 156])
+       * OffsetRange(topic: 'kafka_producer_test', partition: 2, range: [2589 -&gt; 2592])
+       * OffsetRange(topic: 'kafka_producer_test', partition: 0, range: [2589 -&gt; 2592])
+       */
+      val offsetRanges: Array[OffsetRange] = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
+
+      // 自动将offset保存到kafka
+      // dataStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges)
+      // 或
+      // dataStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges, new OffsetCommitCallback() {
+      //   override def onComplete(offsets: java.util.Map[TopicPartition, OffsetAndMetadata], exception: Exception): Unit = {
+      //     if (null != exception) {
+      //       println(&quot;error&quot;)
+      //     } else {
+      //       println(&quot;success&quot;)
+      //     }
+      //   }
+      // })
+      offsetRanges.foreach(eachRange =&gt; {
+        val topic: String = eachRange.topic
+        val fromOffset: Long = eachRange.fromOffset
+        val endOffset: Long = eachRange.untilOffset
+        val partition: Int = eachRange.partition
+
+        conn.hset(Constants.REDIS_KEY, topic + &quot;:&quot; + partition, (endOffset + 1).toString)
+      })
+
+    })
+
+    streamingContext.start()
+    streamingContext.awaitTermination()
+  }
+
+}
+
+</code></pre>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/flink-zi-ding-yi-source/" class="post-title gt-a-link">
+                    Flink——自定义Source
+                </a>
+            </div>
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
