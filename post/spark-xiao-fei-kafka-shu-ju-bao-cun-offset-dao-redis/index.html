@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Spark——消费Kafka数据保存Offset到Redis | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587142764077">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587142906121">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -123,7 +123,7 @@
 <li><code>locationStrategy</code>：源码中建议传入：<code>LocationStrategies.PreferConsistent</code></li>
 <li><code>consumerStrategy</code>：源码中建议传入：<code>ConsumerStrategies.Subscribe</code></li>
 </ul>
-<pre><code class="language-scala">def createDirectStream[K, V](
+<pre><code>def createDirectStream[K, V](
       ssc: StreamingContext,
       locationStrategy: LocationStrategy,
       consumerStrategy: ConsumerStrategy[K, V]
@@ -138,7 +138,7 @@
 <li><code>kafkaParams</code>：Kafka相关配置</li>
 <li><code>offsets</code>：可传可不传，若传该参数，表示指定Offset消费Kafka</li>
 </ul>
-<pre><code class="language-scala">def Subscribe[K, V](
+<pre><code>def Subscribe[K, V](
       topics: Iterable[jl.String],
       kafkaParams: collection.Map[String, Object],
       offsets: collection.Map[TopicPartition, Long]): ConsumerStrategy[K, V] = {
@@ -151,7 +151,7 @@
 </li>
 <li>
 <p>SparkStreaming消费Kafka得到<code>InputDStream[ConsumerRecord[K, V]]</code>对象，其中<code>ConsumerRecord</code>对象：Topic、Partition、Offset等信息：</p>
-<pre><code class="language-java">/**
+<pre><code>/**
      * Creates a record to be received from a specified topic and partition
      *
      * @param topic The topic this record is received from
@@ -225,7 +225,7 @@
 <blockquote>
 <p>Redis连接：org.ourhome.utils.RedisUtils</p>
 </blockquote>
-<pre><code class="language-scala">package org.ourhome.utils
+<pre><code>package org.ourhome.utils
 
 import org.ourhome.cons.Constants
 import redis.clients.jedis.Jedis
@@ -243,7 +243,7 @@ class RedisUtils extends Serializable {
 <blockquote>
 <p>常量：org.ourhome.cons.Constants</p>
 </blockquote>
-<pre><code class="language-scala">package org.ourhome.cons
+<pre><code>package org.ourhome.cons
 
 import org.apache.kafka.common.serialization.StringDeserializer
 
@@ -276,7 +276,7 @@ object Constants {
 <blockquote>
 <p>主程序：org.ourhome.kafkatest.SaveOffsetToRedis</p>
 </blockquote>
-<pre><code class="language-scala">package org.ourhome.kafkatest
+<pre><code>package org.ourhome.kafkatest
 
 import java.util
 
