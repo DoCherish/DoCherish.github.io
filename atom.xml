@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2020-04-17T17:09:40.928Z</updated>
+    <updated>2020-04-18T15:41:00.770Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,28 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Do&apos;s blog</rights>
+    <entry>
+        <title type="html"><![CDATA[Flink——实战之MySQL Sink]]></title>
+        <id>https://DoCherish.github.io/post/flink-shi-zhan-zhi-mysql-sink/</id>
+        <link href="https://DoCherish.github.io/post/flink-shi-zhan-zhi-mysql-sink/">
+        </link>
+        <updated>2020-04-18T15:39:21.000Z</updated>
+        <summary type="html"><![CDATA[<p>主要内容：实现Flink写数据到MySQL，即MySQL Sink。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>主要内容：实现Flink写数据到MySQL，即MySQL Sink。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Flink——实战之Redis Sink]]></title>
+        <id>https://DoCherish.github.io/post/flink-shi-zhan-zhi-redis-sink/</id>
+        <link href="https://DoCherish.github.io/post/flink-shi-zhan-zhi-redis-sink/">
+        </link>
+        <updated>2020-04-18T15:33:02.000Z</updated>
+        <summary type="html"><![CDATA[<p>主要内容：实现Flink写数据到Redis，即Redis Sink。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>主要内容：实现Flink写数据到Redis，即Redis Sink。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Spark——消费Kafka数据保存Offset到Redis]]></title>
         <id>https://DoCherish.github.io/post/spark-xiao-fei-kafka-shu-ju-bao-cun-offset-dao-redis/</id>
@@ -149,33 +171,5 @@
 <li>Flume配置文件配置流程</li>
 </ul>
 ]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Kafka——日志存储原理]]></title>
-        <id>https://DoCherish.github.io/post/kafka-ri-zhi-cun-chu-yuan-li/</id>
-        <link href="https://DoCherish.github.io/post/kafka-ri-zhi-cun-chu-yuan-li/">
-        </link>
-        <updated>2020-03-31T15:24:57.000Z</updated>
-        <summary type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>Kafka底层数据存储设计</li>
-<li>Kafka查询数据策略</li>
-<li>具体demo及原理图</li>
-</ul>
-]]></summary>
-        <content type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>Kafka底层数据存储设计</li>
-<li>Kafka查询数据策略</li>
-<li>具体demo及原理图</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Kafka——简介与架构]]></title>
-        <id>https://DoCherish.github.io/post/kafka-jian-jie-yu-jia-gou/</id>
-        <link href="https://DoCherish.github.io/post/kafka-jian-jie-yu-jia-gou/">
-        </link>
-        <updated>2020-03-30T14:02:31.000Z</updated>
     </entry>
 </feed>

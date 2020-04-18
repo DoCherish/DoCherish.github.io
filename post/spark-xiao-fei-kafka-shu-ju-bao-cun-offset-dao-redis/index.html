@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Spark——消费Kafka数据保存Offset到Redis | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587142906121">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587224455636">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -123,14 +123,16 @@
 <li><code>locationStrategy</code>：源码中建议传入：<code>LocationStrategies.PreferConsistent</code></li>
 <li><code>consumerStrategy</code>：源码中建议传入：<code>ConsumerStrategies.Subscribe</code></li>
 </ul>
-<pre><code>def createDirectStream[K, V](
-      ssc: StreamingContext,
-      locationStrategy: LocationStrategy,
-      consumerStrategy: ConsumerStrategy[K, V]
-    ): InputDStream[ConsumerRecord[K, V]] = {
-    val ppc = new DefaultPerPartitionConfig(ssc.sparkContext.getConf)
-    createDirectStream[K, V](ssc, locationStrategy, consumerStrategy, ppc)
-  }
+</li>
+</ol>
+<pre><code class="language-java">   def createDirectStream[K, V](
+         ssc: StreamingContext,
+         locationStrategy: LocationStrategy,
+         consumerStrategy: ConsumerStrategy[K, V]
+       ): InputDStream[ConsumerRecord[K, V]] = {
+       val ppc = new DefaultPerPartitionConfig(ssc.sparkContext.getConf)
+       createDirectStream[K, V](ssc, locationStrategy, consumerStrategy, ppc)
+     }
 </code></pre>
 <p>Subscribe函数可传入两个或三个参数：</p>
 <ul>
@@ -138,61 +140,61 @@
 <li><code>kafkaParams</code>：Kafka相关配置</li>
 <li><code>offsets</code>：可传可不传，若传该参数，表示指定Offset消费Kafka</li>
 </ul>
-<pre><code>def Subscribe[K, V](
-      topics: Iterable[jl.String],
-      kafkaParams: collection.Map[String, Object],
-      offsets: collection.Map[TopicPartition, Long]): ConsumerStrategy[K, V] = {
-    new Subscribe[K, V](
-      new ju.ArrayList(topics.asJavaCollection),
-      new ju.HashMap[String, Object](kafkaParams.asJava),
-      new ju.HashMap[TopicPartition, jl.Long](offsets.mapValues(l =&gt; new jl.Long(l)).asJava))
-  }
+<pre><code class="language-java">   def Subscribe[K, V](
+         topics: Iterable[jl.String],
+         kafkaParams: collection.Map[String, Object],
+         offsets: collection.Map[TopicPartition, Long]): ConsumerStrategy[K, V] = {
+       new Subscribe[K, V](
+         new ju.ArrayList(topics.asJavaCollection),
+         new ju.HashMap[String, Object](kafkaParams.asJava),
+         new ju.HashMap[TopicPartition, jl.Long](offsets.mapValues(l =&gt; new jl.Long(l)).asJava))
+     }
 </code></pre>
-</li>
-<li>
-<p>SparkStreaming消费Kafka得到<code>InputDStream[ConsumerRecord[K, V]]</code>对象，其中<code>ConsumerRecord</code>对象：Topic、Partition、Offset等信息：</p>
-<pre><code>/**
-     * Creates a record to be received from a specified topic and partition
-     *
-     * @param topic The topic this record is received from
-     * @param partition The partition of the topic this record is received from
-     * @param offset The offset of this record in the corresponding Kafka partition
-     * @param timestamp The timestamp of the record.
-     * @param timestampType The timestamp type
-     * @param checksum The checksum (CRC32) of the full record
-     * @param serializedKeySize The length of the serialized key
-     * @param serializedValueSize The length of the serialized value
-     * @param key The key of the record, if one exists (null is allowed)
-     * @param value The record contents
-     * @param headers The headers of the record.
-     */
-    public ConsumerRecord(String topic,
-                          int partition,
-                          long offset,
-                          long timestamp,
-                          TimestampType timestampType,
-                          Long checksum,
-                          int serializedKeySize,
-                          int serializedValueSize,
-                          K key,
-                          V value,
-                          Headers headers) {
-        if (topic == null)
-            throw new IllegalArgumentException(&quot;Topic cannot be null&quot;);
-        this.topic = topic;
-        this.partition = partition;
-        this.offset = offset;
-        this.timestamp = timestamp;
-        this.timestampType = timestampType;
-        this.checksum = checksum;
-        this.serializedKeySize = serializedKeySize;
-        this.serializedValueSize = serializedValueSize;
-        this.key = key;
-        this.value = value;
-        this.headers = headers;
-    }
+<ol start="4">
+<li>SparkStreaming消费Kafka得到<code>InputDStream[ConsumerRecord[K, V]]</code>对象，其中<code>ConsumerRecord</code>对象：Topic、Partition、Offset等信息：</li>
+</ol>
+<pre><code class="language-java">   /**
+        * Creates a record to be received from a specified topic and partition
+        *
+        * @param topic The topic this record is received from
+        * @param partition The partition of the topic this record is received from
+        * @param offset The offset of this record in the corresponding Kafka partition
+        * @param timestamp The timestamp of the record.
+        * @param timestampType The timestamp type
+        * @param checksum The checksum (CRC32) of the full record
+        * @param serializedKeySize The length of the serialized key
+        * @param serializedValueSize The length of the serialized value
+        * @param key The key of the record, if one exists (null is allowed)
+        * @param value The record contents
+        * @param headers The headers of the record.
+        */
+       public ConsumerRecord(String topic,
+                             int partition,
+                             long offset,
+                             long timestamp,
+                             TimestampType timestampType,
+                             Long checksum,
+                             int serializedKeySize,
+                             int serializedValueSize,
+                             K key,
+                             V value,
+                             Headers headers) {
+           if (topic == null)
+               throw new IllegalArgumentException(&quot;Topic cannot be null&quot;);
+           this.topic = topic;
+           this.partition = partition;
+           this.offset = offset;
+           this.timestamp = timestamp;
+           this.timestampType = timestampType;
+           this.checksum = checksum;
+           this.serializedKeySize = serializedKeySize;
+           this.serializedValueSize = serializedValueSize;
+           this.key = key;
+           this.value = value;
+           this.headers = headers;
+       }
 </code></pre>
-</li>
+<ol start="5">
 <li>
 <p>将上述信息返回给SparkStreaming；</p>
 </li>
@@ -225,7 +227,7 @@
 <blockquote>
 <p>Redis连接：org.ourhome.utils.RedisUtils</p>
 </blockquote>
-<pre><code>package org.ourhome.utils
+<pre><code class="language-java">package org.ourhome.utils
 
 import org.ourhome.cons.Constants
 import redis.clients.jedis.Jedis
@@ -243,7 +245,7 @@ class RedisUtils extends Serializable {
 <blockquote>
 <p>常量：org.ourhome.cons.Constants</p>
 </blockquote>
-<pre><code>package org.ourhome.cons
+<pre><code class="language-java">package org.ourhome.cons
 
 import org.apache.kafka.common.serialization.StringDeserializer
 
@@ -276,7 +278,7 @@ object Constants {
 <blockquote>
 <p>主程序：org.ourhome.kafkatest.SaveOffsetToRedis</p>
 </blockquote>
-<pre><code>package org.ourhome.kafkatest
+<pre><code class="language-java">package org.ourhome.kafkatest
 
 import java.util
 

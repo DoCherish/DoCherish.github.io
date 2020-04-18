@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Flink——自定义Source | Do&#39;s blog</title>
+<title>Flink——实战之Redis Sink | Do&#39;s blog</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587224455636">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,12 +87,16 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    Flink——自定义Source
+                    Flink——实战之Redis Sink
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2020-04-15 ·
+                        · 2020-04-18 ·
                     </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/redis/" class="post-tags">
+                            # Redis
+                        </a>
                     
                         <a href="https://DoCherish.github.io/tag/MfKgZU3yj/" class="post-tags">
                             # Flink
@@ -100,83 +104,164 @@
                     
                 </div>
                 <div class="post-content">
-                    <p>主要内容：介绍Flink自定义Source的使用方法。</p>
+                    <p>主要内容：实现Flink写数据到Redis，即Redis Sink。</p>
 <!-- more -->
-<p>自定义Source常用于本地测试、调试代码，基本不用于生产。</p>
-<p>使用自定义Source的方法：</p>
-<ol>
-<li>创建<code>env</code></li>
-<li>自定义<code>SourceFunction</code>，主要重写两个方法：
+<h2 id="准备工作">准备工作</h2>
+<p><code>Flink Redis Connector</code>提供了一个Sink可将数据写入Redis。若要使用该连接器需要将以下内容引入工程：</p>
+<pre><code class="language-xml">&lt;!-- redis connector --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.apache.bahir&lt;/groupId&gt;
+    &lt;artifactId&gt;flink-connector-redis_2.11&lt;/artifactId&gt;
+    &lt;version&gt;1.0&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+<h2 id="代码实现">代码实现</h2>
+<p>核心代码在于：</p>
+<pre><code class="language-java">streaming.addSink(new RedisSink[Person](redisConf, new MyRedisMapper))
+</code></pre>
+<p>这里你需要两个参数：</p>
 <ul>
-<li><code>run()</code>：在<code>run()</code>方法中调用<code>ctx.collect()</code>将数据返回</li>
-<li><code>cancel()</code></li>
+<li><code>redisConf</code>：redis配置信息</li>
 </ul>
-</li>
-<li>调用<code>addSource</code>方法：<code>env.addSource(new CustomGenerator())</code></li>
-</ol>
-<p>需要注意的地方已标注在代码中：</p>
+<pre><code class="language-java">// 配置redis conf
+val redisConf: FlinkJedisPoolConfig = new FlinkJedisPoolConfig.Builder()
+    .setHost(&quot;host&quot;)
+    .setPort(6379)
+    .setTimeout(30000)
+    .build()
+</code></pre>
+<ul>
+<li><code>MyRedisMapper</code>：自定义的RedisMapper</li>
+</ul>
+<pre><code class="language-java">//自定义MyRedisMapper
+class MyRedisMapper extends RedisMapper[Person] {
+    override def getCommandDescription: RedisCommandDescription = {
+        new RedisCommandDescription(RedisCommand.HSET, REDIS_KEY)
+    }
+    // redis filed
+    override def getKeyFromData(t: Person): String = {
+        t.name
+    }
+    // redis value
+    override def getValueFromData(t: Person): String = {
+        t.age + &quot;:&quot; + t.gender + &quot;:&quot; + t.height
+    }
+</code></pre>
+<p>完整代码如下：</p>
 <pre><code class="language-java">package org.ourhome.streamapi
 
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.runtime.state.filesystem.FsStateBackend
 import org.apache.flink.streaming.api.CheckpointingMode
-import org.apache.flink.streaming.api.functions.source.SourceFunction
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
-
-import scala.util.Random
+import org.apache.flink.streaming.connectors.redis.RedisSink
+import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig
+import org.apache.flink.streaming.connectors.redis.common.mapper.{RedisCommand, RedisCommandDescription, RedisMapper}
 
 /**
  * @Author Do
- * @Date 2020/4/15 22:04
+ * @Date 2020/4/18 21:19
  */
-object CustomSource {
+object RedisSinkTest {
+  private val REDIS_KEY = &quot;person_message&quot;
+
   def main(args: Array[String]): Unit = {
     val params: ParameterTool = ParameterTool.fromArgs(args)
-    val runType:String = params.get(&quot;runtype&quot;)
+    val runType: String = params.get(&quot;runtype&quot;)
     println(&quot;runType: &quot; + runType)
 
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-    // exactly-once 语义保证整个应用内端到端的数据一致性
     env.getCheckpointConfig.setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE)
-    // 开启检查点并指定检查点时间间隔为5s
-    env.enableCheckpointing(5000) // checkpoint every 5000 msecs
-    // 设置StateBackend，并指定状态数据存储位置
-    env.setStateBackend(new FsStateBackend(&quot;file:///D:/Temp/checkpoint/flink/KafkaSource&quot;))
-    // 使用自定义SourceFunction
-    val dataSource: DataStream[List[Double]] = env.addSource(new CustomGenerator())
-    dataSource.print().setParallelism(1)
+    env.enableCheckpointing(5000)
+    env.setStateBackend(new FsStateBackend(&quot;file:///D:/Work/Code/flinkdev/src/main/resources/checkpoint&quot;))
 
-    env.execute(&quot;Custom Source&quot;)
+    val inputStream: DataStream[String] = env.readTextFile(&quot;D:\\Work\\Code\\flinkdev\\src\\main\\resources\\textfile\\customdata.txt&quot;)
+    // 处理inputStream，包装成Person类
+    val streaming: DataStream[Person] = inputStream.map(line =&gt; {
+      println(line)
+      val strings: Array[String] = line.split(&quot;,&quot;)
+      Person(strings(0).trim, strings(1).trim.toInt, strings(2).trim, strings(3).trim.toFloat)
+    })
+    // 配置redis conf
+    val redisConf: FlinkJedisPoolConfig = new FlinkJedisPoolConfig.Builder()
+      .setHost(&quot;host&quot;)
+      .setPort(6379)
+      .setTimeout(30000)
+      .build()
+    streaming.addSink(new RedisSink[Person](redisConf, new MyRedisMapper))
+
+    env.execute(&quot;Redis Sink&quot;)
   }
 
-  // 自定义Source，重写SourceFunction两个方法
-  class CustomGenerator extends SourceFunction[List[Double]] {
-    private var running = true
-    override def run(ctx: SourceFunction.SourceContext[List[Double]]): Unit = {
-      // 随机数生成器
-      var randomNum: Random = new Random()
-
-      while (running) {
-        val n = 1.to(5).map(i =&gt; {
-          i + randomNum.nextGaussian()
-        }).toList
-        // 利用ctx上下文将数据返回
-        ctx.collect(n)
-
-        Thread.sleep(500)
-      }
-
+  case class Person (name: String, age: Int, gender: String, height: Float)
+  //自定义MyRedisMapper
+  class MyRedisMapper extends RedisMapper[Person] {
+    override def getCommandDescription: RedisCommandDescription = {
+      new RedisCommandDescription(RedisCommand.HSET, REDIS_KEY)
+    }
+    // redis filed
+    override def getKeyFromData(t: Person): String = {
+      t.name
+    }
+    // redis value
+    override def getValueFromData(t: Person): String = {
+      t.age + &quot;:&quot; + t.gender + &quot;:&quot; + t.height
     }
 
-    override def cancel(): Unit = {
-      running = false
-    }
   }
 
 }
 
 </code></pre>
+<blockquote>
+<p>customdata.txt文件</p>
+</blockquote>
+<pre><code>小明,20,man,180.2
+小红,22,woman,178.4
+小黑,18,man,192.9
+小兰,19,woman,188.0
+小爱,30,woman,177.3
+</code></pre>
+<blockquote>
+<p>Redis数据：</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>row</th>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>小明</td>
+<td><code>20:man:180.2</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>小红</td>
+<td><code>22:woman:178.4</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>小黑</td>
+<td><code>18:man:192.9</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>小兰</td>
+<td><code>19:woman:188.0</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>小爱</td>
+<td><code>30:woman:177.3</code></td>
+</tr>
+</tbody>
+</table>
 
                 </div>
             </article>
@@ -185,8 +270,8 @@ object CustomSource {
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://DoCherish.github.io/post/flink-flink1100-zheng-he-kafka/" class="post-title gt-a-link">
-                    Flink——Flink1.10.0整合Kafka之KafkaSource和KafkaSink
+                <a href="https://DoCherish.github.io/post/spark-xiao-fei-kafka-shu-ju-bao-cun-offset-dao-redis/" class="post-title gt-a-link">
+                    Spark——消费Kafka数据保存Offset到Redis
                 </a>
             </div>
         

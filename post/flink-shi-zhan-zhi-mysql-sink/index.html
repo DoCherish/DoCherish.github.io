@@ -1,0 +1,347 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Flink——实战之MySQL Sink | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587224455636">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Flink——实战之MySQL Sink
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2020-04-18 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/mysql/" class="post-tags">
+                            # Mysql
+                        </a>
+                    
+                        <a href="https://DoCherish.github.io/tag/MfKgZU3yj/" class="post-tags">
+                            # Flink
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>主要内容：实现Flink写数据到MySQL，即MySQL Sink。</p>
+<!-- more -->
+<h2 id="准备工作">准备工作</h2>
+<p>Flink自身并没有提供连接MySQL的连接器，需要手动引入：</p>
+<pre><code class="language-xml">&lt;!-- mysql connector --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;mysql&lt;/groupId&gt;
+    &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt;
+    &lt;version&gt;5.1.44&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+<h2 id="代码实现">代码实现</h2>
+<p>核心代码在于：</p>
+<pre><code class="language-java">streaming.addSink(new MyJdbcSink).setParallelism(1)
+</code></pre>
+<p>这里你需要1个参数：</p>
+<ul>
+<li><code>MyJdbcSink</code>：自定义的JdbcSink。需要注意的是，实现该方法时要继承<code>RichSinkFunction</code>函数，可利用<code>open()</code>函数初始化JDBC连接、SQL预编译器等运行时环境，也可以利用<code>close()</code>函数做清理工作。若选择继承<code>SinkFunction</code>，会在每次写入一条数据时都会创建一个JDBC连接。源码注解中给出的解释：</li>
+</ul>
+<blockquote>
+<p>Writes the given value to the sink. This function is called for every record.</p>
+</blockquote>
+<p>完整代码如下：</p>
+<pre><code class="language-java">package org.ourhome.streamapi
+
+import java.sql.{Connection, DriverManager, PreparedStatement}
+
+import org.apache.flink.streaming.api.scala._
+import org.apache.flink.api.java.utils.ParameterTool
+import org.apache.flink.configuration.Configuration
+import org.apache.flink.runtime.state.filesystem.FsStateBackend
+import org.apache.flink.streaming.api.CheckpointingMode
+import org.apache.flink.streaming.api.functions.sink.{RichSinkFunction, SinkFunction}
+import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
+/**
+ * @Author Do
+ * @Date 2020/4/18 22:23
+ */
+object MysqlSinkTest {
+  private val URL: String = &quot;jdbc:mysql://ip:port/database?characterEncoding=utf8&amp;useSSL=false&quot;
+  private val USER: String = &quot;root&quot;
+  private val PASSWORD: String = &quot;123456&quot;
+
+  def main(args: Array[String]): Unit = {
+    val params: ParameterTool = ParameterTool.fromArgs(args)
+    val runType:String = params.get(&quot;runtype&quot;)
+    println(&quot;runType: &quot; + runType)
+
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+    env.getCheckpointConfig.setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE)
+    env.enableCheckpointing(5000) // checkpoint every 5000
+    env.setStateBackend(new FsStateBackend(&quot;file:///D:/Work/Code/flinkdev/src/main/resources/checkpoint&quot;))
+
+    val inputStream: DataStream[String] = env.socketTextStream(&quot;host&quot;, 9000)
+    // 处理inputStream，包装成Person类
+    val streaming: DataStream[Person] = inputStream.map(line =&gt; {
+      println(line)
+      val strings: Array[String] = line.split(&quot;,&quot;)
+      Person(strings(0).trim, strings(1).trim.toInt, strings(2).trim, strings(3).trim.toFloat)
+    })
+
+    streaming.addSink(new MyJdbcSink).setParallelism(1)
+
+    env.execute(&quot;Mysql Sink&quot;)
+
+  }
+
+  case class Person (name: String, age: Int, gender: String, height: Float)
+
+  /**
+   * 若选择SinkFunction &quot;Writes the given value to the sink. This function is called for every record.&quot;
+   * RichFunction有生命周期和初始化配置功能，在初始化时创建连接，后面直接调用连接
+   */
+  class MyJdbcSink extends RichSinkFunction[Person] {
+    // 定义一些变量：JDBC连接、sql预编译器()
+    var conn: Connection = _
+    var updateStmt: PreparedStatement = _
+    var insertStmt: PreparedStatement = _
+
+    // open函数用于初始化富函数运行时的上下文等环境，如JDBC连接
+    override def open(parameters: Configuration): Unit = {
+      println(&quot;----------------------------open函数初始化JDBC连接及预编译sql-------------------------&quot;)
+      super.open(parameters)
+      conn = DriverManager.getConnection(URL, USER, PASSWORD)
+      insertStmt = conn.prepareStatement(&quot;INSERT INTO person_message (name, age, gender, height) VALUES (?, ?, ?, ?)&quot;)
+      updateStmt = conn.prepareStatement(&quot;UPDATE person_message set age = ?, gender = ?, height = ? where name = ?&quot;)
+    }
+    // 调JDBC连接，执行SQL
+    override def invoke(value: Person, context: SinkFunction.Context[_]): Unit = {
+      println(&quot;-------------------------执行sql---------------------------&quot;)
+      // 执行更新语句
+      updateStmt.setInt(1, value.age)
+      updateStmt.setString(2, value.gender)
+      updateStmt.setDouble(3, value.height)
+      updateStmt.setString(4, value.name)
+      updateStmt.execute()
+      // 如果update没有查到数据，那么执行insert语句
+      if (updateStmt.getUpdateCount == 0) {
+        insertStmt.setString(1, value.name)
+        insertStmt.setInt(2, value.age)
+        insertStmt.setString(3, value.gender)
+        insertStmt.setDouble(4, value.height)
+        insertStmt.execute()
+      }
+    }
+    // 关闭时做清理工作
+    override def close(): Unit = {
+      println(&quot;-----------------------关闭连接，并释放资源-----------------------&quot;)
+      updateStmt.close()
+      insertStmt.close()
+      conn.close()
+    }
+  }
+
+}
+
+</code></pre>
+<blockquote>
+<p>Socket发送数据：</p>
+</blockquote>
+<pre><code class="language-shell">nc -lk 9999
+小明,20,man,180.2
+小红,22,woman,178.4
+小黑,18,man,192.9
+小兰,19,woman,188.0
+小爱,30,woman,177.3
+</code></pre>
+<blockquote>
+<p>输出：</p>
+</blockquote>
+<pre><code>--------------open函数初始化JDBC连接及预编译sql---------------
+
+小明,20,man,180.2
+-------------------------执行sql---------------------------
+小红,22,woman,178.4
+-------------------------执行sql---------------------------
+小黑,18,man,192.9
+-------------------------执行sql---------------------------
+小兰,19,woman,188.0
+-------------------------执行sql---------------------------
+小爱,30,woman,177.3
+-------------------------执行sql---------------------------
+
+--------------------关闭连接，并释放资源----------------------
+</code></pre>
+<p>可见，程序会先调用<code>open()</code>函数，创建JDBC连接及预编译SQL，然后使用该链接多次执行SQL语句，最终调用<code>close()</code>函数关闭连接释放资源。注意：代码里需要将并行度设置为了1，以便观察运行机制。</p>
+<blockquote>
+<p>MySQL表数据：</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>age</th>
+<th>gender</th>
+<th>height</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>小明</td>
+<td>20</td>
+<td>man</td>
+<td>180.2</td>
+</tr>
+<tr>
+<td>小红</td>
+<td>22</td>
+<td>woman</td>
+<td>178.4</td>
+</tr>
+<tr>
+<td>小黑</td>
+<td>18</td>
+<td>man</td>
+<td>192.9</td>
+</tr>
+<tr>
+<td>小兰</td>
+<td>19</td>
+<td>woman</td>
+<td>188.0</td>
+</tr>
+<tr>
+<td>小爱</td>
+<td>30</td>
+<td>woman</td>
+<td>177.3</td>
+</tr>
+</tbody>
+</table>
+<p>注意：需要提前创建表person_message。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/flink-shi-zhan-zhi-redis-sink/" class="post-title gt-a-link">
+                    Flink——实战之Redis Sink
+                </a>
+            </div>
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
