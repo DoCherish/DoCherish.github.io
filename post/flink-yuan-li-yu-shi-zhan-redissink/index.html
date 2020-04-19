@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Flink——实战之Redis Sink | Do&#39;s blog</title>
+<title>Flink——原理与实战：RedisSink | Do&#39;s blog</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587310701322">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,11 +87,11 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    Flink——实战之Redis Sink
+                    Flink——原理与实战：RedisSink
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2020-04-18 23:33:02 ·
+                        · 2020-04-19 23:32:34 ·
                     </time>
                     
                         <a href="https://DoCherish.github.io/tag/redis/" class="post-tags">
@@ -104,9 +104,8 @@
                     
                 </div>
                 <div class="post-content">
-                    <p>主要内容：实现Flink写数据到Redis，即Redis Sink。</p>
+                    <p>主要内容：分析RedisSink源码，并结合具体案例实现Flink将数据写入Redis。</p>
 <!-- more -->
-<h2 id="准备工作">准备工作</h2>
 <p><code>Flink Redis Connector</code>提供了一个Sink可将数据写入Redis。若要使用该连接器需要将以下内容引入工程：</p>
 <pre><code class="language-xml">&lt;!-- redis connector --&gt;
 &lt;dependency&gt;
@@ -115,40 +114,142 @@
     &lt;version&gt;1.0&lt;/version&gt;
 &lt;/dependency&gt;
 </code></pre>
-<h2 id="代码实现">代码实现</h2>
-<p>核心代码在于：</p>
-<pre><code>streaming.addSink(new RedisSink[Person](redisConf, new MyRedisMapper))
-</code></pre>
-<p>这里你需要两个参数：</p>
+<h2 id="1-源码分析">1 源码分析</h2>
+<p>首先看一下RedisSink类的继承关系：</p>
+<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1587310642548.png" alt="" loading="lazy"></figure>
+<p>RedisSink间接继承了RichRunction接口，使其也拥有了一些具有生命周期的方法，并可以获取函数运行时的上下文。</p>
+<p>RedisSink类需要两个参数：</p>
 <ul>
-<li><code>redisConf</code>：redis配置信息</li>
+<li><code>FlinkJedisConfigBase</code>：Redis的配置文件</li>
+<li><code>RedisMapper</code>：用于生成Redis命令和键值对</li>
 </ul>
-<pre><code>// 配置redis conf
-val redisConf: FlinkJedisPoolConfig = new FlinkJedisPoolConfig.Builder()
-    .setHost(&quot;host&quot;)
-    .setPort(6379)
-    .setTimeout(30000)
-    .build()
+<pre><code>public RedisSink(FlinkJedisConfigBase flinkJedisConfigBase, RedisMapper&lt;IN&gt; redisSinkMapper) {
+        Objects.requireNonNull(flinkJedisConfigBase, &quot;Redis connection pool config should not be null&quot;);
+        Objects.requireNonNull(redisSinkMapper, &quot;Redis Mapper can not be null&quot;);
+        Objects.requireNonNull(redisSinkMapper.getCommandDescription(), &quot;Redis Mapper data type description can not be null&quot;);
+
+        this.flinkJedisConfigBase = flinkJedisConfigBase;
+
+        this.redisSinkMapper = redisSinkMapper;
+        RedisCommandDescription redisCommandDescription = redisSinkMapper.getCommandDescription();
+        this.redisCommand = redisCommandDescription.getCommand();
+        this.additionalKey = redisCommandDescription.getAdditionalKey();
+    }
 </code></pre>
-<ul>
-<li><code>MyRedisMapper</code>：自定义的RedisMapper</li>
-</ul>
-<pre><code>//自定义MyRedisMapper
-class MyRedisMapper extends RedisMapper[Person] {
+<h3 id="flinkjedisconfigbase分析"><code>FlinkJedisConfigBase</code>分析</h3>
+<p><code>FlinkJedisClusterConfig</code>、<code>FlinkJedisSentinelConfig</code>和<code>FlinkJedisPoolConfig</code>三个类都继承了抽象类<code>FlinkJedisConfigBase</code>，分别对应了Redis的集群模式、哨兵模式和单节点模式。且每个类都有一个内部类Builder，用于初始化一些变量，如host、port、timeout等参数。使用时根据情况选择相应的类即可。</p>
+<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1587310671058.png" alt="" loading="lazy"></figure>
+<h2 id="redismapper分析"><code>RedisMapper</code>分析</h2>
+<p>直接给出应用案例，用于理解：如何用于生成Redis命令和键值对。</p>
+<pre><code>class RedisTestMapper extends RedisMapper[Array[String]] {
     override def getCommandDescription: RedisCommandDescription = {
-        new RedisCommandDescription(RedisCommand.HSET, REDIS_KEY)
+      new RedisCommandDescription(RedisCommand.LPUSH)
     }
-    // redis filed
-    override def getKeyFromData(t: Person): String = {
-        t.name
+
+    override def getKeyFromData(data: Array[String]): String = {
+      data(0)
     }
-    // redis value
-    override def getValueFromData(t: Person): String = {
-        t.age + &quot;:&quot; + t.gender + &quot;:&quot; + t.height
+
+    override def getValueFromData(data: Array[String]): String = {
+      data(1)
+    }
+  }
+</code></pre>
+<h2 id="2-redissink的方法分析">2 RedisSink的方法分析</h2>
+<p>RedisSink类重写了3个方法：</p>
+<ul>
+<li>open()：用于初始化Redis连接，包括集群模式、哨兵模式和单节点模式。该方法创建了一个redisCommandsContainer接口，里面包含可用的Redis命令。</li>
+</ul>
+<pre><code>@Override
+    public void open(Configuration parameters) throws Exception {
+        try {
+            this.redisCommandsContainer = RedisCommandsContainerBuilder.build(this.flinkJedisConfigBase);
+            this.redisCommandsContainer.open();
+        } catch (Exception e) {
+            LOG.error(&quot;Redis has not been properly initialized: &quot;, e);
+            throw e;
+        }
     }
 </code></pre>
-<p>完整代码如下：</p>
-<pre><code>package org.ourhome.streamapi
+<ul>
+<li>close()：关闭包含Redis命令的容器，也可以理解为关闭Redis连接。</li>
+</ul>
+<pre><code>@Override
+    public void close() throws IOException {
+        if (redisCommandsContainer != null) {
+            redisCommandsContainer.close();
+        }
+    }
+</code></pre>
+<ul>
+<li><code>invoke()</code>：根据传入数据input的数据类型，选择不同的Redis命令，将数据发送到Redis。Redis命令目前仅支持8个基础命令，其他的需要自己实现：
+<ul>
+<li><code>push</code></li>
+<li><code>sadd</code></li>
+<li><code>set</code></li>
+<li><code>publish</code></li>
+<li><code>pfadd</code></li>
+<li><code>zadd</code></li>
+<li><code>zrem</code></li>
+<li><code>hset</code></li>
+</ul>
+</li>
+</ul>
+<pre><code>@Override
+    public void invoke(IN input) throws Exception {
+        String key = redisSinkMapper.getKeyFromData(input);
+        String value = redisSinkMapper.getValueFromData(input);
+
+        switch (redisCommand) {
+            case RPUSH:
+                this.redisCommandsContainer.rpush(key, value);
+                break;
+            case LPUSH:
+                this.redisCommandsContainer.lpush(key, value);
+                break;
+            case SADD:
+                this.redisCommandsContainer.sadd(key, value);
+                break;
+            case SET:
+                this.redisCommandsContainer.set(key, value);
+                break;
+            case PFADD:
+                this.redisCommandsContainer.pfadd(key, value);
+                break;
+            case PUBLISH:
+                this.redisCommandsContainer.publish(key, value);
+                break;
+            case ZADD:
+                this.redisCommandsContainer.zadd(this.additionalKey, value, key);
+                break;
+            case ZREM:
+                this.redisCommandsContainer.zrem(this.additionalKey, key);
+                break;
+            case HSET:
+                this.redisCommandsContainer.hset(this.additionalKey, key, value);
+                break;
+            default:
+                throw new IllegalArgumentException(&quot;Cannot process such data type: &quot; + redisCommand);
+        }
+    }
+</code></pre>
+<h2 id="3-rdeissink执行过程">3 RdeisSink执行过程</h2>
+<ol>
+<li>选择不同的方式（包括集群模式、单点模式、哨兵模式）创建FlinkJedisConfigBase对象；</li>
+<li>创建RedisMapper对象。选定Redis命令并指定键值对；</li>
+<li>使用以上两个参数，创建RedisSink对象：<code>new RedisSink(FlinkJedisConfigBase, RedisMapper)</code>；</li>
+<li>调用RedisSink对象的open方法，在该方法中调用RedisCommandsContainerBuilder，并根据FlinkJedisConfigBase对象类型，生成不同的RedisCommandsContainer：</li>
+</ol>
+<ul>
+<li><code>FlinkJedisClusterConfig</code>类型对应生成RedisClusterContainer类。</li>
+<li><code>FlinkJedisSentinelConfig</code>和<code>FlinkJedisPoolConfig</code>类型对应生成RedisContainer类。</li>
+</ul>
+<p>其中，RedisClusterContainer类和RedisContainer类是RedisCommandsContainer接口的两个实现类，对应Redis具体操作。</p>
+<figure data-type="image" tabindex="3"><img src="https://DoCherish.github.io/post-images/1587310501287.png" alt="" loading="lazy"></figure>
+<h2 id="4-应用案例">4 应用案例</h2>
+<p>使用Flink将文本数据Sink到Redis。Redis使用单节点模式。</p>
+<h3 id="完整代码">完整代码</h3>
+<pre><code class="language-scala">package org.ourhome.streamapi
 
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.api.java.utils.ParameterTool
@@ -214,18 +315,14 @@ object RedisSinkTest {
 }
 
 </code></pre>
-<blockquote>
-<p>customdata.txt文件</p>
-</blockquote>
+<h3 id="customdatatxt文件">customdata.txt文件</h3>
 <pre><code>小明,20,man,180.2
 小红,22,woman,178.4
 小黑,18,man,192.9
 小兰,19,woman,188.0
 小爱,30,woman,177.3
 </code></pre>
-<blockquote>
-<p>Redis数据：</p>
-</blockquote>
+<h3 id="redis数据">Redis数据：</h3>
 <table>
 <thead>
 <tr>
@@ -270,8 +367,8 @@ object RedisSinkTest {
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://DoCherish.github.io/post/spark-xiao-fei-kafka-shu-ju-bao-cun-offset-dao-redis/" class="post-title gt-a-link">
-                    Spark——消费Kafka数据保存Offset到Redis
+                <a href="https://DoCherish.github.io/post/flink-richfunction/" class="post-title gt-a-link">
+                    Flink——RichFunction
                 </a>
             </div>
         

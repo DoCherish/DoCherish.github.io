@@ -1,0 +1,262 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Flink——RichFunction | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587310701322">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Flink——RichFunction
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2020-04-19 19:36:20 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/MfKgZU3yj/" class="post-tags">
+                            # Flink
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>主要内容：介绍Flink中的RichFunction函数。</p>
+<!-- more -->
+<p>上一篇文章：<a href="https://docherish.com/post/flink-shi-zhan-zhi-mysql-sink/">Flink——实战之MySQL Sink</a>在介绍MySQL Sink时，强调了这里要选择继承RichSinkFunction接口，而非SinkFunction接口：</p>
+<pre><code class="language-java">streaming.addSink(new MyJdbcSink).setParallelism(1)
+class MyJdbcSink extends RichSinkFunction[Person] {...}
+</code></pre>
+<p>从而实现将数据从Flink写入MySQL。其实，<code>streaming.addSink()</code>函数明明需要传入一个SinkFunction，那为何传入RichSinkFunction也可实现自定义Sink呢？</p>
+<p>在IDEA中展示RichSinkFunction的继承关系层次结构图：</p>
+<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1587296620501.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>蓝色实线：extends继承一个抽象类</p>
+<p>绿色实线：extends继承一个类</p>
+<p>绿色虚线：implements实现一个接口</p>
+</blockquote>
+<p>Function接口是所有用户自定义函数的base interface，RichFunction和SinkFunction都是继承Function的接口。可以看到，SinkFunction和RichFunction接口中有各有不同的方法，而后者的方法更丰富一些，功能也就越多，所以称为“富函数”。</p>
+<h2 id="richfunction接口中各函数介绍">RichFunction接口中各函数介绍</h2>
+<blockquote>
+<p>An base interface for all rich user-defined functions. This class defines methods for the life cycle of the functions, as well as methods to access the context in which the functions are executed.</p>
+</blockquote>
+<p>源码给出的解释如上。大意：RichFunction是所有用户自定义富函数的base interface。RichFunction与常规函数的不同在于：它拥有一些具有生命周期的方法，并可以获取函数运行时的上下文。下面解释一下各个方法的作用：</p>
+<pre><code>class MyRichFunction extends RichFunction[String] {
+    override def open(parameters: Configuration): Unit = ???
+
+    override def close(): Unit = ???
+
+    override def getRuntimeContext: RuntimeContext = ???
+
+    override def getIterationRuntimeContext: IterationRuntimeContext = ???
+
+    override def setRuntimeContext(t: RuntimeContext): Unit = ???
+  }
+</code></pre>
+<p>RichFunction：</p>
+<ul>
+<li><code>open()</code>：在函数调用前，open()函数先被调用，用于初始化操作；</li>
+<li><code>close()</code>：生命周期中最后一个被调用的方法，做一些清理工作；</li>
+<li><code>setRuntimeContext(RuntimeContext)</code>：设置运行时上下文。每个并行的算子子任务都有一个运行时上下文，上下文记录了这个算子运行过程中的一些信息，包括算子当前的并行度、算子子任务序号、广播数据、累加器、监控数据。最重要的是，我们可以从上下文里获取状态数据；</li>
+<li><code>getRuntimeContext()</code>：获取运行时上下文；</li>
+<li><code>getIterationRuntimeContext()</code>：获取迭代运行时上下文。</li>
+</ul>
+<p>SinkFunction：</p>
+<ul>
+<li><code>invoke()</code>：将传入的数据写入Sink。需要强调的是，每传入一个数据就要调用一次该函数。若Sink是MySQl，每次都要创建一个连接。</li>
+</ul>
+<p>由此可见，RichFunction可以实现更复杂的功能，并能提高性能，节省资源。上面说到的RichSinkFunction类之所以有上述方法，是因为从RichFunction接口继承而来。其实，在Flink当中，所有函数类都有继承或者间接继承RichFunction，都有其Rich版本。</p>
+<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1587296668569.png" alt="" loading="lazy"></figure>
+<h2 id="richfunction实现map算子">RichFunction实现map算子</h2>
+<p>下面举一个简单例子：Flink从文件读取数据，经过map算子处理后，取出每行中的name字段，程序结束时输出所统计到的人数。</p>
+<p>文本数据：</p>
+<pre><code>小明,20,man,180.2
+小红,22,woman,178.4
+小黑,18,man,192.9
+小兰,19,woman,188.0
+小爱,30,woman,177.3
+</code></pre>
+<p>main函数：</p>
+<pre><code>def main(args: Array[String]): Unit = {
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+    val inputStream: DataStream[String] = env.readTextFile(&quot;D:\\Work\\Code\\flinkdev\\src\\main\\resources\\textfile\\customdata.txt&quot;)
+    env.setParallelism(1)
+
+    inputStream.map(new MyRichMapFunction).print(&quot;name&quot;)
+
+    env.execute(&quot;RichMapFunction test&quot;)
+  }
+</code></pre>
+<p>自定义RichMapFunction函数：</p>
+<pre><code>class MyRichMapFunction extends RichMapFunction[String, String] {
+    var count: Int = 0
+    var startTime: Long = _
+    val timeFormat = new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss.SSSS&quot;)
+
+    override def open(parameters: Configuration): Unit = {
+      super.open(parameters)
+      startTime = System.currentTimeMillis()
+      println(&quot;open函数调用时间：&quot; + timeFormat.format(startTime))
+      println(&quot;--------------------------------------------&quot;)
+    }
+
+    override def map(value: String): String = {
+      println(&quot;map函数调用时间：&quot; + timeFormat.format(System.currentTimeMillis()))
+      count += 1
+      value.split(&quot;,&quot;)(0)
+    }
+
+    override def close(): Unit = {
+      println(&quot;--------------------------------------------&quot;)
+      println(&quot;close函数调用时间：&quot; + timeFormat.format(System.currentTimeMillis()))
+      super.close()
+      println(&quot;共统计个数：&quot; + count)
+    }
+  }
+</code></pre>
+<p>输出：</p>
+<pre><code>open函数调用时间：2020-04-19 19:00:19.0331
+--------------------------------------------
+map函数调用时间：2020-04-19 19:00:19.0616
+name&gt; 小爱
+map函数调用时间：2020-04-19 19:00:19.0616
+name&gt; 小黑
+map函数调用时间：2020-04-19 19:00:19.0616
+name&gt; 小红
+map函数调用时间：2020-04-19 19:00:19.0616
+name&gt; 小明
+map函数调用时间：2020-04-19 19:00:19.0616
+name&gt; 小兰
+--------------------------------------------
+close函数调用时间：2020-04-19 19:00:19.0616
+共统计个数：5
+</code></pre>
+<p>验证了RichFunction中open()、<code>map()</code>、close()函数执行的顺序以及在函数生命周期内可获取上下文变量count。需要注意：程序中添加了<code>env.setParallelism(1)</code>，即指定了只使用一个线程。若不设定，默认是取机器的CPU核数。且每调用一次<code>MyRichMapFunction</code>，就会调用一次<code>open()</code>、<code>map()</code>、<code>close()</code>函数。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/flink-shi-zhan-zhi-mysql-sink/" class="post-title gt-a-link">
+                    Flink——实战之MySQL Sink
+                </a>
+            </div>
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
