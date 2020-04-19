@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Flink——原理与实战：RedisSink | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587311052878">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587311184658">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -136,10 +136,10 @@
         this.additionalKey = redisCommandDescription.getAdditionalKey();
     }
 </code></pre>
-<h3 id="flinkjedisconfigbase分析"><code>FlinkJedisConfigBase</code>分析</h3>
+<h3 id="flinkjedisconfigbase分析">FlinkJedisConfigBase分析</h3>
 <p><code>FlinkJedisClusterConfig</code>、<code>FlinkJedisSentinelConfig</code>和<code>FlinkJedisPoolConfig</code>三个类都继承了抽象类<code>FlinkJedisConfigBase</code>，分别对应了Redis的集群模式、哨兵模式和单节点模式。且每个类都有一个内部类Builder，用于初始化一些变量，如host、port、timeout等参数。使用时根据情况选择相应的类即可。</p>
 <figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1587310671058.png" alt="" loading="lazy"></figure>
-<h2 id="redismapper分析"><code>RedisMapper</code>分析</h2>
+<h3 id="redismapper分析">RedisMapper分析</h3>
 <p>直接给出应用案例，用于理解：如何用于生成Redis命令和键值对。</p>
 <pre><code>class RedisTestMapper extends RedisMapper[Array[String]] {
     override def getCommandDescription: RedisCommandDescription = {
