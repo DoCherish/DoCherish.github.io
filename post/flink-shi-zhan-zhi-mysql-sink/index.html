@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Flink——实战之MySQL Sink | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587259303489">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587290782002">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -108,7 +108,7 @@
 <!-- more -->
 <h2 id="准备工作">准备工作</h2>
 <p>Flink自身并没有提供连接MySQL的连接器，需要手动引入：</p>
-<pre><code class="language-xml">&lt;!-- mysql connector --&gt;
+<pre><code>&lt;!-- mysql connector --&gt;
 &lt;dependency&gt;
     &lt;groupId&gt;mysql&lt;/groupId&gt;
     &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt;
@@ -117,7 +117,7 @@
 </code></pre>
 <h2 id="代码实现">代码实现</h2>
 <p>核心代码在于：</p>
-<pre><code class="language-java">streaming.addSink(new MyJdbcSink).setParallelism(1)
+<pre><code>streaming.addSink(new MyJdbcSink).setParallelism(1)
 </code></pre>
 <p>这里你需要1个参数：</p>
 <ul>
@@ -127,7 +127,7 @@
 <p>Writes the given value to the sink. This function is called for every record.</p>
 </blockquote>
 <p>完整代码如下：</p>
-<pre><code class="language-java">package org.ourhome.streamapi
+<pre><code>package org.ourhome.streamapi
 
 import java.sql.{Connection, DriverManager, PreparedStatement}
 
@@ -224,7 +224,7 @@ object MysqlSinkTest {
 <blockquote>
 <p>Socket发送数据：</p>
 </blockquote>
-<pre><code class="language-shell">nc -lk 9999
+<pre><code>nc -lk 9999
 小明,20,man,180.2
 小红,22,woman,178.4
 小黑,18,man,192.9

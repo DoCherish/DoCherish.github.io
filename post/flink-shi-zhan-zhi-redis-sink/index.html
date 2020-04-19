@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Flink——实战之Redis Sink | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587259303489">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587290782002">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -117,13 +117,13 @@
 </code></pre>
 <h2 id="代码实现">代码实现</h2>
 <p>核心代码在于：</p>
-<pre><code class="language-java">streaming.addSink(new RedisSink[Person](redisConf, new MyRedisMapper))
+<pre><code>streaming.addSink(new RedisSink[Person](redisConf, new MyRedisMapper))
 </code></pre>
 <p>这里你需要两个参数：</p>
 <ul>
 <li><code>redisConf</code>：redis配置信息</li>
 </ul>
-<pre><code class="language-java">// 配置redis conf
+<pre><code>// 配置redis conf
 val redisConf: FlinkJedisPoolConfig = new FlinkJedisPoolConfig.Builder()
     .setHost(&quot;host&quot;)
     .setPort(6379)
@@ -133,7 +133,7 @@ val redisConf: FlinkJedisPoolConfig = new FlinkJedisPoolConfig.Builder()
 <ul>
 <li><code>MyRedisMapper</code>：自定义的RedisMapper</li>
 </ul>
-<pre><code class="language-java">//自定义MyRedisMapper
+<pre><code>//自定义MyRedisMapper
 class MyRedisMapper extends RedisMapper[Person] {
     override def getCommandDescription: RedisCommandDescription = {
         new RedisCommandDescription(RedisCommand.HSET, REDIS_KEY)
@@ -148,7 +148,7 @@ class MyRedisMapper extends RedisMapper[Person] {
     }
 </code></pre>
 <p>完整代码如下：</p>
-<pre><code class="language-java">package org.ourhome.streamapi
+<pre><code>package org.ourhome.streamapi
 
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.api.java.utils.ParameterTool
