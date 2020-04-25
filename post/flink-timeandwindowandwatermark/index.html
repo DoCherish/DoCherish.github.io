@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Flink——Time&amp;Window&amp;Watermark | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587568694156">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587779389904">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -102,13 +102,12 @@
                 <div class="post-content">
                     <p>主要内容：</p>
 <ul>
-<li>Time</li>
-<li>Window</li>
-<li>Watermark</li>
+<li>介绍Time、Window、Watermark的基本概念</li>
+<li>介绍几个实现案例</li>
 </ul>
 <!-- more -->
 <h2 id="1-flink时间语义">1 Flink时间语义</h2>
-<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1587567005240.svg" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://ci.apache.org/projects/flink/flink-docs-release-1.10/fig/times_clocks.svg" alt="" loading="lazy"></figure>
 <p>时间属性是流处理中最重要的一个方面，是流处理系统的基石之一。Flink作为一个先进的分布式流处理引擎，支持不同的时间语义：</p>
 <ul>
 <li>Event Time：事件生成时间，可根据每一条处理记录所携带的时间戳来判定。Flink通过时间戳分配器获取改时间。</li>
@@ -148,11 +147,11 @@ stream
        .reduce/aggregate/process()      &lt;-  窗口处理函数Window Function
 </code></pre>
 <p>其中涉及到几种数据类型的转换：</p>
-<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1587567027414.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1587779330662.png" alt="" loading="lazy"></figure>
 <p>Flink支持两种类型的窗口：（其核心是TimeWindow）</p>
 <ul>
-<li>TimeWindow：基于时间生成窗口，如每20s生成一个窗口。</li>
-<li>CountWindow：基于数据数量生成窗口，与时间无关，如每20个元素生成一个窗口。</li>
+<li>TimeWindow：基于时间生成窗口。将制定时间范围内的所有数据组成一个window，一次对一个window里面所有的数据进行计算。如每20s生成一个窗口。</li>
+<li>CountWindow：基于元素数量（相同Key）生成窗口，与时间无关，如每20个元素生成一个窗口。</li>
 </ul>
 <h3 id="window-assigner">Window Assigner</h3>
 <p>TimeWindow根据实现原理可以分为三类：</p>
@@ -222,7 +221,7 @@ val session: DataStream[T] = inputStream
 <li>增量计算：指的是窗口保存一份中间数据，每流入一个新元素，新元素与中间数据两两合一，生成新的中间数据，再保存到窗口中。计算性能较高，占用存储空间较少，窗口中只维护了中间结果状态值，不需要缓存原始数据。如<code>RreduceFunction</code>、<code>AggregateFunction</code>。</li>
 <li>全量计算：指的是窗口先缓存该窗口所有元素，等到触发条件后对窗口内的全量元素执行计算。全量计算的代价较高，性能比较弱，因为算子需要对所有属于该窗口的接入数据进行缓存，然后等到窗口触发的时候，对所有的原始数据进行汇总计算。如<code>ProcessWindowFunction</code>。</li>
 </ul>
-<h2 id="watermark">Watermark</h2>
+<h2 id="3-watermark">3 Watermark</h2>
 <p>时间有一个重要的特性：只增不减</p>
 <blockquote>
 <p>对于Processing Time：</p>
@@ -232,8 +231,17 @@ val session: DataStream[T] = inputStream
 <p>对于Event Time：</p>
 </blockquote>
 <p>使用绑定在record中的时间，由于网络延迟、程序内部逻辑、或者其他一些分布式系统的原因，数据的时间可能会存在一定程度的乱序。</p>
-<p>当使用Event Time时，我们就要考虑如何处理这种乱序情况。处理乱序event的方式就是等待更早event到来，但是不能永久等待下去。我们就需要一种策略，何时停止等待。这就是watermark的作用：何时不再等待更早数据，开始计算窗口内的event。<br>
-watermark(t)：时间戳t以前的event都已经到了，未来小于等于t的event不会再来，可以触发并销毁窗口了。</p>
+<p>当使用Event Time时，我们就要考虑如何处理这种乱序情况。处理乱序event的方式就是等待更早event到来，但是不能永久等待下去。我们就需要一种策略，何时停止等待。这就是watermark的作用：何时不再等待更早数据，开始计算窗口内的event。</p>
+<p>watermark是一种衡量Event Time进展的机制。watermark是用于处理乱序事件的，而正确的处理乱序事件 ，通常用watermark机制结合window 来实现。可以理解为一个延迟触发机制。watermark是数据本身的一个隐藏属性，数据本身携带着对相应的watermark，因此，如果运行过程中无法获取新的数据，那么窗口将永远无法触发。watermark(t)：时间戳t以前的event都已经到了，未来小于等于t的event不会再来，可以触发并销毁窗口了。</p>
+<figure data-type="image" tabindex="3"><img src="https://DoCherish.github.io/post-images/1587779355716.png" alt="" loading="lazy"></figure>
+<p>上图中，有序数据的watermark为0，无序数据中设置允许的最大延迟到达时间为2s，所以时间戳为6s的事件对应的watermark时4s，时间戳为10s的事件的watermark是8s。如果我们的窗口1是1s<sub>4s，窗口2是5s</sub>8s，那么时间戳为6s的事件到达时watermark恰好触发窗口1，时间戳为10s的事件到达时的watermark恰好触发窗口2。</p>
+<p>注意：</p>
+<ul>
+<li>窗口是左闭右开，形式：<code>[window_start_time, window_end_time]</code></li>
+<li>window的设定是系统定义好了的，window会一直按照指定的时间间隔进行划分，不论这个window中有没有数据。</li>
+<li>Flink会根据Event time是否在这个window期间，将数据发送到相应window中。属于这个 window 范围的数据会被不断加入到 window 中，所有未触发的window都会等待触发。只要window没有触发，属于这个window范围的数据就会一直被加入到该window，直到window被触发才会停止数据的追加。当window触发后才接受到的数据会丢失。</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="https://DoCherish.github.io/post-images/1587779369816.jpg" alt="" loading="lazy"></figure>
 <p>Flink提供两种方式指定timestamp生成watremark：</p>
 <ul>
 <li><code>SourceFunction</code>：在event源头生成
@@ -264,15 +272,47 @@ watermark(t)：时间戳t以前的event都已经到了，未来小于等于t的e
   }
 </code></pre>
 <ul>
-<li><code>Timestamp Assigner</code>：Flink自带，根据生成方式分两种：
+<li>
+<p><code>Timestamp Assigner</code>：Flink自带，根据生成方式分两种：</p>
 <ul>
-<li><code>Periodic Watermark</code>：周期性地生成，两种实现：
+<li>
+<p><code>Periodic Watermark</code>：周期性地生成，两种实现：</p>
 <ul>
-<li><code>Ascending Timestamp</code>：升序模式，适用于顺序event</li>
+<li><code>Ascending Timestamp</code>：升序模式，适用于顺序event：</li>
+</ul>
+<pre><code>env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+socketData.map(line =&gt; {
+      (line.split(&quot;,&quot;)(0), line.split(&quot;,&quot;)(1).toInt)
+    })
+      // 指定时间字段
+      .assignAscendingTimestamps(_._2)
+      .keyBy(_._1)
+      .timeWindow(Time.minutes(3))
+      .sum(0)
+      .print()
+</code></pre>
+<ul>
 <li><code>Bounded-out-of-orderness</code>：固定延时间隔</li>
 </ul>
+<pre><code>env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+socketData.map(line =&gt; {
+      (line.split(&quot;,&quot;)(0), line.split(&quot;,&quot;)(1).toInt)
+    })
+      // 指定时间字段
+      .assignTimestampsAndWatermarks(new MyAssigner)
+      .peocess(...)
+// 参数为延迟时间
+class MyAssigner extends BoundedOutOfOrdernessTimestampExtractor[(String, Int)](Time.seconds(3)) {
+    // 指定时间字段
+    override def extractTimestamp(element: (String, Int)): Long = {
+      element._2
+    }
+  }
+</code></pre>
 </li>
-<li><code>Punctuated Watermark</code>：根据接入event的数量生成</li>
+<li>
+<p><code>Punctuated Watermark</code>：根据接入event的数量生成</p>
+</li>
 </ul>
 </li>
 </ul>
