@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Kafka——源码分析：Log、LogSegMent、Index | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587787954307">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587788450899">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -130,7 +130,7 @@
 </blockquote>
 <p>指明了日志段主要由两部分组成：日志和索引文件。每个日志段都有一个起始位移值（Base Offset），而该位移值是此日志段所有消息中最小的位移值，同时，该值却又比前面任何日志段中消息的位移值都大。</p>
 <h3 id="日志段类声明">日志段类声明</h3>
-<pre><code>class LogSegment private[log] (val log: FileRecords,
+<pre><code class="language-java">class LogSegment private[log] (val log: FileRecords,
                                val lazyOffsetIndex: LazyIndex[OffsetIndex],
                                val lazyTimeIndex: LazyIndex[TimeIndex],
                                val txnIndex: TransactionIndex,
@@ -160,7 +160,7 @@
 <li>records：待写入的消息集合</li>
 </ul>
 <p>我将自己的理解标注在了源码里：</p>
-<pre><code class="language-scala">def append(largestOffset: Long,
+<pre><code class="language-java">def append(largestOffset: Long,
              largestTimestamp: Long,
              shallowOffsetOfMaxTimestamp: Long,
              records: MemoryRecords): Unit = {
@@ -213,7 +213,7 @@
 <p>minOneMessage：是否允许在消息体过大时至少返回第一条消息，确保不出现消费饿死的情况</p>
 </li>
 </ul>
-<pre><code class="language-scala">def read(startOffset: Long,
+<pre><code class="language-java">def read(startOffset: Long,
            maxSize: Int,
            maxPosition: Long = size,
            minOneMessage: Boolean = false): FetchDataInfo = {
