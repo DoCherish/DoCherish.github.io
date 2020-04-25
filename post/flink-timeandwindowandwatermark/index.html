@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Flink——Time&amp;Window&amp;Watermark | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587788450899">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587832581729">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -237,7 +237,7 @@ val session: DataStream[T] = inputStream
 <p>上图中，有序数据的watermark为0，无序数据中设置允许的最大延迟到达时间为2s，所以时间戳为6s的事件对应的watermark时4s，时间戳为10s的事件的watermark是8s。如果我们的窗口1是1s<sub>4s，窗口2是5s</sub>8s，那么时间戳为6s的事件到达时watermark恰好触发窗口1，时间戳为10s的事件到达时的watermark恰好触发窗口2。</p>
 <p>注意：</p>
 <ul>
-<li>窗口是左闭右开，形式：<code>[window_start_time, window_end_time]</code></li>
+<li>窗口是左闭右开，形式：<code>[window_start_time, window_end_time)</code></li>
 <li>window的设定是系统定义好了的，window会一直按照指定的时间间隔进行划分，不论这个window中有没有数据。</li>
 <li>Flink会根据Event time是否在这个window期间，将数据发送到相应window中。属于这个 window 范围的数据会被不断加入到 window 中，所有未触发的window都会等待触发。只要window没有触发，属于这个window范围的数据就会一直被加入到该window，直到window被触发才会停止数据的追加。当window触发后才接受到的数据会丢失。</li>
 </ul>

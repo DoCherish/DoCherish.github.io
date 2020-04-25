@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Flink——实战之Redis Sink | Do&#39;s blog</title>
+<title>Flink——实战：EventTime结合Watermark应用案例 | Do&#39;s blog</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587832581729">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,16 +87,12 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    Flink——实战之Redis Sink
+                    Flink——实战：EventTime结合Watermark应用案例
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2020-04-18 23:33:02 ·
+                        · 2020-04-26 00:35:05 ·
                     </time>
-                    
-                        <a href="https://DoCherish.github.io/tag/redis/" class="post-tags">
-                            # Redis
-                        </a>
                     
                         <a href="https://DoCherish.github.io/tag/MfKgZU3yj/" class="post-tags">
                             # Flink
@@ -104,164 +100,126 @@
                     
                 </div>
                 <div class="post-content">
-                    <p>主要内容：实现Flink写数据到Redis，即Redis Sink。</p>
+                    <p>主要内容：</p>
+<ul>
+<li>从SocketSource接收数据，时间语义采用EventTime，统计用户在T分钟内的总消费金额。</li>
+</ul>
 <!-- more -->
-<h2 id="准备工作">准备工作</h2>
-<p><code>Flink Redis Connector</code>提供了一个Sink可将数据写入Redis。若要使用该连接器需要将以下内容引入工程：</p>
-<pre><code class="language-xml">&lt;!-- redis connector --&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;org.apache.bahir&lt;/groupId&gt;
-    &lt;artifactId&gt;flink-connector-redis_2.11&lt;/artifactId&gt;
-    &lt;version&gt;1.0&lt;/version&gt;
-&lt;/dependency&gt;
+<h2 id="方案">方案</h2>
+<p>​	1.创建记录用户消费的ConsumerMess类：包括三个属性：用户ID、消费金额、消费时间</p>
+<pre><code>case class ConsumerMess(userId:Int, spend:Double, Time:Long)
 </code></pre>
-<h2 id="代码实现">代码实现</h2>
-<p>核心代码在于：</p>
-<pre><code>streaming.addSink(new RedisSink[Person](redisConf, new MyRedisMapper))
+<p>​	2.要求采用EventTime时间语义，可通过以下设置：</p>
+<pre><code>env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 </code></pre>
-<p>这里你需要两个参数：</p>
+<p>​	3.考虑到数据存在乱序的可能性，需要使用Watermark机制处理乱序数据，并设置允许的最大延迟时间。</p>
 <ul>
-<li><code>redisConf</code>：redis配置信息</li>
+<li>使用固定时间间隔的Timestamp Assigner指定时间戳（ConsumerMess.Time）和Watermark（延迟2s）。</li>
+<li>使用翻滚窗口，窗口长度为T=10s。</li>
 </ul>
-<pre><code>// 配置redis conf
-val redisConf: FlinkJedisPoolConfig = new FlinkJedisPoolConfig.Builder()
-    .setHost(&quot;host&quot;)
-    .setPort(6379)
-    .setTimeout(30000)
-    .build()
+<pre><code>data.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[ConsumerMess](Time.seconds(2)) {
+        override def extractTimestamp(element: ConsumerMess): Long = {
+          element.Time
+        }
+      })
+      .keyBy(_.userId)
+      .timeWindow(Time.seconds(10))
 </code></pre>
-<ul>
-<li><code>MyRedisMapper</code>：自定义的RedisMapper</li>
-</ul>
-<pre><code>//自定义MyRedisMapper
-class MyRedisMapper extends RedisMapper[Person] {
-    override def getCommandDescription: RedisCommandDescription = {
-        new RedisCommandDescription(RedisCommand.HSET, REDIS_KEY)
-    }
-    // redis filed
-    override def getKeyFromData(t: Person): String = {
-        t.name
-    }
-    // redis value
-    override def getValueFromData(t: Person): String = {
-        t.age + &quot;:&quot; + t.gender + &quot;:&quot; + t.height
-    }
-</code></pre>
-<p>完整代码如下：</p>
+<h2 id="代码">代码</h2>
 <pre><code>package org.ourhome.streamapi
 
+import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
 import org.apache.flink.streaming.api.scala._
-import org.apache.flink.api.java.utils.ParameterTool
-import org.apache.flink.runtime.state.filesystem.FsStateBackend
-import org.apache.flink.streaming.api.CheckpointingMode
-import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
-import org.apache.flink.streaming.connectors.redis.RedisSink
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig
-import org.apache.flink.streaming.connectors.redis.common.mapper.{RedisCommand, RedisCommandDescription, RedisMapper}
+import org.apache.flink.streaming.api.windowing.time.Time
 
 /**
  * @Author Do
- * @Date 2020/4/18 21:19
+ * @Date 2020/4/25 21:33
  */
-object RedisSinkTest {
-  private val REDIS_KEY = &quot;person_message&quot;
-
+object EventTImeTest {
   def main(args: Array[String]): Unit = {
-    val params: ParameterTool = ParameterTool.fromArgs(args)
-    val runType: String = params.get(&quot;runtype&quot;)
-    println(&quot;runType: &quot; + runType)
-
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-    env.getCheckpointConfig.setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE)
-    env.enableCheckpointing(5000)
-    env.setStateBackend(new FsStateBackend(&quot;file:///D:/Work/Code/flinkdev/src/main/resources/checkpoint&quot;))
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    env.setParallelism(1)
 
-    val inputStream: DataStream[String] = env.readTextFile(&quot;D:\\Work\\Code\\flinkdev\\src\\main\\resources\\textfile\\customdata.txt&quot;)
-    // 处理inputStream，包装成Person类
-    val streaming: DataStream[Person] = inputStream.map(line =&gt; {
-      println(line)
-      val strings: Array[String] = line.split(&quot;,&quot;)
-      Person(strings(0).trim, strings(1).trim.toInt, strings(2).trim, strings(3).trim.toFloat)
+    val socketData: DataStream[String] = env.socketTextStream(&quot;192.168.237.128&quot;, 9999)
+    socketData.print(&quot;input &quot;)
+
+    socketData.map(line =&gt; {
+      val str: Array[String] = line.split(&quot;,&quot;)
+      ConsumerMess(str(0).toInt, str(1).toDouble, str(2).toLong)
     })
-    // 配置redis conf
-    val redisConf: FlinkJedisPoolConfig = new FlinkJedisPoolConfig.Builder()
-      .setHost(&quot;host&quot;)
-      .setPort(6379)
-      .setTimeout(30000)
-      .build()
-    streaming.addSink(new RedisSink[Person](redisConf, new MyRedisMapper))
+      .assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[ConsumerMess](Time.seconds(2)) {
+        override def extractTimestamp(element: ConsumerMess): Long = {
+          element.Time
+        }
+      })
+      .keyBy(_.userId)
+      .timeWindow(Time.minutes(10))
+      .reduce((a, b) =&gt; ConsumerMess(a.userId, a.spend + b.spend, b.Time))
+      .print(&quot;out &quot;)
 
-    env.execute(&quot;Redis Sink&quot;)
-  }
-
-  case class Person (name: String, age: Int, gender: String, height: Float)
-  //自定义MyRedisMapper
-  class MyRedisMapper extends RedisMapper[Person] {
-    override def getCommandDescription: RedisCommandDescription = {
-      new RedisCommandDescription(RedisCommand.HSET, REDIS_KEY)
-    }
-    // redis filed
-    override def getKeyFromData(t: Person): String = {
-      t.name
-    }
-    // redis value
-    override def getValueFromData(t: Person): String = {
-      t.age + &quot;:&quot; + t.gender + &quot;:&quot; + t.height
-    }
+    env.execute()
 
   }
+
+  case class ConsumerMess(userId:Int, spend:Double, Time:Long)
 
 }
 
 </code></pre>
-<blockquote>
-<p>customdata.txt文件</p>
-</blockquote>
-<pre><code>小明,20,man,180.2
-小红,22,woman,178.4
-小黑,18,man,192.9
-小兰,19,woman,188.0
-小爱,30,woman,177.3
+<h2 id="测试">测试</h2>
+<p>Socket发送数据：</p>
+<p>第一个字段代表用户123，第二个字段为用户消费金额，第三个字段时间戳。</p>
+<p>为方便测试，这里从2020-04-25 12:00:01（1587787201000）开始记录第一条数据，且第1分钟消费100，第2分钟消费200……以此类推：</p>
+<pre><code>123,100,1587787201000     2020-04-25 12:00:01
+123,400,1587787204000     2020-04-25 12:00:04
+123,300,1587787203000     2020-04-25 12:00:03
+123,500,1587787205000     2020-04-25 12:00:05
+123,200,1587787202000     2020-04-25 12:00:02
+123,600,1587787206000     2020-04-25 12:00:06
+123,800,1587787208000     2020-04-25 12:00:08
+123,700,1587787207000     2020-04-25 12:00:07
+123,1000,1587787210000    2020-04-25 12:00:10
+123,900,1587787209000     2020-04-25 12:00:09
+123,1100,1587787211000    2020-04-25 12:00:11
+123,1200,1587787212000    2020-04-25 12:00:12
 </code></pre>
-<blockquote>
-<p>Redis数据：</p>
-</blockquote>
-<table>
-<thead>
-<tr>
-<th>row</th>
-<th>key</th>
-<th>value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>小明</td>
-<td><code>20:man:180.2</code></td>
-</tr>
-<tr>
-<td>2</td>
-<td>小红</td>
-<td><code>22:woman:178.4</code></td>
-</tr>
-<tr>
-<td>3</td>
-<td>小黑</td>
-<td><code>18:man:192.9</code></td>
-</tr>
-<tr>
-<td>4</td>
-<td>小兰</td>
-<td><code>19:woman:188.0</code></td>
-</tr>
-<tr>
-<td>5</td>
-<td>小爱</td>
-<td><code>30:woman:177.3</code></td>
-</tr>
-</tbody>
-</table>
+<p>可以观察到数据是乱序到达Flink。启动Flink程序后，1到11分的数据进入窗口，并以进入的顺序被打印：（input为打印的输入数据）</p>
+<pre><code>input &gt; 123,100,1587787201000
+input &gt; 123,400,1587787204000
+input &gt; 123,300,1587787203000
+input &gt; 123,500,1587787205000
+input &gt; 123,200,1587787202000
+input &gt; 123,600,1587787206000
+input &gt; 123,800,1587787208000
+input &gt; 123,700,1587787207000
+input &gt; 123,1000,1587787210000
+input &gt; 123,900,1587787209000
+input &gt; 123,1100,1587787211000
+input &gt; 123,1200,1587787212000
+</code></pre>
+<p>当<code>123,1200,1587787212000</code>这条数据进入窗口，其携带的时间戳为<code>1587787212000</code>（<code>2020-04-25 12:00:12</code>），延迟时间参数为2s，此时Watermark更新为12-2=10，也就是这条数据对应的Watermark是10s（Watermark(10)），就意味着10s前的数据都已经到了，且窗口内有数据，所以可以触发窗口计算并销毁窗口：（output为打印的结果）</p>
+<pre><code>output &gt; ConsumerMess(123,4500.0,1587787209000)
+</code></pre>
+<p>打印出的结果显示，用户123窗口期内共消费4500元。通过计算可知4500是9分钟内消费的金额，也就是说窗口在第10分钟关闭，统计的是9分钟以前的数据。但是我们的窗口长度明明是10，这是否正确呢？答案是正确的！因为：窗口是左闭右开，形式：<code>[window_start_time, window_end_time)</code></p>
+<p>继续输入：</p>
+<pre><code>123,1300,1587787213000
+123,14,1587787214000
+123,20,1587787220000
+123,21,1587787221000
+123,22,1587787222000
+</code></pre>
+<p>相应的输出：</p>
+<pre><code>input &gt; 123,1300,1587787213000
+input &gt; 123,14,1587787214000
+input &gt; 123,20,1587787220000
+input &gt; 123,21,1587787221000
+input &gt; 123,22,1587787222000
+out &gt; ConsumerMess(123,4614.0,1587787214000)
+</code></pre>
+<p>可自行验证4614结果的正确性。</p>
 
                 </div>
             </article>
@@ -270,8 +228,8 @@ object RedisSinkTest {
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://DoCherish.github.io/post/spark-xiao-fei-kafka-shu-ju-bao-cun-offset-dao-redis/" class="post-title gt-a-link">
-                    Spark——消费Kafka数据保存Offset到Redis
+                <a href="https://DoCherish.github.io/post/kafka-yuan-ma-fen-xi-loglogsegmentindex/" class="post-title gt-a-link">
+                    Kafka——源码分析：Log、LogSegMent、Index
                 </a>
             </div>
         

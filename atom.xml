@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2020-04-25T04:27:39.397Z</updated>
+    <updated>2020-04-25T16:36:24.906Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,23 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Do&apos;s blog</rights>
+    <entry>
+        <title type="html"><![CDATA[Flink——实战：EventTime结合Watermark应用案例]]></title>
+        <id>https://DoCherish.github.io/post/flink-shi-zhan-eventtime-jie-he-watermark-ying-yong-an-li/</id>
+        <link href="https://DoCherish.github.io/post/flink-shi-zhan-eventtime-jie-he-watermark-ying-yong-an-li/">
+        </link>
+        <updated>2020-04-25T16:35:05.000Z</updated>
+        <summary type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>从SocketSource接收数据，时间语义采用EventTime，统计用户在T分钟内的总消费金额。</li>
+</ul>
+]]></summary>
+        <content type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>从SocketSource接收数据，时间语义采用EventTime，统计用户在T分钟内的总消费金额。</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Kafka——源码分析：Log、LogSegMent、Index]]></title>
         <id>https://DoCherish.github.io/post/kafka-yuan-ma-fen-xi-loglogsegmentindex/</id>
@@ -137,17 +154,6 @@
         <summary type="html"><![CDATA[<p>主要内容：介绍Flink自定义Source的使用方法。</p>
 ]]></summary>
         <content type="html"><![CDATA[<p>主要内容：介绍Flink自定义Source的使用方法。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Flink——Flink1.10.0整合Kafka之KafkaSource和KafkaSink]]></title>
-        <id>https://DoCherish.github.io/post/flink-flink1100-zheng-he-kafka/</id>
-        <link href="https://DoCherish.github.io/post/flink-flink1100-zheng-he-kafka/">
-        </link>
-        <updated>2020-04-14T15:55:35.000Z</updated>
-        <summary type="html"><![CDATA[<p>主要内容：基于scala代码实现Flink1.10.0对接Kafka。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>主要内容：基于scala代码实现Flink1.10.0对接Kafka。</p>
 ]]></content>
     </entry>
 </feed>
