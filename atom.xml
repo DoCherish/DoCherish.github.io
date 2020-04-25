@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2020-04-25T01:49:53.489Z</updated>
+    <updated>2020-04-25T02:47:27.781Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,25 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Do&apos;s blog</rights>
+    <entry>
+        <title type="html"><![CDATA[Flink——原理与实战：AggregateFunction]]></title>
+        <id>https://DoCherish.github.io/post/flink-yuan-li-yu-shi-zhan-aggregatefunction/</id>
+        <link href="https://DoCherish.github.io/post/flink-yuan-li-yu-shi-zhan-aggregatefunction/">
+        </link>
+        <updated>2020-04-25T02:45:38.000Z</updated>
+        <summary type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>介绍AggregateFunction</li>
+<li>案例：从SocketSource接收数据，通过Flink 时间窗口以及AggregateFunction方法统计用户在24小时内的平均消费金额</li>
+</ul>
+]]></summary>
+        <content type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>介绍AggregateFunction</li>
+<li>案例：从SocketSource接收数据，通过Flink 时间窗口以及AggregateFunction方法统计用户在24小时内的平均消费金额</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Flink——Time&Window&Watermark]]></title>
         <id>https://DoCherish.github.io/post/flink-timeandwindowandwatermark/</id>
@@ -132,29 +151,6 @@
 <li>DataSource</li>
 <li>DataStream Transformations</li>
 <li>DataSink</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Flink——从零搭建Flink应用]]></title>
-        <id>https://DoCherish.github.io/post/flink-cong-ling-da-jian-flink-ying-yong/</id>
-        <link href="https://DoCherish.github.io/post/flink-cong-ling-da-jian-flink-ying-yong/">
-        </link>
-        <updated>2020-04-12T11:19:52.000Z</updated>
-        <summary type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>环境准备</li>
-<li>创建Flink项目模板</li>
-<li>编写Flink程序</li>
-<li>运行测试</li>
-</ul>
-]]></summary>
-        <content type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>环境准备</li>
-<li>创建Flink项目模板</li>
-<li>编写Flink程序</li>
-<li>运行测试</li>
 </ul>
 ]]></content>
     </entry>
