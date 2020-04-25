@@ -1,0 +1,306 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Kafka——源码分析：Log、LogSegMent、Index | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587787954307">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Kafka——源码分析：Log、LogSegMent、Index
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2020-04-25 12:09:29 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/kafka/" class="post-tags">
+                            # Kafka
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>主要内容：</p>
+<ul>
+<li>对Kafka的日志（Log）、日志段（LogSegment）以及索引（Index）源码进行尝试性分析。</li>
+</ul>
+<!-- more -->
+<p>日志段及其相关代码是 Kafka 服务器源码中最为重要的组件代码之一。</p>
+<h2 id="1-kafka-日志结构概览">1 Kafka 日志结构概览</h2>
+<p>Kafka 日志在磁盘上的组织架构：</p>
+<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1587787878573.png" alt="" loading="lazy"></figure>
+<p>Kafka 日志对象由多个日志段对象组成，而每个日志段对象会在磁盘上创建一组文件：</p>
+<ul>
+<li>消息日志文件（.log）</li>
+<li>位移索引文件（.index）</li>
+<li>时间戳索引文件（.timeindex）</li>
+<li>已中止（Aborted）事务的索引文件（.txnindex）</li>
+</ul>
+<p>图中的一串数字 0 是该日志段的起始位移值（Base Offset），也就是该日志段中所存的第一条消息的位移值。</p>
+<h2 id="2-日志段源码介绍">2 日志段源码介绍</h2>
+<p>位置：core/src/main/scala/kafka/log/LogSegment.scala，该文件定义了三个对象：</p>
+<ul>
+<li>LogSegment class</li>
+<li>LogSegment object</li>
+<li>LogFlushStats object</li>
+</ul>
+<p>源码对日志段的描述：</p>
+<blockquote>
+<p>A segment of the log. Each segment has two components: a log and an index. The log is a FileRecords containing the actual messages. The index is an OffsetIndex that maps from logical offsets to physical file positions. Each segment has a base offset which is an offset &lt;= the least offset of any message in this segment and &gt; any offset in any previous segment.</p>
+</blockquote>
+<p>指明了日志段主要由两部分组成：日志和索引文件。每个日志段都有一个起始位移值（Base Offset），而该位移值是此日志段所有消息中最小的位移值，同时，该值却又比前面任何日志段中消息的位移值都大。</p>
+<h3 id="日志段类声明">日志段类声明</h3>
+<pre><code>class LogSegment private[log] (val log: FileRecords,
+                               val lazyOffsetIndex: LazyIndex[OffsetIndex],
+                               val lazyTimeIndex: LazyIndex[TimeIndex],
+                               val txnIndex: TransactionIndex,
+                               val baseOffset: Long,
+                               val indexIntervalBytes: Int,
+                               val rollJitterMs: Long,
+                               val time: Time) extends Logging { … }
+</code></pre>
+<p>根据LogSegment的定义，一个日志段包含的信息：</p>
+<ul>
+<li>FileRecords：实际保存Kafka消息的对象；</li>
+<li>lazyOffsetIndex：位移索引文件，使用了延迟初始化；</li>
+<li>lazyTimeIndex：时间戳索引文件，使用了延迟初始化；</li>
+<li>txnIndex：已中止事务索引文件，Kafka事务相关；</li>
+<li>baseOffset：起始位移，磁盘上看到的文件名就是 baseOffset 的值；</li>
+<li>indexIntervalBytes：也是Broker 端参数 log.index.interval.bytes 值，控制日志段对象新增索引项的频率。默认情况下，日志段至少新写入 4KB 的消息数据才会新增一条索引项；</li>
+<li>rollJitterMs：日志段对象新增倒计时的“扰动值“。因为目前 Broker 端日志段新增倒计时是全局设置，这就是说，在未来的某个时刻可能同时创建多个日志段对象，这将极大地增加物理磁盘 I/O 压力。有了 rollJitterMs 值的干扰，每个新增日志段在创建时会彼此岔开一小段时间，这样可以缓解物理磁盘的 I/O 负载瓶颈；</li>
+<li>time ：用于统计计时的一个实现类。</li>
+</ul>
+<p>接下来介绍日志段的几个重要方法。</p>
+<h3 id="append方法">append方法</h3>
+<p>参数：</p>
+<ul>
+<li>largestOffset：待写入的一个批次的消息的最大位移值</li>
+<li>largestTimestamp：待写入的一个批次的消息的最大时间戳</li>
+<li>shallowOffsetOfMaxTimestamp：待写入的一个批次的消息的最大时间戳对应消息的位移</li>
+<li>records：待写入的消息集合</li>
+</ul>
+<p>我将自己的理解标注在了源码里：</p>
+<pre><code class="language-scala">def append(largestOffset: Long,
+             largestTimestamp: Long,
+             shallowOffsetOfMaxTimestamp: Long,
+             records: MemoryRecords): Unit = {
+    // 1 判断待写入的消息集合是否为空，不为空进行下面操作
+    if (records.sizeInBytes &gt; 0) {
+      trace(s&quot;Inserting ${records.sizeInBytes} bytes at end offset $largestOffset at position ${log.sizeInBytes} &quot; +
+            s&quot;with largest timestamp $largestTimestamp at shallow offset $shallowOffsetOfMaxTimestamp&quot;)
+      // 2 判断当前日志段是否为空
+      // 如果是空，则记录要写入消息集合的最大时间戳，并将其作为后面新增日志段倒计时的依据
+      val physicalPosition = log.sizeInBytes()
+      if (physicalPosition == 0)
+        rollingBasedTimestamp = Some(largestTimestamp)
+      // 3 判断输入参数最大位移值是否合法,标准是largestOffset-baseOffset是否在整数范围内
+      ensureOffsetInRange(largestOffset)
+
+      // 4 如果合法，调用FileRecords的append方法执行真正的写入
+      val appendedBytes = log.append(records)
+      trace(s&quot;Appended $appendedBytes to ${log.file} at end offset $largestOffset&quot;)
+      // 5 更新当前日志段的最大时间戳和对应消息的offset
+      if (largestTimestamp &gt; maxTimestampSoFar) {
+        maxTimestampSoFar = largestTimestamp
+        offsetOfMaxTimestampSoFar = shallowOffsetOfMaxTimestamp
+      }
+      // 6 判断是否需要新增索引项，标准：已写入字节数是否超过4KB
+      if (bytesSinceLastIndexEntry &gt; indexIntervalBytes) {
+        // 当已写入字节数超过了 4KB 之后，append方法会调用索引对象的append方法新增索引项，同时清空已写入字节数，以备下次重新累积计算
+        offsetIndex.append(largestOffset, physicalPosition)
+        timeIndex.maybeAppend(maxTimestampSoFar, offsetOfMaxTimestampSoFar)
+        bytesSinceLastIndexEntry = 0
+      }
+      // 若不需要新增索引项，则更新日志段已写入的字节数
+      bytesSinceLastIndexEntry += records.sizeInBytes
+    }
+  }
+</code></pre>
+<p>append方法的完整执行流程：</p>
+<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1587787900995.png" alt="" loading="lazy"></figure>
+<h3 id="read方法">read方法</h3>
+<ul>
+<li>
+<p>startOffset：要读取的第一条消息的位移</p>
+</li>
+<li>
+<p>maxSize：能读取的最大字节数</p>
+</li>
+<li>
+<p>maxPosition ：能读到的最大文件位置</p>
+</li>
+<li>
+<p>minOneMessage：是否允许在消息体过大时至少返回第一条消息，确保不出现消费饿死的情况</p>
+</li>
+</ul>
+<pre><code class="language-scala">def read(startOffset: Long,
+           maxSize: Int,
+           maxPosition: Long = size,
+           minOneMessage: Boolean = false): FetchDataInfo = {
+    // 1 判断待读取的最大字节数是否合法
+    if (maxSize &lt; 0)
+      throw new IllegalArgumentException(s&quot;Invalid max size $maxSize for log read from segment $log&quot;)
+    // 2 调用translateOffset方法定位要读取的起始文件位置
+    val startOffsetAndSize = translateOffset(startOffset)
+
+    // 如果该位置已经在日志末尾，返回空
+    if (startOffsetAndSize == null)
+      return null
+
+    val startPosition = startOffsetAndSize.position
+    // 计算offst的元信息
+    val offsetMetadata = LogOffsetMetadata(startOffset, this.baseOffset, startPosition)
+    // 3 计算调整后的能读取的最大字节数
+    // 如果该值为空，则返回空
+    val adjustedMaxSize =
+      if (minOneMessage) math.max(maxSize, startOffsetAndSize.size)
+      else maxSize
+
+    if (adjustedMaxSize == 0)
+      return FetchDataInfo(offsetMetadata, MemoryRecords.EMPTY)
+
+    // 4 根据计算出来的起始文件的位置，以及能读到的最大文件位置和调整后的能读到的最大字节数计算出要读取的总字节数
+    // maxSize=100，maxPosition=300，startPosition=250，那么read方法只能读取50字节,因为maxPosition - startPosition = 50
+    val fetchSize: Int = min((maxPosition - startPosition).toInt, adjustedMaxSize)
+    // 5 调用FileRecords的slice方法，从指定位置读取指定大小的消息集合
+    FetchDataInfo(offsetMetadata, log.slice(startPosition, fetchSize),
+      firstEntryIncomplete = adjustedMaxSize &lt; startOffsetAndSize.size)
+  }
+</code></pre>
+<p>下图展示了 read 方法的完整执行逻辑：</p>
+<figure data-type="image" tabindex="3"><img src="https://DoCherish.github.io/post-images/1587787913438.png" alt="" loading="lazy"></figure>
+<p>总结：</p>
+<ul>
+<li>对 Kafka 日志段源码进行了重点的分析，包括日志段的 append 方法、read 方法。</li>
+<li>append 方法：分析了源码是如何写入消息到日志段的。重点关注一下写操作过程中更新索引的时机是如何设定的。</li>
+<li>read 方法：分析了源码底层读取消息的完整流程。重点关注 Kafka 计算待读取消息字节数的逻辑，也就是 maxSize、maxPosition 和 startOffset 是如何共同影响 read 方法的。</li>
+</ul>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/flink-yuan-li-yu-shi-zhan-aggregatefunction/" class="post-title gt-a-link">
+                    Flink——原理与实战：AggregateFunction
+                </a>
+            </div>
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
