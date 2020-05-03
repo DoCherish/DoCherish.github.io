@@ -1,0 +1,306 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Flink——Side Output侧输出流 | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1588518665686">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Flink——Side Output侧输出流
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2020-05-03 23:08:49 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/MfKgZU3yj/" class="post-tags">
+                            # Flink
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <h1 id="flinkside-output侧输出流">Flink——Side Output侧输出流</h1>
+<p>主要内容：</p>
+<ul>
+<li>结合应用场景，介绍Flink侧输出流的使用流程和原理</li>
+</ul>
+<!-- more -->
+<p>在处理数据的时候，有时候想对不同情况的数据进行不同的处理，那么就需要把数据流进行分流。可以在主数据流上产生出任意数量额外的侧输出流。</p>
+<h2 id="1-场景">1 场景</h2>
+<p>某公司使用埋点组件收集到了埋点数据，并实时写入了Kafka。其中，埋点数据共分为三类：Web端埋点数据、移动端埋点数据和CS端埋点数据。现在需要从Kafka读取埋点数据，并分别对三端数据做不同的处理逻辑：</p>
+<h2 id="2-side-output">2 Side Output</h2>
+<p>当然使用 filter 对主数据流进行过滤，也能满足上述场景，但每次筛选过滤都要保留整个流，然后通过遍历整个流来获取相应的数据，显然很浪费性能。假如能够在一个流里面就进行多次输出就好了，恰好 Flink 的 Side Output 提供了这样的功能。Flink的Side Output侧输出流的作用在于将主数据分割成多个不同的侧输出流。侧输出结果流的数据类型不需要与主数据流的类型一致，不同侧输出流的类型也可以不同。</p>
+<p>在上述场景中，可以使用Flink此功能：将Kafka的埋点数据进行分类，分为web端、mobile端和CS端三类，然后再对每类埋点数据进行相应的处理。</p>
+<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1588518590057.png" alt="" loading="lazy"></figure>
+<h2 id="3-处理流程">3 处理流程</h2>
+<h3 id="31-定义outputtag">3.1 定义OutputTag</h3>
+<p>在使用侧输出的时候需要先定义一个OutputTag，来标识 Side Output，代表这个 Tag 是要收集哪种类型的数据。这里定义了三个 OutputTag：</p>
+<ul>
+<li><code>webTerminal</code>：web端埋点数据</li>
+<li><code>mobileTerminal</code>：移动端埋点数据</li>
+<li><code>csTerminal：CS</code>端埋点数据</li>
+</ul>
+<pre><code>lazy val webTerminal: OutputTag[MdMsg] = new OutputTag[MdMsg](&quot;Web端埋点数据&quot;)
+lazy val mobileTerminal: OutputTag[MdMsg] = new OutputTag[MdMsg](&quot;移动端埋点数据&quot;)
+lazy val csTerminal: OutputTag[MdMsg] = new OutputTag[MdMsg](&quot;CS端埋点数据&quot;)
+</code></pre>
+<h3 id="32-使用特定的处理函数">3.2 使用特定的处理函数</h3>
+<p>要使用侧输出，在处理数据的时候除了要定义相应类型的OutputTag外，还要使用特定的函数，主要是有四个：</p>
+<ul>
+<li><code>ProcessFunction</code></li>
+<li><code>CoProcessFunction</code></li>
+<li><code>ProcessWindowFunction</code></li>
+<li><code>ProcessAllWindowFunction</code></li>
+</ul>
+<p>该场景里选择使用ProcessFunction函数。该函数继承于RichFunction，使用时必须要重写processElement方法。自定义ProcessFunction函数：</p>
+<pre><code>class MdSplitProcessFunction extends ProcessFunction[MdMsg, MdMsg] {
+
+    override def processElement(value: MdMsg, ctx: ProcessFunction[MdMsg, MdMsg]#Context, out: Collector[MdMsg]): Unit = {
+      // web
+      if (value.mdType == &quot;web&quot;) {
+        ctx.output(webTerminal, value)
+      // mobile
+      } else if (value.mdType == &quot;mobile&quot;) {
+        ctx.output(mobileTerminal, value)
+      // cs
+      } else if (value.mdType == &quot;cs&quot;) {
+        ctx.output(csTerminal, value)
+      // others
+      } else {
+        out.collect(value)
+      }
+
+    }
+  }
+</code></pre>
+<h3 id="33-对每个侧输出流做处理">3.3 对每个侧输出流做处理</h3>
+<p>为每种类型的侧输出流添加处理逻辑，直接调用<code>getSideOutput</code>函数：（这里的处理逻辑进展示直接打印）</p>
+<pre><code>// Web端埋点数据流
+outputStream.getSideOutput(webTerminal).print(&quot;web&quot;)
+// Mobile端埋点数据流
+outputStream.getSideOutput(mobileTerminal).print(&quot;mobile&quot;)
+// CS端埋点数据流
+outputStream.getSideOutput(csTerminal).print(&quot;cs&quot;)
+</code></pre>
+<h2 id="4-代码">4 代码</h2>
+<h3 id="41-代码">4.1 代码</h3>
+<pre><code>package org.ourhome.streamapi
+
+import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.streaming.api.functions.ProcessFunction
+import org.apache.flink.streaming.api.scala._
+import org.apache.flink.util.Collector
+
+/**
+ * @Author Do
+ * @Date 2020/5/3 20:35
+ */
+object SideOutputTest2 {
+  lazy val webTerminal: OutputTag[MdMsg] = new OutputTag[MdMsg](&quot;Web端埋点数据&quot;)
+  lazy val mobileTerminal: OutputTag[MdMsg] = new OutputTag[MdMsg](&quot;移动端埋点数据&quot;)
+  lazy val csTerminal: OutputTag[MdMsg] = new OutputTag[MdMsg](&quot;CS端埋点数据&quot;)
+
+  def main(args: Array[String]): Unit = {
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime)
+    env.setParallelism(1)
+
+    val socketData: DataStream[String] = env.socketTextStream(&quot;localhost&quot;, 9999)
+    socketData.print(&quot;input data&quot;)
+
+    val outputStream: DataStream[MdMsg] = socketData.map(line =&gt; {
+      val str: Array[String] = line.split(&quot;,&quot;)
+      MdMsg(str(0), str(1), str(2).toLong)
+    })
+      .process(new MdSplitProcessFunction)
+
+    // Web端埋点数据流处理逻辑
+    outputStream.getSideOutput(webTerminal).print(&quot;web&quot;)
+    // Mobile端埋点数据流处理逻辑
+    outputStream.getSideOutput(mobileTerminal).print(&quot;mobile&quot;)
+    // CS端埋点数据流处理逻辑
+    outputStream.getSideOutput(csTerminal).print(&quot;cs&quot;)
+
+    env.execute()
+
+  }
+
+  case class MdMsg(mdType:String, url:String, Time:Long)
+
+  class MdSplitProcessFunction extends ProcessFunction[MdMsg, MdMsg] {
+
+    override def processElement(value: MdMsg, ctx: ProcessFunction[MdMsg, MdMsg]#Context, out: Collector[MdMsg]): Unit = {
+      // web
+      if (value.mdType == &quot;web&quot;) {
+        ctx.output(webTerminal, value)
+        // mobile
+      } else if (value.mdType == &quot;mobile&quot;) {
+        ctx.output(mobileTerminal, value)
+        // cs
+      } else if (value.mdType == &quot;cs&quot;) {
+        ctx.output(csTerminal, value)
+        // others
+      } else {
+        out.collect(value)
+      }
+
+    }
+  }
+
+}
+
+</code></pre>
+<h3 id="42-测试">4.2 测试</h3>
+<p>输入1：</p>
+<pre><code>web,http://www.web1.com,1587787201000
+mobile,http://www.mobile1.com,1587787202000
+cs,http://www.cs1.com,1587787203000
+</code></pre>
+<p>输出1：</p>
+<pre><code>input data&gt; web,http://www.web1.com,1587787201000
+web&gt; MdMsg(web,http://www.web1.com,1587787201000)
+
+input data&gt; mobile,http://www.mobile1.com,1587787202000
+mobile&gt; MdMsg(mobile,http://www.mobile1.com,1587787202000)
+
+input data&gt; cs,http://www.cs1.com,1587787203000
+cs&gt; MdMsg(cs,http://www.cs1.com,1587787203000)
+</code></pre>
+<p>可见：Flink将接收到的数据，分别分到了web埋点数据流、移动端埋点数据流和CS端买点数据流中，并分别打印。</p>
+<p>输入2：</p>
+<pre><code>other,http://www.other.com,1587787201000
+</code></pre>
+<p>输出2：</p>
+<pre><code>input data&gt; other,http://www.other.com,1587787201000
+</code></pre>
+<p>可见：Flink将接收到的数据发到了常规数据流中，并打印。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/flink-shi-zhan-eventtime-jie-he-watermark-ying-yong-an-li/" class="post-title gt-a-link">
+                    Flink——实战：EventTime结合Watermark应用案例
+                </a>
+            </div>
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
