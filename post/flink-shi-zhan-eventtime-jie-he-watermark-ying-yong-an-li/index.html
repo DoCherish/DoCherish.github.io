@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Flink——实战：EventTime结合Watermark应用案例 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1587832581729">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1588505042910">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -105,7 +105,7 @@
 <li>从SocketSource接收数据，时间语义采用EventTime，统计用户在T分钟内的总消费金额。</li>
 </ul>
 <!-- more -->
-<h2 id="方案">方案</h2>
+<h2 id="1-方案">1 方案</h2>
 <p>​	1.创建记录用户消费的ConsumerMess类：包括三个属性：用户ID、消费金额、消费时间</p>
 <pre><code>case class ConsumerMess(userId:Int, spend:Double, Time:Long)
 </code></pre>
@@ -125,7 +125,7 @@
       .keyBy(_.userId)
       .timeWindow(Time.seconds(10))
 </code></pre>
-<h2 id="代码">代码</h2>
+<h2 id="2-代码">2 代码</h2>
 <pre><code>package org.ourhome.streamapi
 
 import org.apache.flink.streaming.api.TimeCharacteristic
@@ -169,7 +169,7 @@ object EventTImeTest {
 }
 
 </code></pre>
-<h2 id="测试">测试</h2>
+<h2 id="3-测试">3 测试</h2>
 <p>Socket发送数据：</p>
 <p>第一个字段代表用户123，第二个字段为用户消费金额，第三个字段时间戳。</p>
 <p>为方便测试，这里从2020-04-25 12:00:01（1587787201000）开始记录第一条数据，且第1分钟消费100，第2分钟消费200……以此类推：</p>
@@ -203,23 +203,84 @@ input &gt; 123,1200,1587787212000
 <p>当<code>123,1200,1587787212000</code>这条数据进入窗口，其携带的时间戳为<code>1587787212000</code>（<code>2020-04-25 12:00:12</code>），延迟时间参数为2s，此时Watermark更新为12-2=10，也就是这条数据对应的Watermark是10s（Watermark(10)），就意味着10s前的数据都已经到了，且窗口内有数据，所以可以触发窗口计算并销毁窗口：（output为打印的结果）</p>
 <pre><code>output &gt; ConsumerMess(123,4500.0,1587787209000)
 </code></pre>
-<p>打印出的结果显示，用户123窗口期内共消费4500元。通过计算可知4500是9分钟内消费的金额，也就是说窗口在第10分钟关闭，统计的是9分钟以前的数据。但是我们的窗口长度明明是10，这是否正确呢？答案是正确的！因为：窗口是左闭右开，形式：<code>[window_start_time, window_end_time)</code></p>
+<p>打印出的结果显示，用户123窗口期内共消费4500元。通过计算可知4500是9分钟内消费的金额，但是我们的窗口长度明明是10，这是否正确呢？答案是正确的！</p>
+<h2 id="4-timewindow-窗口边界问题">4 timeWindow 窗口边界问题</h2>
+<h3 id="41-getwindowstartwithoffset解析">4.1 getWindowStartWithOffset解析</h3>
+<p>对于上述现象，自然而言有个疑问：窗口的起始时间是如何确定的呢？？？顺着源码看一看：<br>
+打开timeWindow函数源码，其调用的是javaStream的<code>timeWindow</code>	方法：</p>
+<pre><code class="language-java">def timeWindow(size: Time): WindowedStream[T, K, TimeWindow] = {
+    new WindowedStream(javaStream.timeWindow(size))
+  }
+</code></pre>
+<p>接着，看一下timeWindow其内部。由于我们使用的是EventTIme时间语义，所以调用的是<code>TumblingEventTimeWindows.of(size)</code>方法：</p>
+<pre><code class="language-java">public WindowedStream&lt;T, KEY, TimeWindow&gt; timeWindow(Time size) {
+		if (environment.getStreamTimeCharacteristic() == TimeCharacteristic.ProcessingTime) {
+			return window(TumblingProcessingTimeWindows.of(size));
+		} else {
+			return window(TumblingEventTimeWindows.of(size));
+		}
+	}
+</code></pre>
+<p>这里有个start变量，也就是窗口的起始时间，start+size即窗口的结束时间。起始时间的计算调用的是<code>TimeWindow.getWindowStartWithOffset</code>方法：</p>
+<pre><code class="language-java">@Override
+	public Collection&lt;TimeWindow&gt; assignWindows(Object element, long timestamp, WindowAssignerContext context) {
+		if (timestamp &gt; Long.MIN_VALUE) {
+			// Long.MIN_VALUE is currently assigned when no timestamp is present
+			long start = TimeWindow.getWindowStartWithOffset(timestamp, offset, size);
+			return Collections.singletonList(new TimeWindow(start, start + size));
+		} else {
+			throw new RuntimeException(&quot;Record has Long.MIN_VALUE timestamp (= no timestamp marker). &quot; +
+					&quot;Is the time characteristic set to 'ProcessingTime', or did you forget to call &quot; +
+					&quot;'DataStream.assignTimestampsAndWatermarks(...)'?&quot;);
+		}
+	}
+</code></pre>
+<p>最后来看看<code>getWindowStartWithOffset</code>，该方法有3个参数：</p>
+<ul>
+<li>timestamp：启动窗口的时间，单位毫秒</li>
+<li>offset：时间的偏移量，针对时区问题</li>
+<li>windowSize：窗口长度</li>
+</ul>
+<pre><code class="language-java">public static long getWindowStartWithOffset(long timestamp, long offset, long windowSize) {
+		return timestamp - (timestamp - offset + windowSize) % windowSize;
+	}
+</code></pre>
+<p>现在，我们根据案例验证一下窗口的起始时间：</p>
+<pre><code class="language-java">timestamp = 1587787201000  (2020-04-25 12:00:01)
+offset = 0
+windowSize = 10000
+带入公式：
+start = timestamp - (timestamp - offset + windowSize) % windowSize
+得：
+start = 1587787200000   (2020-04-25 12:00:00)
+end = start + windowSize = 1587787210000   (2020-04-25 12:00:10)
+</code></pre>
+<p>所以：</p>
+<ul>
+<li>从2020-04-25 12:00:00开始计算的滚动窗口的起始时间是从2020-04-25 12:00:00到2020-04-25 12:00:10（注意：左闭右开！），也就是<code>[12:00:00, 12:00:10)</code></li>
+<li>再加上watermark要求的延迟2s，也就是<code>[12:00:00, 12:00:12)</code><br>
+即第一次窗口统计的0-9分钟的数据，也就解释了上一个部分的结果4500的合理性了！</li>
+</ul>
+<h3 id="42-继续验证">4.2 继续验证</h3>
 <p>继续输入：</p>
-<pre><code>123,1300,1587787213000
-123,14,1587787214000
-123,20,1587787220000
-123,21,1587787221000
-123,22,1587787222000
+<pre><code class="language-bash">123,1300,1587787213000
+123,1500,1587787215000
+123,1700,1587787217000
+123,2000,1587787220000
+123,2100,1587787221000
+123,2200,1587787222000
 </code></pre>
-<p>相应的输出：</p>
-<pre><code>input &gt; 123,1300,1587787213000
-input &gt; 123,14,1587787214000
-input &gt; 123,20,1587787220000
-input &gt; 123,21,1587787221000
-input &gt; 123,22,1587787222000
-out &gt; ConsumerMess(123,4614.0,1587787214000)
+<p>输出：</p>
+<pre><code class="language-bash">input &gt; 123,1300,1587787213000
+input &gt; 123,1500,1587787215000
+input &gt; 123,1700,1587787217000
+input &gt; 123,2000,1587787220000
+input &gt; 123,2100,1587787221000
+input &gt; 123,2200,1587787222000
+output &gt; ConsumerMess(123,7800.0,1587787217000)
 </code></pre>
-<p>可自行验证4614结果的正确性。</p>
+<p>分析：<br>
+按照上面的分析，此次窗口的起始时间应该为<code>[12:00:10, 12:00:20)</code>，那么总消费金额应该为：1000+1100+1200+1300+1500+1700=7800，跟输出的结果是一致的！也就是说进入第一个窗口的12:00:10和12:00:11的数据会在第二个窗口触发计算时得到正确的计算，同时未进入第二个窗口的12:00:14、12:00:16、12:00:18和12:00:19的数据将会被遗弃。</p>
 
                 </div>
             </article>
