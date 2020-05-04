@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2020-05-03T15:15:34.810Z</updated>
+    <updated>2020-05-04T16:16:04.129Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,23 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Do&apos;s blog</rights>
+    <entry>
+        <title type="html"><![CDATA[Flink——状态管理]]></title>
+        <id>https://DoCherish.github.io/post/flink-zhuang-tai-guan-li/</id>
+        <link href="https://DoCherish.github.io/post/flink-zhuang-tai-guan-li/">
+        </link>
+        <updated>2020-05-04T16:11:22.000Z</updated>
+        <summary type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>介绍有状态计算及状态后端</li>
+</ul>
+]]></summary>
+        <content type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>介绍有状态计算及状态后端</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Flink——Side Output侧输出流]]></title>
         <id>https://DoCherish.github.io/post/flink-side-output-ce-shu-chu-liu/</id>
@@ -141,25 +158,6 @@
         <summary type="html"><![CDATA[<p>主要内容：实现Flink写数据到Redis，即Redis Sink。</p>
 ]]></summary>
         <content type="html"><![CDATA[<p>主要内容：实现Flink写数据到Redis，即Redis Sink。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Spark——消费Kafka数据保存Offset到Redis]]></title>
-        <id>https://DoCherish.github.io/post/spark-xiao-fei-kafka-shu-ju-bao-cun-offset-dao-redis/</id>
-        <link href="https://DoCherish.github.io/post/spark-xiao-fei-kafka-shu-ju-bao-cun-offset-dao-redis/">
-        </link>
-        <updated>2020-04-17T16:55:45.000Z</updated>
-        <summary type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>Scala实现SparkStreaming消费Kafka数据保存Offset到Redis，实现自主维护Offset。</li>
-<li>分析部分源码</li>
-</ul>
-]]></summary>
-        <content type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>Scala实现SparkStreaming消费Kafka数据保存Offset到Redis，实现自主维护Offset。</li>
-<li>分析部分源码</li>
-</ul>
 ]]></content>
     </entry>
 </feed>

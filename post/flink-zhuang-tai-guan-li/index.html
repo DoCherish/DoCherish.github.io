@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Hello Gridea | Do&#39;s blog</title>
+<title>Flink——状态管理 | Do&#39;s blog</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1588608938147">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,45 +87,92 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    Hello Gridea
+                    Flink——状态管理
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2018-12-12 00:00:00 ·
+                        · 2020-05-05 00:11:22 ·
                     </time>
                     
-                        <a href="https://DoCherish.github.io/tag/r2E8rgXFt/" class="post-tags">
-                            # Gridea
+                        <a href="https://DoCherish.github.io/tag/MfKgZU3yj/" class="post-tags">
+                            # Flink
                         </a>
                     
                 </div>
                 <div class="post-content">
-                    <p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
-✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
+                    <p>主要内容：</p>
+<ul>
+<li>介绍有状态计算及状态后端</li>
+</ul>
 <!-- more -->
-<p><a href="https://github.com/getgridea/gridea">Github</a><br>
-<a href="https://gridea.dev/">Gridea 主页</a><br>
-<a href="http://fehey.com/">示例网站</a></p>
-<h2 id="特性">特性👇</h2>
-<p>📝  你可以使用最酷的 <strong>Markdown</strong> 语法，进行快速创作</p>
-<p>🌉  你可以给文章配上精美的封面图和在文章任意位置插入图片</p>
-<p>🏷️  你可以对文章进行标签分组</p>
-<p>📋  你可以自定义菜单，甚至可以创建外部链接菜单</p>
-<p>💻  你可以在 <strong>Windows</strong>，<strong>MacOS</strong> 或 <strong>Linux</strong> 设备上使用此客户端</p>
-<p>🌎  你可以使用 <strong>𝖦𝗂𝗍𝗁𝗎𝖻 𝖯𝖺𝗀𝖾𝗌</strong> 或 <strong>Coding Pages</strong> 向世界展示，未来将支持更多平台</p>
-<p>💬  你可以进行简单的配置，接入 <a href="https://github.com/gitalk/gitalk">Gitalk</a> 或 <a href="https://github.com/SukkaW/DisqusJS">DisqusJS</a> 评论系统</p>
-<p>🇬🇧  你可以使用<strong>中文简体</strong>或<strong>英语</strong></p>
-<p>🌁  你可以任意使用应用内默认主题或任意第三方主题，强大的主题自定义能力</p>
-<p>🖥  你可以自定义源文件夹，利用 OneDrive、百度网盘、iCloud、Dropbox 等进行多设备同步</p>
-<p>🌱 当然 <strong>Gridea</strong> 还很年轻，有很多不足，但请相信，它会不停向前 🏃</p>
-<p>未来，它一定会成为你离不开的伙伴</p>
-<p>尽情发挥你的才华吧！</p>
-<p>😘 Enjoy~</p>
+<h2 id="1-有状态计算">1 有状态计算</h2>
+<p>有状态计算是Flink非常重要的特性之一。什么是状态？一般来说，状态是由一个task维护，并用于计算某个结果的所有数据，都属于这个任务的状态。也可以理解为一个本地变量，可以被task的业务逻辑访问。下图展示了一个task与它的state的常规交互过程：task在处理数据时，会先访问state，并根据输入信息和state信息更新state。</p>
+<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1588608704168.jpg" alt="" loading="lazy"></figure>
+<p>Flink会处理所有关于state一致性、故障处理、高效存储并访问等问题，开发者仅需关注在他们的应用逻辑即可。在Flink中，状态始终与特定算子相关联。为了让Flink的runtime可以意识到一个operator的state，operator需要注册它的state。</p>
+<p>Flink中包含两种基础的状态：</p>
+<ul>
+<li>Keyed State：键控状态，表示和key相关的一种state，基于KeyedStream上的状态。键控状态数据结构：
+<ul>
+<li>value state：将state表示为单个值</li>
+<li>list state：以list表示state</li>
+<li>map state：以map，key-value对表示state</li>
+</ul>
+</li>
+<li>Operator State：算子状态，作用范围限定为算子任务，一个任务一个状态。同一任务共享state。算子状态数据结构：
+<ul>
+<li>list state：列表状态，以list结构表示state</li>
+<li>union list state：联合列表状态，同样以list表示state，与list state不同在于：发生故障恢复的方式，或从检查点开始的方式</li>
+<li>broadcast state：广播状态，当一个operator的每个task的state都是相同时使用</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-状态后端state-backends">2 状态后端（State Backends）</h2>
+<p>在有状态的流处理中，当开发人员启用了 Flink 中的 checkpoint 机制，那么状态将会持久化以防止数据的丢失并确保发生故障时能够完全恢复。选择何种状态后端，将决定状态持久化的方式和位置。</p>
+<p>Flink 提供了三种可用的状态后端：<code>MemoryStateBackend</code>，<code>FsStateBackend</code>，和<code>RocksDBStateBackend</code>。</p>
+<h3 id="21-状态后端类型">2.1 状态后端类型</h3>
+<ul>
+<li>
+<p>MemoryStateBackend：基于TaskManager的JVM堆内存，支持异步快照以避免阻塞数据流的处理。使用时需要注意：</p>
+<ul>
+<li>默认情况下，每个状态大小限制为5M。</li>
+</ul>
+<pre><code>/** The default maximal size that the snapshotted memory state may have (5 MiBytes). */
+public static final int DEFAULT_MAX_STATE_SIZE = 5 * 1024 * 1024;
+</code></pre>
+<ul>
+<li>特点：快速、低延迟、但不稳定（内存溢出、丢失）、适用于测试环境</li>
+</ul>
+</li>
+<li>
+<p>FsStateBackend：基于文件系统存储，可以是本地文件系统，也可以是HDFS分布式文件系统</p>
+<pre><code>path = &quot;file:///data/flink/checkpoints&quot;
+path = &quot;hdfs://nameserver/flink/checkpoints&quot;
+</code></pre>
+<p>FsStateBackend的第二个参数表示是否以同步的方式进行状态数据的记录，可设置为false。</p>
+<ul>
+<li>特点：适用于处理大状态、长窗口，或大键值状态的有状态处理任务；非常适合用于高可用方案。</li>
+</ul>
+</li>
+<li>
+<p>RocksDBStateBackend：将所有数据序列化后，存入到本地的RocksDB中。RocksDB是一种嵌入式本地数据库。RocksDB 默认也是配置成异步快照的模式。序列化过程可能会影响程序吞吐量。</p>
+<ul>
+<li>特点：适用于处理大状态、长窗口，或大键值状态的有状态处理任务；非常适合用于高可用方案；是目前唯一支持增量checkpoint的后端，非常适合于超大状态的场景。</li>
+</ul>
+</li>
+</ul>
+<p>不同状态后端满足不同场景的需求，在开始开发应用程序之前应该仔细考虑和规划后选择。这可确保选择了正确的状态后端以最好地满足应用程序和业务需求。</p>
 
                 </div>
             </article>
         </div>
 
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/flink-side-output-ce-shu-chu-liu/" class="post-title gt-a-link">
+                    Flink——Side Output侧输出流
+                </a>
+            </div>
         
 
         
