@@ -1,0 +1,306 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Flink——项目：实时计算PVUV | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1588951098945">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Flink——项目：实时计算PVUV
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2020-05-08 23:13:29 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/MfKgZU3yj/" class="post-tags">
+                            # Flink
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>主要内容：</p>
+<ul>
+<li>介绍实时计算PVUV项目</li>
+</ul>
+<!-- more -->
+<h2 id="需求">需求</h2>
+<p>根据埋点信息，包括移动端埋点和Web端埋点，实时统计T系统的PVUV变化情况。</p>
+<ol>
+<li>实时显示：当天总PVUV变化</li>
+<li>实时显示：当前每一个小时PVUV的变化</li>
+<li>数据不能保证有序，需要做延时处理</li>
+<li>数据源是kafka，PVUV数据来自两个topic，日志格式不同</li>
+<li>数据量：</li>
+</ol>
+<h2 id="分析">分析</h2>
+<p>先分析<strong>可确定项：</strong></p>
+<ul>
+<li>时间语义选择EventTime，利用数据自带的时间戳信息：</li>
+</ul>
+<pre><code>env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+</code></pre>
+<p>提取时间戳字段并生成watermark（尽量放在靠近数据源的位置）：</p>
+<pre><code>.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[LogMsg](Time.seconds(2)) {
+        override def extractTimestamp(element: LogMsg): Long = {
+          element.time
+        }
+      })
+</code></pre>
+<ul>
+<li>数据源DataSource使用KafkaSource，Consumer使用FlinkKafkaConsumer，topic参数使用List<String>：</li>
+</ul>
+<pre><code>public FlinkKafkaConsumer(List&lt;String&gt; topics, DeserializationSchema&lt;T&gt; deserializer, Properties props) {
+		this(topics, new KafkaDeserializationSchemaWrapper&lt;&gt;(deserializer), props);
+	}
+</code></pre>
+<ul>
+<li>根据不同的日志格式编写正则，从多个字段中匹配出子系统编码、用户ID、时间戳等有用字段封装成LogMag对象：</li>
+</ul>
+<pre><code>case class LogMsg(subSysCode:String = &quot;&quot;, userId:String = &quot;&quot;, time:Long = 0L, enabledflag: Int = 0)
+
+kafkaData.filter(new FilterFunction[String] {
+      override def filter(value: String): Boolean = {
+        val subSysCode: Try[String] = getSubSysCode(value)
+        if (subSysCode.isSuccess) {
+          if (ICENTER_SUB_SYS_CODE == subSysCode.get) true else false
+        } else false
+      }
+    }).map(line =&gt; {
+      if (mapToLogMsg(line).isSuccess) {
+        mapToLogMsg(line).get
+      } else {
+        LogMsg()
+      }
+    }).filter(_.enabledflag == 1)
+</code></pre>
+<p>在将数据封装成LogMsg时，使用了Try来处理异常，返回结果需要调用<code>isSuccess</code>方法判断是否存在异常，获取具体值时需要调用<code>get</code>方法。</p>
+<p>匹配不同日志格式中的子系统编码信息：</p>
+<pre><code>def getSubSysCode(value: String): Try[String] = {
+     Try {
+      val logSplit: Array[String] = value.split(&quot;\\|&quot;)
+      if (logSplit.length &gt; 2) { // web端埋点
+        logSplit(5)
+      } else { // 移动端埋点
+        (subSysCodeMobilePattern findFirstIn value).get.split(&quot;\&quot;&quot;)(3)
+      }
+    }
+  }
+</code></pre>
+<p>匹配不同日志格式中的时间戳和用户ID信息：</p>
+<pre><code>def mapToLogMsg(value: String): Try[LogMsg] = {
+    val subSysCode: String = T_SUB_SYS_CODE
+    Try {
+      val logSplit: Array[String] = value.split(&quot;\\|&quot;)
+      if (logSplit.length &gt; 2) { // web端埋点
+        val time: Long = dateFormat.parse(logSplit(0)).getTime
+        val userId: String = (userIdWebPattern findFirstIn value).get.split(&quot;\\^&quot;)(1)
+        LogMsg(subSysCode, userId, time, 1)
+      } else { // 移动端埋点
+        val time: Long = dateFormat.parse(logSplit(0)).getTime
+        val userId: String = (userIdMobilePattern findFirstIn value).get.split(&quot;\&quot;&quot;)(3)
+        LogMsg(subSysCode, userId, time, 1)
+      }
+    }
+  }
+</code></pre>
+<p>以上工作均为准备工作，重点在于选择哪种方式统计PVUV，以及数据存储位置。</p>
+<h2 id="方案">方案</h2>
+<p>根据统计方式和数据存储位置的不同，可供选择的方案：</p>
+<h4 id="方案1">方案1</h4>
+<ul>
+<li>统计方式：使用windowAll，窗口关闭时统计整个窗口内数据，PV使用计数器统计，UV使用Set去重。windowAll：Non-Keyed Window，不分组，将数据流中的所有元素分配到相应的窗口中，不可设置并行度，始终为1。</li>
+<li>存储位置：内存</li>
+</ul>
+<p>该方案以空间换时间，处理速度相对较快，但处理过程中会将数据暂存在内存中，若是数据量特别大或者内存大小有限的情况下会造成OOM问题。若数据量不大时，也是一个不错的选择。</p>
+<p>该方案若不设置触发器，则等待的过程中没有数据输出，即在计算一个小时内的PVUV时，只有到达整点时才有数据。所以无法满足需求1和需求2。但可以通过设置Trigger来触发计算，如可以设置固定时间间隔触发或者数据到达一定量时触发计算，如：<code>ContinuousEventTimeTrigger</code>和<code>CountTrigger</code>。</p>
+<p>另外，该方案在计算PVUV时，若不借助外界存储，是不能统计全天的PVUV累积量的，只能统计每个小时的变化情况。</p>
+<pre><code>.timeWindowAll(Time.hours(24))
+      .apply(new AllWindowFunction[LogMsg, PvUvCount, TimeWindow] {
+        override def apply(window: TimeWindow, input: Iterable[LogMsg], out: Collector[PvUvCount]): Unit = {
+          // 定义一个set  保存userId
+          val userSet: Set[String] = Set[String]()
+          // 定义一个计数器
+          var userCount: Long = 0
+          // 把当前所有userId收集到set，最后输出set大小
+          for (eachLog &lt;- input) {
+            userSet += eachLog.userId
+            userCount += 1
+          }
+          val windowStart: String = DATE_FORMAT.format(window.getStart)
+          val windowEnd: String = DATE_FORMAT.format(window.getEnd)
+
+          out.collect(PvUvCount(windowStart, windowEnd, userCount, userSet.size))
+        }
+      }).print(&quot;output data &quot;)
+</code></pre>
+<h4 id="方案2">方案2</h4>
+<ul>
+<li>统计方式：使用timeWindow，可以设置多并行度，可以设置数据来一条处理一条，或处理多条。使用process函数时借助<code>ProcessWindowFunction</code>抽象类，该抽象类继承了RichFunction的一些方法，可选择使用open或者close来创建和关闭Redis连接。也可以通过addSink写入Redis。</li>
+<li>存储位置：Reids或者Hbase，这里选择redis。计算PV使用Hashmap数据结构的hincrBy方法执行+1操作，计算UV使用Set数据结构去重。</li>
+</ul>
+<p>该方案可借助Redis计算PVUV。当天的总PV可以按照每小时的PV统计量进行累加，但是UV不能累加，可将每个小时的userId都放在同一个Set里。当窗口触发时，先执行PV+1操作，再将userId加入到Set，最后执行读取Set长度的操作，并记录到另一个hashmap里。</p>
+<p>该方案可以满足需求上述全部需求。但是该方案在数据量特别大的特殊情况下，比如每秒几亿条数据，userId会撑爆Redis服务器的内存。但是在本需求提供的数据量下是没有问题的。</p>
+<pre><code>.keyBy(_.subSysCode)
+      .timeWindow(Time.hours(24))
+      .process(new ProcessWindowFunction[LogMsg, PvUvCount, String, TimeWindow] {
+        var jedis: Jedis = _
+
+        override def open(parameters: Configuration): Unit = {
+          super.open(parameters)
+          this.jedis = new Jedis(&quot;&quot;, 6379)
+        }
+
+        override def close(): Unit = {
+          super.close()
+          if (this.jedis != null) {
+            this.jedis.close()
+          }
+        }
+
+        override def process(key: String, context: Context, elements: Iterable[LogMsg], out: Collector[PvUvCount]): Unit = {
+          val userId: String = elements.last.userId
+          jedis.hincrBy(&quot;key&quot;, context.window.getEnd.toString, 1)
+          for (element &lt;- elements) {
+            // pv
+            jedis.hincrBy(&quot;pvkey&quot;, context.window.getEnd.toString, 1)
+            // uv
+            jedis.sadd(&quot;uvkey&quot;, userId)
+          }
+          val uvCount: lang.Long = jedis.scard(&quot;uvkey&quot;)
+          jedis.hset(&quot;uvkey-hours&quot;, context.window.getEnd.toString, uvCount.toString)
+        }
+      })
+</code></pre>
+<h4 id="方案3">方案3</h4>
+<p>在方案2的基础上，使用布隆过滤器压缩处理userId，存储在位图，用一个位来表示userId。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/flink-zhuang-tai-guan-li/" class="post-title gt-a-link">
+                    Flink——状态管理
+                </a>
+            </div>
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
