@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2020-05-09T13:30:28.227Z</updated>
+    <updated>2020-05-10T06:54:29.050Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,23 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Do&apos;s blog</rights>
+    <entry>
+        <title type="html"><![CDATA[技术架构选型]]></title>
+        <id>https://DoCherish.github.io/post/ji-zhu-jia-gou-xuan-xing/</id>
+        <link href="https://DoCherish.github.io/post/ji-zhu-jia-gou-xuan-xing/">
+        </link>
+        <updated>2020-05-09T13:51:59.000Z</updated>
+        <summary type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>介绍几种架构选型</li>
+</ul>
+]]></summary>
+        <content type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>介绍几种架构选型</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Flink——项目：实时计算PVUV]]></title>
         <id>https://DoCherish.github.io/post/flink-xiang-mu-shi-shi-ji-suan-pvuv/</id>
@@ -153,17 +170,6 @@
         <summary type="html"><![CDATA[<p>主要内容：介绍Flink中的RichFunction函数。</p>
 ]]></summary>
         <content type="html"><![CDATA[<p>主要内容：介绍Flink中的RichFunction函数。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Flink——实战之MySQL Sink]]></title>
-        <id>https://DoCherish.github.io/post/flink-shi-zhan-zhi-mysql-sink/</id>
-        <link href="https://DoCherish.github.io/post/flink-shi-zhan-zhi-mysql-sink/">
-        </link>
-        <updated>2020-04-18T15:39:21.000Z</updated>
-        <summary type="html"><![CDATA[<p>主要内容：实现Flink写数据到MySQL，即MySQL Sink。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>主要内容：实现Flink写数据到MySQL，即MySQL Sink。</p>
 ]]></content>
     </entry>
 </feed>
