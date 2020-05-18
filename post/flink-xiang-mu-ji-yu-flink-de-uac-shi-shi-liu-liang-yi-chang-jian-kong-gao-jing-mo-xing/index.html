@@ -1,0 +1,318 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Flink——项目：基于Flink的UAC实时流量异常监控告警模型 | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1589824447362">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Flink——项目：基于Flink的UAC实时流量异常监控告警模型
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2020-05-19 01:52:27 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/MfKgZU3yj/" class="post-tags">
+                            # Flink
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>主要内容：</p>
+<ul>
+<li>介绍项目：基于Flink的UAC实时流量异常监控告警模型</li>
+</ul>
+<!-- more -->
+<p>流量，是是系统的黄金指标，直观反映系统的运行状态。当流量突增（被爬虫爬取或攻击）或者突降（无法响应外部请求）时预示系统存在某种故障或异常行为。因此，流量异常检测对发现系统故障、维护系统稳定性十分重要。</p>
+<h2 id="1-需求">1 需求</h2>
+<p>内部系统UAC的一次瘫痪，导致全员无法登陆公司内部云桌面和使用相关权限，严重影响正常办公，给公司造成较大损失。针对该情况，作为拥有其登陆日志的日志中心，将对UAC的流量进行监控，并及时发现异常流量、发出告警。</p>
+<h2 id="2-分析">2 分析</h2>
+<h3 id="21流量异常检测模型">2.1流量异常检测模型</h3>
+<figure data-type="image" tabindex="1"><img src="C:%5CUsers%5C86134%5COneDrive%5Cuac-flow-monitor-model.png" alt="uac-flow-monitor-model" loading="lazy"></figure>
+<p>该模型分为两个阶段：</p>
+<ul>
+<li>预测阶段：需要克服异常流量的影响，对流量进行精准预测</li>
+<li>检测阶段：需要计算真实值与预测值之间的差异，当差异显著大于通常情况时，即可判定当前实际流量出现了异常</li>
+</ul>
+<h3 id="22-智能流量异常检测算法方案对比选择">2.2 智能流量异常检测算法方案对比选择</h3>
+<h4 id="221-预测算法">2.2.1 预测算法：</h4>
+<p><strong>算法1</strong>：移动平均</p>
+<p>实现：使用当前窗口内w个数据的均值作为窗口内最后一个点的预测值。</p>
+<p>移动平均算法简单地将窗口内数据的均值作为下一个点的预测值，没有考虑到窗口内的数据趋势，导致预测的趋势总是滞后于实际趋势，预测的结果不准确。</p>
+<p><strong>算法2</strong>：线性回归</p>
+<p>实现：局部窗口内的线性表达式为<code>y=kt+b</code>，其中y为窗口内每个点的预测值，<em>t</em>为不同时刻，k，b为直线的斜率和截距。对于窗口内n个数据点     使用最小二乘法来最小化损失函数可以求得k，b参数，然后即可预测窗口内最后一个点的流量值。</p>
+<p>线性回归方法容易受到异常点（突增、突降）的影响。线性回归的损失函数是二次函数，所以异常点带来的影响被放大，导致拟合的结果偏离理想结果。</p>
+<p><strong>算法3</strong>：鲁棒回归</p>
+<p>鲁棒回归本质上来说也是线性回归，只是使用一次损失函数L1替换了二次损失函数L2，作用在于减弱异常点带给线性回归的影响。但由于L1不可导，没有确定的解析解，可以使用IRLS(Iterative Reweighted Least Squares) ，迭代加权最小二乘法，得到相对的最优解。这样在预测过程中就可以弱化突增、突降等异常点的影响，得到比较理想的预测结果。</p>
+<h4 id="222-检测算法">2.2.2 检测算法</h4>
+<p>有了精准的预测结果，接下来需要根据预测结果检测流量是否出现异常。</p>
+<p><strong>算法1</strong>：残差（绝对残差）</p>
+<p>实现：直接计算真实值与预测值之间的残差，得到真实值与预测值的绝对残差，以此来表征流量是够出现异常。流量预期值分别是200和20000情况下，</p>
+<p>该方法没有考虑流量本身大小的因素，如残差为-100时，对于预期值是200的情况下，真实值是100就意味着系统很可能出现了故障导致无法处理请求；对于预期值是20000的情况下，真是是19900,可能只是正常的波动而已。所以使用基于残差的检测方法，需要我们针对不同的系统流量设置不同的阈值。</p>
+<p><strong>算法2</strong>：相对残差</p>
+<p>计算：对流量的残差进行归一化处理，将真实值与预测值的差值再除以预测值作为结果。但此方法仍然存在一定的问题。例如大部分系统服务白天流量大，相对波动小，下跌10%可能意味着比较严重的问题；深夜流量小，相对波动大，下跌30%才有可能意味着系统存在故障。所以基于相对残差的检测方法也不能够设置统一的阈值来检测异常。</p>
+<p><strong>算法3</strong>：泊松分布</p>
+<p>计算：流量是系统一段时间内接受到的请求次数，而泊松分布是描述单位时间内随机事件发生次数的概率分布，因此可以用泊松分布对流量进行建模。</p>
+<p>不管是相对残差还是残差来设置统一的检测阈值都会有不适应的应用场景。该方法从概率的角度来设置恒定的检测阈值。系统大部分时间都处于正常状态，正常流量出现的概率远远大于异常流量，可以通过流量出现的概率大小来检测异常流量。</p>
+<p><strong>针对可能由于突增后保持一段时间后的降回正常值引发的误报</strong>，引入同比检测方法，将访问量与前几周的同一weekday相同时间点的访问量进行对比，利用3sigma对检测出的异常点进行再筛选。同样地，基于上述方法得到的异常点存在隐患是误报的出现，如果同期都是这样的情况一定程度上说明这是一种惯常的走向，3sigma一定程度也能缓解突增突降误报。</p>
+<blockquote>
+<p>总结：</p>
+<p>根据以上分析，本项目采取：</p>
+<p>预测器：鲁邦回归算法</p>
+<p>检测器：泊松分布+同比检测</p>
+</blockquote>
+<h2 id="3-方案">3 方案</h2>
+<p>整体方案流程：</p>
+<figure data-type="image" tabindex="2"><img src="C:%5CUsers%5C86134%5COneDrive%5Cuac-model.png" alt="uac-model" loading="lazy"></figure>
+<ol>
+<li>Flink实时消费Kafka数据：Flink的Soure选择KafkaSource</li>
+<li>记录当前PV：使用Flink DataStream API算子计算PV，并写入Redis。使用到map、filter、keyBy、sum、timeWindow等算子</li>
+<li>检测当前PV值是否出现异常并告警：
+<ul>
+<li>从Redis取出当前时间的PV预测值</li>
+<li>从MySQL取出历史前5周的、同weekday的、同一时间段的PV真实值（这部分值是通过HDFS上的离线数据统计出来的）</li>
+<li>将上述步骤的结果作为参数传给检测器，经过泊松分布和同比检测算法检测，判断是否告警，若需要告警，则通过邮件或者短信的方式告知责任人</li>
+<li>最后将实际值和预测值写入MySQL，当做历史数据，或为报表展示提供数据支撑</li>
+</ul>
+</li>
+<li>预测下一个时间间隔PV的预测值：
+<ul>
+<li>从Redis取出窗口长度的历史数据</li>
+<li>传入鲁棒回归算法模型</li>
+<li>预测出下一个时间间隔PV的预测值，并写入Redis</li>
+</ul>
+</li>
+</ol>
+<p>该方案中，需要多次读写MySQL，MySQL压力较大，后面会将其改为Hbase或者Redis。选择使用MySQL是由于后面在做可视化时，使用的是永洪科技的一站式大数据分析平台（国内）。</p>
+<h2 id="4-算法实现scala">4 算法实现——Scala</h2>
+<h3 id="41-预测器鲁棒回归">4.1 预测器——鲁棒回归</h3>
+<pre><code class="language-scala"> /**
+   * 鲁棒回归算法实现
+   * IRLS(Iterative Reweighted Least Squares) 迭代加权最小二乘法
+   *
+   * @param X:待拟合窗口中的序列，如果窗口为20，X_则为1,2,3...20
+   * @param y：待拟合窗口中的访问量
+   * @return
+   */
+  def IRLS(X: DenseMatrix[Double], y: DenseVector[Double]): Tuple2[DenseVector[Double], ArrayBuffer[Double]] = {
+    if (y.toArray.length != WINDOW_SIZE || y.toArray.length == 0) {
+      println(&quot;请提供与窗口长度一致的数据量&quot;)
+      sys.exit(-1)
+    } else {
+      val err = ArrayBuffer[Double]() // 迭代误差，欧式距离
+      val W = DenseMatrix.eye[Double](X.rows) //W权重 初始值 单位阵
+      var beta_old = DenseVector.ones[Double](X.cols) //beta 初始值
+      var beta_new = inv(X.t * W * X)*(X.t * W * y)   //beta 更新值
+
+      // 根据迭代方式求得相对优的线性参数
+      for (iter &lt;- 0 until ITERATION) {
+        if (norm((X * beta_old) - (X * beta_new)) &gt; EPSILON) {
+          for (i &lt;- 0 until X.rows) {
+            val W_i = abs(y(i) - (X(i, ::) * beta_new))
+            val max_ = List(0.0001, W_i).max // 0.0001  避免除数为0的情况
+            W(i, i) = 1.0 / max_
+          }
+          beta_old = beta_new.copy
+          beta_new = inv(X.t * W * X) * (X.t * W * y)
+          err += norm(X * beta_old - X * beta_new)
+        } else {
+          if (iter == ITERATION - 1 &amp;&amp; err.reverse(0) &gt; EPSILON) {
+            println(&quot;当前误差：&quot; + err.reverse(0) + &quot;达到了最大循环次数，如果您对当前的误差不满意，请增大循环次数！&quot;)
+          }
+        }
+      }
+        
+      val result = (beta_new, err): Tuple2[DenseVector[Double], ArrayBuffer[Double]]
+      result
+    }
+  }
+
+  /**
+   * 
+   * @param y
+   * @return
+   */
+  def predict(y: DenseVector[Double]): Double = {
+    if (y.toArray.length != windowSize || y.toArray.length == 0) {
+      println(&quot;请提供与窗口长度一致的数据量！&quot;)
+    }
+    val X = DenseMatrix.tabulate(windowSize, 2) {
+      case (i, j) =&gt; if (j == 0) {
+        i.toDouble + 1
+      } else {
+        1.toDouble
+      }
+    }
+      
+    val result = IRLS(X, y)
+    result._1(0) * (windowSize + 1) + result._1(1)
+  }
+</code></pre>
+<h3 id="42-检测器泊松分布-同比检测">4.2 检测器——泊松分布、同比检测</h3>
+<pre><code class="language-scala">  /**
+   * 
+   * @param X
+   * @param valuePredicted
+   * @param threshold
+   * @return
+   */
+  def algorithmDetect(X: DenseVector[Double], valuePredicted: Double, threshold: Int = 10): Boolean = {
+    val len = X.length - 2
+    val meanVal = mean(X(0 to len))
+    val stdVal = stddev(X(0 to len))
+    if (abs(X(-1) - valuePredicted) / sqrt(valuePredicted) &gt; threshold // 泊松分布
+      &amp;&amp; abs(X(-1) - meanVal) / stdVal &gt; 3 // 同比检测
+    ) {
+      true
+    } else {
+      false
+    }
+  }
+</code></pre>
+<h3 id="43-主程序">4.3 主程序</h3>
+<p>主程序部分参考PVUV的计算，另外 需要创建几个辅助类工具：Redis、Mysql等。</p>
+<h2 id="4-总结">4 总结</h2>
+<p>一方面，基于鲁棒回归的预测算法，可以不受异常点的影响，精准地预测流量水位值；另一方面，基于泊松分布、同步检测的检测算法，可以从概率的角度对流量建模，能够使用简单的恒定阈值来精准地检测流量异常。</p>
+<p>需要思考：</p>
+<ol>
+<li>在设置告警条件时，还需要结合具体业务来进一步确定是否属于误报</li>
+<li>项目中涉及到多个参数的调优如：
+<ul>
+<li>窗口长度</li>
+<li>时间间隔</li>
+<li>鲁棒回归中：迭代次数、误差大小</li>
+<li>泊松分布、同比检测中：阈值等</li>
+</ul>
+</li>
+</ol>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/ji-zhu-jia-gou-xuan-xing/" class="post-title gt-a-link">
+                    技术架构选型
+                </a>
+            </div>
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
