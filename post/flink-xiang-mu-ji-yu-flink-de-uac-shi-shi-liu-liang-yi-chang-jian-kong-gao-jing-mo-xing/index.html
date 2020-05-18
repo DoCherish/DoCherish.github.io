@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Flink——项目：基于Flink的UAC实时流量异常监控告警模型 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1589824447362">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1589824579237">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -110,7 +110,7 @@
 <p>内部系统UAC的一次瘫痪，导致全员无法登陆公司内部云桌面和使用相关权限，严重影响正常办公，给公司造成较大损失。针对该情况，作为拥有其登陆日志的日志中心，将对UAC的流量进行监控，并及时发现异常流量、发出告警。</p>
 <h2 id="2-分析">2 分析</h2>
 <h3 id="21流量异常检测模型">2.1流量异常检测模型</h3>
-<figure data-type="image" tabindex="1"><img src="C:%5CUsers%5C86134%5COneDrive%5Cuac-flow-monitor-model.png" alt="uac-flow-monitor-model" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1589824533601.png" alt="" loading="lazy"></figure>
 <p>该模型分为两个阶段：</p>
 <ul>
 <li>预测阶段：需要克服异常流量的影响，对流量进行精准预测</li>
@@ -145,7 +145,7 @@
 </blockquote>
 <h2 id="3-方案">3 方案</h2>
 <p>整体方案流程：</p>
-<figure data-type="image" tabindex="2"><img src="C:%5CUsers%5C86134%5COneDrive%5Cuac-model.png" alt="uac-model" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1589824555381.png" alt="" loading="lazy"></figure>
 <ol>
 <li>Flink实时消费Kafka数据：Flink的Soure选择KafkaSource</li>
 <li>记录当前PV：使用Flink DataStream API算子计算PV，并写入Redis。使用到map、filter、keyBy、sum、timeWindow等算子</li>
@@ -168,7 +168,7 @@
 <p>该方案中，需要多次读写MySQL，MySQL压力较大，后面会将其改为Hbase或者Redis。选择使用MySQL是由于后面在做可视化时，使用的是永洪科技的一站式大数据分析平台（国内）。</p>
 <h2 id="4-算法实现scala">4 算法实现——Scala</h2>
 <h3 id="41-预测器鲁棒回归">4.1 预测器——鲁棒回归</h3>
-<pre><code class="language-scala"> /**
+<pre><code> /**
    * 鲁棒回归算法实现
    * IRLS(Iterative Reweighted Least Squares) 迭代加权最小二乘法
    *
@@ -231,7 +231,7 @@
   }
 </code></pre>
 <h3 id="42-检测器泊松分布-同比检测">4.2 检测器——泊松分布、同比检测</h3>
-<pre><code class="language-scala">  /**
+<pre><code>  /**
    * 
    * @param X
    * @param valuePredicted
