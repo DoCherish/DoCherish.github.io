@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Kafka——再均衡监听器 | Do&#39;s blog</title>
+<title>埋点信息 | Do&#39;s blog</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1589900389210">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,89 +87,120 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    Kafka——再均衡监听器
+                    埋点信息
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2020-03-20 23:28:33 ·
+                        · 2020-05-19 22:57:46 ·
                     </time>
                     
-                        <a href="https://DoCherish.github.io/tag/kafka/" class="post-tags">
-                            # Kafka
+                        <a href="https://DoCherish.github.io/tag/others/" class="post-tags">
+                            # Others
                         </a>
                     
                 </div>
                 <div class="post-content">
-                    <p>在为消费者分配新分区或者移除旧分区时，可以通过消费者API执行一些应用程序代码，在调用subscribe方法时，传进去一个ConsumerRebalanceListener实例就可以了。ConsumerRebalanceListener有两个需要实现的方法。</p>
-<!-- more -->
+                    <h3 id="埋点信息">埋点信息</h3>
+<p>主要内容：</p>
 <ul>
-<li>onPartitionsRevoked方法会在再均衡开始之前和消费者停止读取消息之后被调用。如果在这里提交偏移量，下一个接管分区的消费者就知道该从哪里开始读取了。要注意，提交的是最近处理过的偏移量，而不是批次中还在处理的最后一个偏移量。因为分区有可能在我们还在处理消息的时候被撤回。我们要提交所有分区的偏移量，而不只是那些即将失去所有权的分区的偏移量——因为提交的偏移量时已经处理过的，所以不会有什么问题。调用commitSync方法，确保在再均衡发生之前提交偏移量。</li>
-<li>onPartitionsAssigned方法会在重新分配分区之后和消费者开始读取消息之前被调用。</li>
+<li>介绍埋点相关信息</li>
 </ul>
-<pre><code>package test.kafka.kafkaconsumer
+<!-- more -->
+<p>分三端：</p>
+<ul>
+<li>Web端埋点
+<ul>
+<li>pinpoint     服务调用链埋点</li>
+<li>pf                页面访问</li>
+<li>xhr              后台访问</li>
+<li>event          事件埋点</li>
+<li>userprofile 用户基础资料</li>
+<li>err               web端js错误</li>
+</ul>
+</li>
+<li>移动端埋点
+<ul>
+<li>page           页面访问</li>
+<li>request      后台服务</li>
+<li>event          事件</li>
+<li>login           用户登录</li>
+<li>error           app错误</li>
+</ul>
+</li>
+<li>CS端埋点（同上）</li>
+</ul>
+<p>数据流：使用埋点sdk采集数据，NG做负载均衡后，均匀地分部到三台埋点网关服务器，经lua脚本解析处理后，通过flume采集到kafka。</p>
+<p>lue解析：结合请求头和请求体信息，通过lua将所要的信息按照一定格式要求进行拼接，以便后续处理，如nifi、es等。</p>
+<h3 id="web端埋点">web端埋点</h3>
+<p>头部信息：</p>
+<ul>
+<li>av：埋点组件版本号</li>
+<li>v：埋点组件版本号</li>
+<li>key：子系统编码</li>
+<li>ref：请求发起时的页面URL地址</li>
+<li>rand：随机数（时间戳）</li>
+<li>pvid：一个session ID</li>
+<li>did：用户ID唯一标识</li>
+</ul>
+<p>请求体：</p>
+<ul>
+<li>event_id：事件id</li>
+<li>tag：事件描述</li>
+<li>properties：自定义多个事件属性（不同项目组定义不同）
+<ul>
+<li>empNo：登录工号（必选）</li>
+<li>event_path：事件路径（必选）</li>
+<li>response_time：响应时间</li>
+<li>pageTime：停留时间</li>
+<li>event_begin_time：事件开始时间</li>
+<li>event_end_time：事件结束时间</li>
+<li>event_trans_id：事件事务ID，多个连续事件，设置相同事务ID</li>
+<li>custom_data：自定义字段信息，json字符串格式</li>
+</ul>
+</li>
+<li>uf：页面访问通用信息
+<ul>
+<li>is_first_day：是否首日访问</li>
+<li>is_first_time：是否首次访问</li>
+<li>pageref：页面来源</li>
+<li>first_browser_language：首次使用的浏览器语言</li>
+<li>latest_referrer：最近一次站外地址</li>
+<li>screen_height：显示器高度</li>
+<li>screen_width：显示器宽度</li>
+</ul>
+</li>
+</ul>
+<p>使用lua解析后的日志格式（各字段之间&quot;|&quot;分割）：</p>
+<ol>
+<li>fmt_localtime：访问服务器的时间</li>
+<li>remote_addr：客户端IP地址</li>
+<li>http_user_agent：用户浏览器其他信息，浏览器版本、浏览器类型等</li>
+<li>av</li>
+<li>v</li>
+<li>key</li>
+<li>ref</li>
+<li>rand</li>
+<li>pvid</li>
+<li>did</li>
+<li>properties中自定义的各个字段：若字段值是json：字段名1<sup>字段值1~字段名2</sup>字段值2~，若字段值不是json：使用&quot;|&quot;分割</li>
+<li>uf中的各个字段：使用&quot;|&quot;分割</li>
+</ol>
+<p>例子：</p>
+<pre><code>1：2020-05-04 09:11:00|
+2：10.5.18.143|
+3：Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36|
 
-import java.util
+4：2.0.1.0001|
+5：2.0.1|
+6：100000103244|
+7：http://mktapi.company.com.cn/zte-crm-eva-newdecui/indexb.html#/spare/newlyBuild?r=1588554179644|
+8：1588554666849|
+9：df4b-13e12f93|
+10：ba6fd526-d578-4557-a7bf-d9745b8d2944|
 
-import org.apache.kafka.clients.consumer.{ConsumerRebalanceListener, KafkaConsumer, OffsetAndMetadata}
-import org.apache.kafka.common.TopicPartition
+11：1588554649971|http://mktapi.company.com.cn/zte-crm-eva-newdecui/indexb.html#/spare/newlyBuild_|response_time^5~event_end_time^1588554649976~event_path^http://mktapi.company.com.cn/zte-crm-eva-newdecui/indexb.html#/spare/newlyBuild?r=1588554179644~pageTime^463125~empNo^6237001361~event_begin_time^1588554649971|
 
-class HandleRebalance(
-                       consumer:KafkaConsumer[String, String],
-                       currentOffsets: util.HashMap[TopicPartition, OffsetAndMetadata]
-                     ) extends ConsumerRebalanceListener {
-  override def onPartitionsRevoked(partitions: util.Collection[TopicPartition]): Unit = {
-//    println(&quot;Lost partitions in rebalance. Committing current offsets: &quot; + currentOffsets)
-    consumer.commitSync(currentOffsets)
-  }
-  override def onPartitionsAssigned(partitions: util.Collection[TopicPartition]): Unit = {}
-}
-</code></pre>
-<pre><code>package test.kafka.kafkaconsumer
-
-import java.util
-import java.util.Properties
-
-import org.apache.kafka.clients.consumer._
-import org.apache.kafka.common.TopicPartition
-import org.apache.kafka.common.errors.WakeupException
-import test.kafka.kafkaProperities
-
-object RebalanceListener {
-  private val KAFKA_PROPERITIES = new kafkaProperities()
-
-  def main(args: Array[String]): Unit = {
-    val kfkConProps: Properties = KAFKA_PROPERITIES.getKakConPros
-    val currentOffsets: util.HashMap[TopicPartition, OffsetAndMetadata] = new util.HashMap[TopicPartition, OffsetAndMetadata]()
-
-    val consumer: KafkaConsumer[String, String] = new KafkaConsumer(kfkConProps)
-
-    try {
-      consumer.subscribe(util.Arrays.asList(KAFKA_PROPERITIES.TOPIC), new HandleRebalance(consumer, currentOffsets))
-      while (true) {
-        val consumerRecords: ConsumerRecords[String, String] = consumer.poll(100)
-        val records: util.Iterator[ConsumerRecord[String, String]] = consumerRecords.iterator()
-        while (records.hasNext){
-          val record: ConsumerRecord[String, String] = records.next()
-          println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
-          currentOffsets.put(
-            new TopicPartition(record.topic(), record.partition()),
-            new OffsetAndMetadata(record.offset() + 1, &quot;&quot;))
-        }
-        consumer.commitAsync(currentOffsets, null)
-      }
-    } catch {
-      case e: WakeupException =&gt; println(e)
-      case e: Exception =&gt; println(&quot;Unexpected error:&quot; + e)
-    } finally {
-      try {
-        consumer.commitSync(currentOffsets)
-      } finally {
-        consumer.close()
-      }
-    }
-  }
-}
-
+12：false|false|http://api.smartsales.zte.com.cn/zte-crm-common-smartsalespc/|http://api.smartsales.zte.com.cn/zte-crm-common-smartsalespc/|zh-CN|768|1366
 </code></pre>
 
                 </div>
@@ -179,8 +210,8 @@ object RebalanceListener {
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://DoCherish.github.io/post/kafka-consumer-ti-jiao-pian-yi-liang/" class="post-title gt-a-link">
-                    Kafka——Consumer提交偏移量
+                <a href="https://DoCherish.github.io/post/flink-xiang-mu-ji-yu-flink-de-uac-shi-shi-liu-liang-yi-chang-jian-kong-gao-jing-mo-xing/" class="post-title gt-a-link">
+                    Flink——项目：基于Flink的UAC实时流量异常监控告警模型
                 </a>
             </div>
         
