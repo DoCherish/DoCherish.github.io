@@ -1,0 +1,476 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Hadoop分布式文件系统 | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1593927236126">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Hadoop分布式文件系统
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2020-07-05 13:25:09 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/hadoop/" class="post-tags">
+                            # hadoop
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <h1 id="目标">目标</h1>
+<ol>
+<li>理解分布式文件系统</li>
+<li>理解hdfs架构</li>
+<li>熟练hdfs基本命令使用</li>
+<li>掌握hdfs编程</li>
+<li>理解namenode及secondarynamenode交互</li>
+</ol>
+<h1 id="hadoop的发展历史起源">Hadoop的发展历史起源</h1>
+<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1593926813399.png" alt="" loading="lazy"></figure>
+<p><strong>hadoop理解：</strong></p>
+<ul>
+<li>狭义上来说，hadoop就是单独指代hadoop这个软件</li>
+<li>广义上来说，hadoop指代大数据的一个生态圈，包括很多其他的软件<br>
+<img src="https://DoCherish.github.io/post-images/1593926862732.gif" alt="" loading="lazy"></li>
+</ul>
+<p><strong>hadoop的发展版本：</strong></p>
+<ul>
+<li>
+<p>0.x系列版本：hadoop当中最早的一个开源版本，在此基础上演变而来的1.x以及2.x的版本。</p>
+</li>
+<li>
+<p>1.x版本系列：hadoop版本当中的第二代开源版本，主要修复0.x版本的一些bug等。</p>
+</li>
+<li>
+<p>2.x版本系列：架构产生重大变化，引入了yarn平台等许多新特性，也是现在生产环境当中使用最多的版本。</p>
+</li>
+<li>
+<p>3.x版本系列：在2.x的基础上，引入了一些hdfs的新特性等，且已经发型了稳定版本，未来公司的使用趋势。</p>
+</li>
+</ul>
+<p><strong>hadoop生产环境版本选择：</strong></p>
+<p>Hadoop三大发行版本：Apache、Cloudera、Hortonworks。</p>
+<p><strong>hadoop的架构模块介绍：</strong></p>
+<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1593926893131.png" alt="" loading="lazy"></figure>
+<p>Hadoop由三个模块组成：分布式存储HDFS、分布式计算MapReduce、资源调度引擎Yarn。</p>
+<figure data-type="image" tabindex="3"><img src="https://DoCherish.github.io/post-images/1593926901216.png" alt="" loading="lazy"></figure>
+<ul>
+<li>
+<p>HDFS模块：</p>
+<ul>
+<li>
+<p>namenode：主节点，主要负责集群的管理以及元数据信息管理。</p>
+</li>
+<li>
+<p>datanode：从节点，主要负责存储用户数据。</p>
+</li>
+<li>
+<p>secondaryNameNode：辅助namenode管理元数据信息，以及元数据信息的冷备份。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Yarn模块：</p>
+<ul>
+<li>ResourceManager：主节点，主要负责资源分配。</li>
+<li>NodeManager：从节点，主要负责执行任务。</li>
+</ul>
+</li>
+</ul>
+<h1 id="hdfs功能详解介绍">hdfs功能详解介绍</h1>
+<p>最直观的理解便是三个臭皮匠，顶个诸葛亮。<br>
+<img src="https://DoCherish.github.io/post-images/1593927059108.png" alt="" loading="lazy"></p>
+<h3 id="文件分块存储3副本"><strong>文件分块存储&amp;3副本：</strong></h3>
+<figure data-type="image" tabindex="4"><img src="https://DoCherish.github.io/post-images/1593927135884.png" alt="" loading="lazy"></figure>
+<ul>
+<li>保存文件到HDFS时，会先默认按128M的大小对文件进行切分，效果如上图。
+<ul>
+<li>数据以block块的形式进统一存储管理，每个block块默认最多可以存储128M的文件。</li>
+<li>如果有一个文件大小为1KB，也是要占用一个block块，但是实际占用磁盘空间还是1KB大小，类似于有一个水桶可以装128斤的水，但是我只装了1斤的水，那么我的水桶里面水的重量就是1斤，而不是128斤。</li>
+</ul>
+</li>
+<li>每个block块的元数据大小大概为150字节。</li>
+<li>所有的文件都是以block块的方式存放在HDFS文件系统当中，在hadoop1当中，文件的block块默认大小是64M；hadoop2当中，文件的block块大小默认是128M，block块的大小可以通过hdfs-site.xml当中的配置文件进行指定：</li>
+</ul>
+<pre><code class="language-xml">&lt;property&gt;
+    &lt;name&gt;dfs.block.size&lt;/name&gt;
+    &lt;value&gt;块大小 以字节为单位&lt;/value&gt;&lt;!-- 只写数值就可以 --&gt;
+&lt;/property&gt;
+</code></pre>
+<ul>
+<li>为了保证block块的安全性，也就是数据的安全性，在hadoop2当中，文件默认保存三个副本，我们可以更改副本数以提高数据的安全性。</li>
+<li>在hdfs-site.xml当中修改以下配置属性，即可更改文件的副本数：</li>
+</ul>
+<pre><code class="language-xml">&lt;property&gt;
+      &lt;name&gt;dfs.replication&lt;/name&gt;
+      &lt;value&gt;3&lt;/value&gt;
+&lt;/property&gt;
+</code></pre>
+<h3 id="抽象成数据块的好处"><strong>抽象成数据块的好处：</strong></h3>
+<ol>
+<li>
+<p>一个文件有可能大于集群中任意一个磁盘 ：<br>
+10T*3/128 = xxx块 2T，2T，2T 文件方式存—–&gt;多个block块，这些block块属于一个文件。</p>
+</li>
+<li>
+<p>使用块抽象而不是文件可以简化存储子系统：</p>
+<p>hdfs将所有的文件全部抽象成为block块来进行存储，不管文件大小，全部一视同仁都是以block块的形式进行存储，方便我们的分布式文件系统对文件的管理。</p>
+</li>
+<li>
+<p>块非常适合用于数据备份进而提供数据容错能力和可用性。</p>
+</li>
+</ol>
+<h3 id="hdfs架构"><strong>HDFS架构：</strong></h3>
+<p>HDFS集群包括，NameNode和DataNode以及Secondary Namenode。</p>
+<ul>
+<li>NameNode负责管理整个文件系统的元数据，以及每一个路径（文件）所对应的数据块信息。</li>
+<li>DataNode 负责管理用户的文件数据块，每一个数据块都可以在多个datanode上存储多个副本。</li>
+<li>Secondary NameNode用来监控HDFS状态的辅助后台程序，每隔一段时间获取HDFS元数据的快照。最主要作用是辅助namenode管理元数据信息。</li>
+</ul>
+<h3 id="namenode与datanode的总结概述"><strong>NameNode与Datanode的总结概述：</strong></h3>
+<figure data-type="image" tabindex="5"><img src="https://DoCherish.github.io/post-images/1593927190698.png" alt="" loading="lazy"></figure>
+<h3 id="hdfs的shell命令操作"><strong>hdfs的shell命令操作：</strong></h3>
+<p>HDFS命令有两种风格：</p>
+<ul>
+<li>hadoop fs开头的</li>
+<li>hdfs dfs开头的</li>
+<li>两种命令均可使用，效果相同</li>
+</ul>
+<ol>
+<li>如何查看hdfs或hadoop子命令的帮助信息，如ls子命令</li>
+</ol>
+<pre><code class="language-shell">hdfs dfs -help ls
+hadoop fs -help ls #两个命令等价
+</code></pre>
+<ol start="2">
+<li>查看hdfs文件系统中指定目录的文件列表。对比linux命令ls</li>
+</ol>
+<pre><code class="language-shell">hdfs dfs -ls /
+hadoop fs -ls /
+hdfs dfs -ls -R /
+</code></pre>
+<ol start="3">
+<li>在hdfs文件系统中创建文件</li>
+</ol>
+<pre><code class="language-shell">hdfs dfs -touchz /edits.txt
+</code></pre>
+<ol start="4">
+<li>向HDFS文件中追加内容</li>
+</ol>
+<pre><code class="language-shell">hadoop fs -appendToFile edit1.xml /edits.txt #将本地磁盘当前目录的edit1.xml内容追加到HDFS根目录 的edits.txt文件
+</code></pre>
+<ol start="5">
+<li>查看HDFS文件内容</li>
+</ol>
+<pre><code class="language-shell">hdfs dfs -cat /edits.txt
+</code></pre>
+<ol start="6">
+<li>从本地路径上传文件至HDFS</li>
+</ol>
+<pre><code class="language-shell">#用法：hdfs dfs -put /本地路径 /hdfs路径
+hdfs dfs -put /linux本地磁盘文件 /hdfs路径文件
+hdfs dfs -copyFromLocal /linux本地磁盘文件 /hdfs路径文件  #跟put作用一样
+hdfs dfs -moveFromLocal /linux本地磁盘文件 /hdfs路径文件  #跟put作用一样，只不过，源文件被拷贝成功后，会被删除
+</code></pre>
+<ol start="7">
+<li>在hdfs文件系统中下载文件</li>
+</ol>
+<pre><code class="language-shell">hdfs dfs -get /hdfs路径 /本地路径
+hdfs dfs -copyToLocal /hdfs路径 /本地路径  #根get作用一样
+</code></pre>
+<ol start="8">
+<li>在hdfs文件系统中创建目录</li>
+</ol>
+<pre><code class="language-shell">hdfs dfs -mkdir /shell
+</code></pre>
+<ol start="9">
+<li>在hdfs文件系统中删除文件</li>
+</ol>
+<pre><code class="language-shell">hdfs dfs -rm /edits.txt
+</code></pre>
+<ol start="10">
+<li>在hdfs文件系统中修改文件名称（也可以用来移动文件到目录）</li>
+</ol>
+<pre><code class="language-shell">hdfs dfs -mv /xcall.sh /call.sh
+hdfs dfs -mv /call.sh /shell
+</code></pre>
+<ol start="11">
+<li>在hdfs中拷贝文件到目录</li>
+</ol>
+<pre><code class="language-shell">hdfs dfs -cp /xrsync.sh /shell
+</code></pre>
+<ol start="12">
+<li>递归删除目录</li>
+</ol>
+<pre><code class="language-shell">hdfs dfs -rm -r /shell
+</code></pre>
+<ol start="13">
+<li>列出本地文件的内容（默认是hdfs文件系统）</li>
+</ol>
+<pre><code class="language-shell">hdfs dfs -ls file:///home/hadoop/
+</code></pre>
+<ol start="14">
+<li>查找文件</li>
+</ol>
+<pre><code class="language-shell"># linux find命令
+find . -name 'edit*'
+# HDFS find命令
+hadoop fs -find / -name part-r-00000 # 在HDFS根目录中，查找part-r-00000文件
+</code></pre>
+<ol start="15">
+<li>总结</li>
+</ol>
+<ul>
+<li>
+<p>输入hadoop fs 或hdfs dfs，回车，查看所有的HDFS命令</p>
+</li>
+<li>
+<p>许多命令与linux命令有很大的相似性，学会举一反三</p>
+</li>
+<li>
+<p>有用的help，如查看ls命令的使用说明：hadoop fs -help ls</p>
+</li>
+<li>
+<p>绝大多数的大数据框架的命令，也有类似的help信息</p>
+</li>
+</ul>
+<h3 id="hdfs安全模式"><strong>hdfs安全模式：</strong></h3>
+<ul>
+<li>安全模式是HDFS所处的一种特殊状态，在这种状态下，文件系统只接受读数据请求，而不接受删除、修改等变更请求。在NameNode主节点启动时，HDFS首先进入安全模式，DataNode在启动的时候会向namenode汇报可用的block等状态，当整个系统达到安全标准时，HDFS自动离开安全模式。如果HDFS出于安全模式下，则文件block不能进行任何的副本复制操作，因此达到最小的副本数量要求是基于datanode启动时的状态来判定的，启动时不会再做任何复制（从而达到最小副本数量要求），hdfs集群刚启动的时候，默认30S钟的时间是出于安全期的，只有过了30S之后，集群脱离了安全期，然后才可以对集群进行操作</li>
+<li>何时推出安全模式
+<ul>
+<li>namenode知道集群共多少个block（不考虑副本），假设值是total；</li>
+<li>namenode启动后，会上报block report，namenode开始累加统计满足最小副本数（默认1）的block个数，假设是num</li>
+<li>当num/total &gt; 99.9%时，推出安全模式。</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-shell">[hadoop@node01 hadoop]$ hdfs dfsadmin -safemode  
+Usage: hdfs dfsadmin [-safemode enter | leave | get | wait]
+</code></pre>
+<h3 id="namenode和secondarynamenode功能剖析">NameNode和SecondaryNameNode功能剖析：</h3>
+<h5 id="1namenode与secondaryname解析"><strong>1.namenode与secondaryName解析：</strong></h5>
+<ul>
+<li>
+<p>NameNode主要负责集群当中的元数据信息管理，而且元数据信息需要经常随机访问，因为元数据信息必须高效的检索，那么如何保证namenode快速检索呢？？元数据信息保存在哪里能够快速检索呢？？如何保证元数据的持久安全呢？？</p>
+</li>
+<li>
+<p>为了保证元数据信息的快速检索，那么我们就必须将元数据存放在内存当中，因为在内存当中元数据信息能够最快速的检索，那么随着元数据信息的增多（每个block块大概占用150字节的元数据信息），内存的消耗也会越来越多。</p>
+</li>
+<li>
+<p>如果所有的元数据信息都存放内存，服务器断电，内存当中所有数据都消失，为了保证元数据的安全持久，元数据信息必须做可靠的持久化，在hadoop当中为了持久化存储元数据信息，将所有的元数据信息保存在了FSImage文件当中，那么FSImage随着时间推移，必然越来越膨胀，FSImage的操作变得越来越难，为了解决元数据信息的增删改，hadoop当中还引入了元数据操作日志edits文件，edits文件记录了客户端操作元数据的信息，随着时间的推移，edits信息也会越来越大，为了解决edits文件膨胀的问题，hadoop当中引入了secondaryNamenode来专门做fsimage与edits文件的合并。</p>
+</li>
+</ul>
+<p><strong>namenode工作机制：</strong></p>
+<p>（1）第一次启动namenode格式化后，创建fsimage和edits文件。如果不是第一次启动，直接加载编辑日志和镜像文件到内存。</p>
+<p>（2）客户端对元数据进行增删改的请求</p>
+<p>（3）namenode记录操作日志，更新滚动日志。</p>
+<p>（4）namenode在内存中对数据进行增删改查</p>
+<p><strong>Secondary NameNode工作机制：</strong></p>
+<p>（1）Secondary NameNode询问namenode是否需要checkpoint。直接带回namenode是否检查结果。</p>
+<p>（2）Secondary NameNode请求执行checkpoint。</p>
+<p>（3）namenode滚动正在写的edits日志</p>
+<p>（4）将滚动前的编辑日志和镜像文件拷贝到Secondary NameNode</p>
+<p>（5）Secondary NameNode加载编辑日志和镜像文件到内存，并合并。</p>
+<p>（6）生成新的镜像文件fsimage.chkpoint</p>
+<p>（7）拷贝fsimage.chkpoint到namenode</p>
+<p>（8）namenode将fsimage.chkpoint重新命名成fsimage</p>
+<h5 id="2fsimage与edits详解">2.FSImage与edits详解:</h5>
+<ul>
+<li>所有的元数据信息都保存在了FsImage与Eidts文件当中，这两个文件就记录了所有的数据的元数据信息，元数据信息的保存目录配置在了hdfs-site.xml当中：</li>
+</ul>
+<pre><code class="language-xml">&lt;property&gt;
+  &lt;name&gt;dfs.namenode.name.dir&lt;/name&gt;
+  &lt;value&gt;file:///kkb/install/hadoop-2.6.0-cdh5.14.2/hadoopDatas/namenodeDatas&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+   &lt;name&gt;dfs.namenode.edits.dir&lt;/name&gt;
+   &lt;value&gt;file:///kkb/install/hadoop-2.6.0-cdh5.14.2/hadoopDatas/dfs/nn/edits&lt;/value&gt;
+&lt;/property&gt;
+</code></pre>
+<ul>
+<li>
+<p>客户端对hdfs进行写文件时会首先被记录在edits文件中。</p>
+<p>edits修改时元数据也会更新。</p>
+<p>每次hdfs更新时edits先更新后客户端才会看到最新信息。</p>
+<p>fsimage:是namenode中关于元数据的镜像，一般称为检查点。</p>
+<p>一般开始时对namenode的操作都放在edits中，为什么不放在fsimage中呢？</p>
+<p>因为fsimage是namenode的完整的镜像，内容很大，如果每次都加载到内存的话生成树状拓扑结构，这是非常耗内存和CPU。</p>
+<p>fsimage内容包含了namenode管理下的所有datanode中文件及文件block及block所在的datanode的元数据信息。随着edits内容增大，就需要在一定时间点和fsimage合并。</p>
+</li>
+</ul>
+<h5 id="3-fsimage文件当中的文件信息查看">3. FSimage文件当中的文件信息查看</h5>
+<ul>
+<li>
+<p>官方查看文档</p>
+<p><a href="http://archive.cloudera.com/cdh5/cdh/5/hadoop-2.6.0-cdh5.14.0/hadoop-project-dist/hadoop-hdfs/HdfsImageViewer.html">http://archive.cloudera.com/cdh5/cdh/5/hadoop-2.6.0-cdh5.14.2/hadoop-project-dist/hadoop-hdfs/HdfsImageViewer.html</a></p>
+</li>
+<li>
+<p>使用命令 hdfs oiv</p>
+</li>
+</ul>
+<pre><code class="language-shell">cd  /kkb/install/hadoop-2.6.0-cdh5.14.2/hadoopDatas/namenodeDatas/current
+hdfs oiv -i fsimage_0000000000000000864 -p XML -o hello.xml
+</code></pre>
+<h5 id="4-edits当中的文件信息查看">4. edits当中的文件信息查看</h5>
+<ul>
+<li>
+<p>官方查看文档</p>
+<p><a href="http://archive.cloudera.com/cdh5/cdh/5/hadoop-2.6.0-cdh5.14.0/hadoop-project-dist/hadoop-hdfs/HdfsEditsViewer.html">http://archive.cloudera.com/cdh5/cdh/5/hadoop-2.6.0-cdh5.14.2/hadoop-project-dist/hadoop-hdfs/HdfsEditsViewer.html</a></p>
+</li>
+<li>
+<p>查看命令 hdfs oev</p>
+</li>
+</ul>
+<pre><code class="language-shell">cd /kkb/install/hadoop-2.6.0-cdh5.14.2/hadoopDatas/dfs/nn/edits
+hdfs oev -i edits_0000000000000000865-0000000000000000866 -o myedit.xml -p XML
+</code></pre>
+<h5 id="5-secondarynamenode如何辅助管理fsimage与edits文件">5. secondarynameNode如何辅助管理FSImage与Edits文件</h5>
+<h5 id="6-namenode元数据信息多目录配置">6. namenode元数据信息多目录配置</h5>
+<ul>
+<li>
+<p>为了保证元数据的安全性，我们一般都是先确定好我们的磁盘挂载目录，将元数据的磁盘做RAID1</p>
+<p>namenode的本地目录可以配置成多个，且每个目录存放内容相同，增加了可靠性。</p>
+</li>
+<li>
+<p>具体配置如下：</p>
+<p>hdfs-site.xml</p>
+</li>
+</ul>
+<pre><code class="language-xml">&lt;property&gt;
+   &lt;name&gt;dfs.namenode.name.dir&lt;/name&gt;
+   &lt;value&gt;file:///kkb/install/hadoop-2.6.0-cdh5.14.2/hadoopDatas/namenodeDatas&lt;/value&gt;
+&lt;/property&gt;
+</code></pre>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/mai-dian-xin-xi/" class="post-title gt-a-link">
+                    埋点信息
+                </a>
+            </div>
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
