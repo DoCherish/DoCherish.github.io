@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Hadoop分布式文件系统 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1593927515212">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1593936023704">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -100,7 +100,8 @@
                     
                 </div>
                 <div class="post-content">
-                    <h1 id="目标">目标</h1>
+                    <figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1593935995661.png" alt="" loading="lazy"></figure>
+<h1 id="目标">目标</h1>
 <ol>
 <li>理解分布式文件系统</li>
 <li>理解hdfs架构</li>
@@ -109,7 +110,7 @@
 <li>理解namenode及secondarynamenode交互</li>
 </ol>
 <h1 id="hadoop的发展历史起源">Hadoop的发展历史起源</h1>
-<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1593926813399.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1593926813399.png" alt="" loading="lazy"></figure>
 <p><strong>hadoop理解：</strong></p>
 <ul>
 <li>狭义上来说，hadoop就是单独指代hadoop这个软件</li>
@@ -134,9 +135,9 @@
 <p><strong>hadoop生产环境版本选择：</strong></p>
 <p>Hadoop三大发行版本：Apache、Cloudera、Hortonworks。</p>
 <p><strong>hadoop的架构模块介绍：</strong></p>
-<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/1593926893131.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://DoCherish.github.io/post-images/1593926893131.png" alt="" loading="lazy"></figure>
 <p>Hadoop由三个模块组成：分布式存储HDFS、分布式计算MapReduce、资源调度引擎Yarn。</p>
-<figure data-type="image" tabindex="3"><img src="https://DoCherish.github.io/post-images/1593926901216.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://DoCherish.github.io/post-images/1593926901216.png" alt="" loading="lazy"></figure>
 <ul>
 <li>
 <p>HDFS模块：</p>
@@ -164,7 +165,7 @@
 <p>最直观的理解便是三个臭皮匠，顶个诸葛亮。<br>
 <img src="https://DoCherish.github.io/post-images/1593927059108.png" alt="" loading="lazy"></p>
 <h3 id="文件分块存储3副本"><strong>文件分块存储&amp;3副本：</strong></h3>
-<figure data-type="image" tabindex="4"><img src="https://DoCherish.github.io/post-images/1593927135884.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://DoCherish.github.io/post-images/1593927135884.png" alt="" loading="lazy"></figure>
 <ul>
 <li>保存文件到HDFS时，会先默认按128M的大小对文件进行切分，效果如上图。
 <ul>
@@ -211,7 +212,7 @@
 <li>Secondary NameNode用来监控HDFS状态的辅助后台程序，每隔一段时间获取HDFS元数据的快照。最主要作用是辅助namenode管理元数据信息。</li>
 </ul>
 <h3 id="namenode与datanode的总结概述"><strong>NameNode与Datanode的总结概述：</strong></h3>
-<figure data-type="image" tabindex="5"><img src="https://DoCherish.github.io/post-images/1593927190698.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://DoCherish.github.io/post-images/1593927190698.png" alt="" loading="lazy"></figure>
 <h3 id="hdfs的shell命令操作"><strong>hdfs的shell命令操作：</strong></h3>
 <p>HDFS命令有两种风格：</p>
 <ul>
