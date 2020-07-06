@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2020-07-05T13:03:28.058Z</updated>
+    <updated>2020-07-06T15:31:48.428Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,25 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Do&apos;s blog</rights>
+    <entry>
+        <title type="html"><![CDATA[大数据常用的架构——Lambda和Kappa]]></title>
+        <id>https://DoCherish.github.io/post/da-shu-ju-chang-yong-de-jia-gou-lambda-he-kappa/</id>
+        <link href="https://DoCherish.github.io/post/da-shu-ju-chang-yong-de-jia-gou-lambda-he-kappa/">
+        </link>
+        <updated>2020-07-06T15:26:14.000Z</updated>
+        <summary type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>介绍Lambda架构和Kappa结构</li>
+<li>分析优缺点</li>
+</ul>
+]]></summary>
+        <content type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>介绍Lambda架构和Kappa结构</li>
+<li>分析优缺点</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Hadoop分布式文件系统]]></title>
         <id>https://DoCherish.github.io/post/hadoop-fen-bu-shi-wen-jian-xi-tong/</id>
@@ -23,14 +42,12 @@
         <link href="https://DoCherish.github.io/post/mai-dian-xin-xi/">
         </link>
         <updated>2020-05-19T14:57:46.000Z</updated>
-        <summary type="html"><![CDATA[<h3 id="埋点信息">埋点信息</h3>
-<p>主要内容：</p>
+        <summary type="html"><![CDATA[<p>主要内容：</p>
 <ul>
 <li>介绍埋点相关信息</li>
 </ul>
 ]]></summary>
-        <content type="html"><![CDATA[<h3 id="埋点信息">埋点信息</h3>
-<p>主要内容：</p>
+        <content type="html"><![CDATA[<p>主要内容：</p>
 <ul>
 <li>介绍埋点相关信息</li>
 </ul>
@@ -152,25 +169,6 @@
         <content type="html"><![CDATA[<p>主要内容：</p>
 <ul>
 <li>对Kafka的日志（Log）、日志段（LogSegment）以及索引（Index）源码进行尝试性分析。</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Flink——原理与实战：AggregateFunction]]></title>
-        <id>https://DoCherish.github.io/post/flink-yuan-li-yu-shi-zhan-aggregatefunction/</id>
-        <link href="https://DoCherish.github.io/post/flink-yuan-li-yu-shi-zhan-aggregatefunction/">
-        </link>
-        <updated>2020-04-25T02:45:38.000Z</updated>
-        <summary type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>介绍AggregateFunction</li>
-<li>案例：从SocketSource接收数据，通过Flink 时间窗口以及AggregateFunction方法统计用户在24小时内的平均消费金额</li>
-</ul>
-]]></summary>
-        <content type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>介绍AggregateFunction</li>
-<li>案例：从SocketSource接收数据，通过Flink 时间窗口以及AggregateFunction方法统计用户在24小时内的平均消费金额</li>
 </ul>
 ]]></content>
     </entry>
