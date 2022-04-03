@@ -1,0 +1,273 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Hive——常用函数 | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1648985913387">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Hive——常用函数
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-04-03 14:55:48 ·
+                    </time>
+                    
+                </div>
+                <div class="post-content">
+                    <figure data-type="image" tabindex="1"><img src="https://images.pexels.com/photos/669615/pexels-photo-669615.jpeg?auto=compress&amp;cs=tinysrgb&amp;h=750&amp;w=1260" alt="事實, 圖, 圖形 的 免费素材图片" loading="lazy"></figure>
+<h2 id="数值计算">数值计算</h2>
+<h3 id="1-取整函数-round">1、取整函数: round</h3>
+<p><strong>语法</strong>: round(double a)<br>
+<strong>返回值</strong>: BIGINT<br>
+<strong>说明</strong>: 返回double类型的整数值部分 （四舍五入）。</p>
+<h3 id="2-指定精度取整函数-round">2、指定精度取整函数: round</h3>
+<p><strong>语法</strong>: round(double a, int d)<br>
+<strong>返回值</strong>: DOUBLE<br>
+<strong>说明</strong>: 返回指定精度d的double类型。</p>
+<h3 id="3-向下取整函数-floor">3、向下取整函数: floor</h3>
+<p><strong>语法</strong>: floor(double a)<br>
+<strong>返回值</strong>: BIGINT<br>
+<strong>说明</strong>: 返回等于或者小于该double变量的最大的整数。</p>
+<h3 id="4-向上取整函数-ceil-ceiling">4、向上取整函数: ceil （ceiling）</h3>
+<p><strong>语法</strong>: ceil(double a)<br>
+<strong>返回值</strong>: BIGINT<br>
+<strong>说明</strong>: 返回等于或者大于该double变量的最小的整数。</p>
+<h2 id="日期函数">日期函数</h2>
+<h3 id="1-unix时间戳转日期函数-from_unixtime">1、UNIX时间戳转日期函数: from_unixtime</h3>
+<p><strong>语法</strong>: from_unixtime(bigint unixtime[, string format])<br>
+<strong>返回值</strong>: string<br>
+<strong>说明</strong>: 转化UNIX时间戳（从1970-01-01 00:00:00 UTC到指定时间的秒数）到当前时区的时间格式。</p>
+<h3 id="2-获取当前unix时间戳函数-unix_timestamp">2、获取当前UNIX时间戳函数: unix_timestamp</h3>
+<p><strong>语法</strong>: unix_timestamp()<br>
+<strong>返回值</strong>: bigint<br>
+<strong>说明</strong>: 获得当前时区的UNIX时间戳</p>
+<h3 id="3-日期转unix时间戳函数-unix_timestamp">3、日期转UNIX时间戳函数: unix_timestamp</h3>
+<p><strong>语法</strong>: unix_timestamp(string date)<br>
+<strong>返回值</strong>: bigint<br>
+<strong>说明</strong>: 转换格式为&quot;yyyy-MM-dd HH:mm:ss&quot;的日期到UNIX时间戳。如果转化失败，则返回0。</p>
+<h3 id="4-指定格式日期转unix时间戳函数-unix_timestamp">4、指定格式日期转UNIX时间戳函数: unix_timestamp</h3>
+<p><strong>语法</strong>: unix_timestamp(string date, string pattern)<br>
+<strong>返回值</strong>: bigint<br>
+<strong>说明</strong>: 转换pattern格式的日期到UNIX时间戳。如果转化失败，则返回0。</p>
+<h3 id="5-日期时间转日期函数-to_date">5、日期时间转日期函数: to_date</h3>
+<p><strong>语法</strong>: to_date(string timestamp)<br>
+<strong>返回值</strong>: string<br>
+<strong>说明</strong>: 返回日期时间字段中的日期部分。</p>
+<h3 id="6-日期比较函数-datediff">6、日期比较函数: datediff</h3>
+<p><strong>语法</strong>: datediff(string enddate, string startdate)<br>
+<strong>返回值</strong>: int<br>
+<strong>说明</strong>: 返回结束日期减去开始日期的天数。</p>
+<h3 id="7-日期增加函数-date_add">7、日期增加函数: date_add</h3>
+<p><strong>语法</strong>: date_add(string startdate, int days)<br>
+<strong>返回值</strong>: string<br>
+<strong>说明</strong>: 返回开始日期startdate增加days天后的日期。</p>
+<h2 id="条件函数">条件函数</h2>
+<h3 id="1-if函数-if">1、If函数: if</h3>
+<p><strong>语法</strong>: if(boolean testCondition, T valueTrue, T valueFalseOrNull)<br>
+<strong>返回值</strong>: T<br>
+<strong>说明</strong>: 当条件testCondition为TRUE时，返回valueTrue；否则返回valueFalseOrNull。</p>
+<h3 id="2-非空查找函数-coalesce">2、非空查找函数: COALESCE</h3>
+<p><strong>语法</strong>: COALESCE(T v1, T v2, …)<br>
+<strong>返回值</strong>: T<br>
+<strong>说明</strong>: 返回参数中的第一个非空值；如果所有值都为NULL，那么返回NULL。</p>
+<h3 id="3-条件判断函数case">3、条件判断函数：CASE</h3>
+<p><strong>语法</strong>: CASE a WHEN b THEN c [WHEN d THEN e]* [ELSE f] END<br>
+<strong>返回值</strong>: T<br>
+<strong>说明</strong>：如果a等于b，那么返回c；如果a等于d，那么返回e；否则返回f</p>
+<h3 id="4-条件判断函数case">4、条件判断函数：CASE</h3>
+<p><strong>语法</strong>: CASE WHEN a THEN b [WHEN c THEN d]* [ELSE e] END<br>
+<strong>返回值</strong>: T<br>
+<strong>说明</strong>：如果a为TRUE，则返回b；如果c为TRUE，则返回d；否则返回e。</p>
+<h2 id="字符串函数">字符串函数</h2>
+<h3 id="1-字符串连接函数concat">1、字符串连接函数：concat</h3>
+<p><strong>语法</strong>: concat(string A, string B…)<br>
+<strong>返回值</strong>: string<br>
+<strong>说明</strong>：返回输入字符串连接后的结果，支持任意个输入字符串。</p>
+<h3 id="2-带分隔符字符串连接函数concat_ws">2、带分隔符字符串连接函数：concat_ws</h3>
+<p><strong>语法</strong>: concat_ws(string SEP, string A, string B…)<br>
+<strong>返回值</strong>: string<br>
+<strong>说明</strong>：返回输入字符串连接后的结果，SEP表示各个字符串间的分隔符。</p>
+<h2 id="复合类型">复合类型</h2>
+<h3 id="1-map类型构建-map">1、Map类型构建: map</h3>
+<p><strong>语法</strong>: map (key1, value1, key2, value2, …)<br>
+<strong>说明</strong>: 根据输入的key和value对构建map类型。<br>
+<strong>访问</strong>: M[key]，M为map类型，key为map中的key值。</p>
+<h3 id="2-array类型构建-array">2、Array类型构建: array</h3>
+<p><strong>语法</strong>: array(val1, val2, …)<br>
+<strong>说明</strong>: 根据输入的参数构建数组array类型。<br>
+<strong>访问</strong>: A[n]，A为array类型，n为int类型。</p>
+<h3 id="3-struct类型构建-struct">3、Struct类型构建: struct</h3>
+<p><strong>语法</strong>: struct(val1, val2, val3, …)<br>
+<strong>说明</strong>: 根据输入的参数构建结构体struct类型<br>
+<strong>访问</strong>:  S.x，S为struct类型，返回结构体S中的x字段。</p>
+<h2 id="hive当中的-lateral-view-与-explode以及reflect和窗口函数">Hive当中的 <a href="https://help.aliyun.com/document_detail/87722.html">lateral view</a> 与 explode以及reflect和窗口函数</h2>
+<h2 id="1-使用explode函数将hive表中的map和array字段进行拆分">1、使用explode函数将hive表中的Map和Array字段进行拆分</h2>
+<p>lateral view经常和split、explode等UDTF函数一起使用，能将一行数据拆分成多行数据。在此基础上可以对拆分的数据进行聚合，lateral view首先为原始表的每行调用UDTF，UDTF会把一行拆分成一行或者多行，lateral view在把结果组合，产生一个支持别名表的虚拟表。其中explode还可以用于将hive一列中复杂的array或者map结构拆分成多行。Outer关键字可以把不输出的UDTF的空结果，输出成NULL，防止丢失数据。</p>
+<h3 id="2-行转列">2、行转列</h3>
+<p>CONCAT(string A/col, string B/col…)：返回输入字符串连接后的结果，支持任意个输入字符串。CONCAT_WS(separator, str1, str2,...)：它是一个特殊形式的 CONCAT()。第一个参数剩余参数间的分隔符。分隔符可以是与剩余参数一样的字符串。如果分隔符是 NULL，返回值也将为 NULL。这个函数会跳过分隔符参数后的任何 NULL 和空字符串。分隔符将被加到被连接的字符串之间。<br>
+COLLECT_SET(col)：函数只接受基本数据类型，它的主要作用是将某字段的值进行去重汇总，产生array类型字段。</p>
+<h3 id="3-列转行">3、列转行</h3>
+<p>EXPLODE(col)：将hive一列中复杂的array或者map结构拆分成多行。<br>
+LATERAL VIEW用法：<strong>LATERAL VIEW udtf(expression) tableAlias AS columnAlias</strong><br>
+解释：用于和split, explode等UDTF一起使用，它能够将一列数据拆成多行数据，在此基础上可以对拆分后的数据进行聚合。</p>
+<p>行转列和列转行请参考：<a href="https://help.aliyun.com/document_detail/419206.htm?spm=a2c4g.11186623.0.0.4d2236fe9WgmvX#concept-2199338">行转列及列转行最佳实践</a></p>
+<h3 id="4-reflect函数">4、reflect函数</h3>
+<p>reflect函数可以支持在sql中调用java中的自带函数，秒杀一切udf函数。<br>
+<code>select reflect(&quot;java.lang.Math&quot;, &quot;max&quot;, 1, 2) 输出：2</code></p>
+<h2 id="排序函数">排序函数</h2>
+<h3 id="1-row_number">1、 ROW_NUMBER()</h3>
+<p>从1开始，按照顺序，生成分组内记录的序列。值相同时，名词不同。</p>
+<h3 id="2-rank">2、 RANK()</h3>
+<p><strong>计算跳跃排名</strong>。相同组的值相同的行数据获得的排名相同，且排名跳跃。例如两个第二名后为第四名。</p>
+<h3 id="3-dense_rank">3、 DENSE_RANK()</h3>
+<p><strong>计算连续排名</strong>。相同组的值相同的行数据获得的排名相同，且排名连续。例如两个第二名后为第三名。</p>
+<pre><code class="language-sql">+-----------+------------+--------+----+-----+-----+--+
+|  user_id  | user_type  | sales  | r  | rn  | dr  |
++-----------+------------+--------+----+-----+-----+--+
+| wutong    | new        | 6      | 1  | 1   | 1   |
+| qishili   | new        | 5      | 2  | 2   | 2   |
+| lilisi    | new        | 5      | 2  | 3   | 2   |
+| wagner    | new        | 3      | 4  | 4   | 3   |
+| zhangsan  | new        | 2      | 5  | 5   | 4   |
+| qiuba     | new        | 1      | 6  | 6   | 5   |
+| liliu     | new        | 1      | 6  | 7   | 5   |
+| liwei     | old        | 3      | 1  | 1   | 1   |
+| wangshi   | old        | 2      | 2  | 2   | 2   |
+| lisi      | old        | 1      | 3  | 3   | 3   |
++-----------+------------+--------+----+-----+-----+--+
+
+</code></pre>
+<h2 id="多维分析">多维分析</h2>
+<h3 id="1-grouping-sets">1、GROUPING SETS</h3>
+<p>对于经常需要对数据进行多维度的聚合分析的场景，您既需要对A列做聚合，也要对B列做聚合，同时要对A、B两列做聚合，因此需要多次使用<code>union all</code>。您可以使用<code>grouping sets</code>快速解决此类问题。可参考：<a href="https://help.aliyun.com/document_detail/92807.html">GROUPING SETS</a></p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/da-shu-ju-chang-yong-de-jia-gou-lambda-he-kappa/" class="post-title gt-a-link">
+                    大数据常用的架构——Lambda和Kappa
+                </a>
+            </div>
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
