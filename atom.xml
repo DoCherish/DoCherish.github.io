@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2022-04-04T05:45:28.455Z</updated>
+    <updated>2022-04-05T15:10:06.301Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,30 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2022, Do&apos;s blog</rights>
+    <entry>
+        <title type="html"><![CDATA[Hive——大数据分析利器]]></title>
+        <id>https://DoCherish.github.io/post/hive-da-shu-ju-fen-xi-li-qi/</id>
+        <link href="https://DoCherish.github.io/post/hive-da-shu-ju-fen-xi-li-qi/">
+        </link>
+        <updated>2022-04-05T15:07:45.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Hive——如何查看hive的执行计划]]></title>
+        <id>https://DoCherish.github.io/post/hive-ru-he-cha-kan-hive-de-zhi-xing-ji-hua/</id>
+        <link href="https://DoCherish.github.io/post/hive-ru-he-cha-kan-hive-de-zhi-xing-ji-hua/">
+        </link>
+        <updated>2022-04-05T14:41:53.000Z</updated>
+        <summary type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>介绍hive的执行计划</li>
+</ul>
+]]></summary>
+        <content type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>介绍hive的执行计划</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Hive——常用函数]]></title>
         <id>https://DoCherish.github.io/post/hive-chang-yong-han-shu/</id>
@@ -135,40 +159,6 @@
         <content type="html"><![CDATA[<p>主要内容：</p>
 <ul>
 <li>介绍有状态计算及状态后端</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Flink——Side Output侧输出流]]></title>
-        <id>https://DoCherish.github.io/post/flink-side-output-ce-shu-chu-liu/</id>
-        <link href="https://DoCherish.github.io/post/flink-side-output-ce-shu-chu-liu/">
-        </link>
-        <updated>2020-05-03T15:08:49.000Z</updated>
-        <summary type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>结合应用场景，介绍Flink侧输出流的使用流程和原理</li>
-</ul>
-]]></summary>
-        <content type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>结合应用场景，介绍Flink侧输出流的使用流程和原理</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Flink——实战：EventTime结合Watermark应用案例]]></title>
-        <id>https://DoCherish.github.io/post/flink-shi-zhan-eventtime-jie-he-watermark-ying-yong-an-li/</id>
-        <link href="https://DoCherish.github.io/post/flink-shi-zhan-eventtime-jie-he-watermark-ying-yong-an-li/">
-        </link>
-        <updated>2020-04-25T16:35:05.000Z</updated>
-        <summary type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>从SocketSource接收数据，时间语义采用EventTime，统计用户在T分钟内的总消费金额。</li>
-</ul>
-]]></summary>
-        <content type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>从SocketSource接收数据，时间语义采用EventTime，统计用户在T分钟内的总消费金额。</li>
 </ul>
 ]]></content>
     </entry>

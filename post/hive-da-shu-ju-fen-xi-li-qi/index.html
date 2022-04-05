@@ -1,0 +1,351 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Hive——大数据分析利器 | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1649171320602">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Hive——大数据分析利器
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-04-05 23:07:45 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/hive/" class="post-tags">
+                            # Hive
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <h1 id="hive大数据分析利器">Hive——大数据分析利器</h1>
+<p>主要内容：</p>
+<ul>
+<li>介绍OLAP和OLTP区别</li>
+<li>介绍Hive的概念、架构，对比内部表和外部表，行存储和列存储</li>
+</ul>
+<h2 id="1-数据仓库">1、数据仓库</h2>
+<figure data-type="image" tabindex="1"><img src="https://1.cms.s81c.com/sites/default/files/2021-01-06/ICLH_Diagram_Batch_02_15-DataWarehouse-WHITEBG.png" alt="" loading="lazy"></figure>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E8%B3%87%E6%96%99%E5%80%89%E5%84%B2">数据仓库</a>的英文名称为Data Warehouse，可简写为DW。作为商业智能的核心组件，数据仓库将来自许多不同来源的数据汇集到一个数据存储中心，以支持数据分析、数据挖掘、人工智能 (AI) 和机器学习。数据仓库使组织能够以标准数据库无法做到的方式，对大量历史数据进行强大的分析。在企业中，数据仓库作为企业全部业务数据的集中存储中心（解决数据孤岛问题），并在数仓中进行数据指标迭代开发计算。</li>
+<li>数据仓库的目的是构建<strong>面向分析</strong>的集成化数据环境，为企业提供<strong>决策支持</strong>（Decision Support）。</li>
+<li>主要特征：数据仓库是<strong>面向主题的</strong>、<strong>集成的</strong>、<strong>相对稳定的</strong>和<strong>反映历史变化的</strong>数据集合，用以支持管理决策。</li>
+</ul>
+<h3 id="11-数据仓库olap与数据库oltp的区别">1.1 数据仓库（OLAP）与数据库（OLTP）的区别</h3>
+<p>首先要明白，数据仓库的出现，并不是要取代数据库。在数据科学领域，有两种类型的数据处理系统：OLAP（Online Analytical Processing）是联机分析处理，OLTP（Online Transaction Processing）是联机事务处理。各自都有各自的应用场景。</p>
+<blockquote>
+<p><strong>The question isn’t which to choose, but how to make the best use of both processing types for your situation</strong>.</p>
+</blockquote>
+<ul>
+<li>主要区别在于：OLAP使用数据来获得有价值的见解，而OLTP则纯粹是可操作的。OLTP是面向<strong>事务</strong>的，是为捕获数据而设计的，而OLAP是面向<strong>分析</strong>的，是为分析数据而设计的。</li>
+<li>侧重点不同：OLAP侧重基于海量数据进行复杂分析，为了推动业务决策，查询通常涉及大量数据。相比之下，OLTP侧重在数据库中进行简单的更新、插入、删除，查询通常只涉及部分少量数据。</li>
+<li>数据源不同：OLAP具有多维分析模式，需要从多个业务库接入数据。不同的OLTP库可以作为OLAP库的数据来源。数据仓库，是在数据库已经大量存在的情况下，为了进一步挖掘数据资源、为了决策需要而产生的，它决不是所谓的大型数据库。</li>
+<li>数据冗余性不同：OLAP有意引入冗余，OLTP有意避免冗余。</li>
+<li>处理时间不同：OLAP响应时间比OLTP慢几个数量级，OLAP要求时效性和实时性。OLAP工作负载是读密集型，涉及大量的数据集。OLTP工作负载是进行简单的读写操作，需要更少的时间和更少的存储空间。</li>
+</ul>
+<h2 id="2-hive">2、Hive</h2>
+<h3 id="21-hive的概念">2.1 Hive的概念</h3>
+<ul>
+<li>hive是基于hadoop的一个数据仓库工具，可以将结构化的数据文件映射为一张数据库表，并提供类SQL查询功能。</li>
+<li>其本质是将SQL转化为MR任务进行运算，底层由HDFS来提供数据的存储支持。</li>
+</ul>
+<figure data-type="image" tabindex="2"><img src="D:%5CDocument%5CKKB%5C12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive%5C%E7%AC%AC%E4%B8%80%E8%8A%82%EF%BC%9Ahive%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7%E5%85%A5%E9%97%A8%5C%E8%AF%BE%E4%BB%B6%5Cassets%5CSnipaste_2019-07-10_23-23-31.png" alt="Snipaste_2019-07-10_23-23-31" loading="lazy"></figure>
+<p>hive与数据库的区别：</p>
+<figure data-type="image" tabindex="3"><img src="D:%5CDocument%5CKKB%5C12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive%5C%E7%AC%AC%E4%B8%80%E8%8A%82%EF%BC%9Ahive%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7%E5%85%A5%E9%97%A8%5C%E8%AF%BE%E4%BB%B6%5Cassets%5C2018040319335283.png" alt="2018040319335283" loading="lazy"></figure>
+<h3 id="22-hive的架构原理">2.2 Hive的架构原理</h3>
+<figure data-type="image" tabindex="4"><img src="D:%5CDocument%5CKKB%5C12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive%5C%E7%AC%AC%E4%B8%80%E8%8A%82%EF%BC%9Ahive%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7%E5%85%A5%E9%97%A8%5C%E8%AF%BE%E4%BB%B6%5Cassets%5C2019-07-11_11-08-35.png" alt="2019-07-11_11-08-35" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="D:%5CDocument%5CKKB%5C12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive%5C%E7%AC%AC%E4%B8%80%E8%8A%82%EF%BC%9Ahive%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7%E5%85%A5%E9%97%A8%5C%E8%AF%BE%E4%BB%B6%5Cassets%5Chive1.png" alt="hive1" loading="lazy"></figure>
+<h3 id="23-内部表和外部表">2.3 内部表和外部表</h3>
+<p>默认创建的都是内部表，也叫管理表（Managed Table）。因为这种表，hive控制着数据的生命周期。默认情况下，内部表的数据存储在hive.metastore.warehouse.dir（默认/user/hive/warehouse）。外部表在创建的时候需要加上external关键字。在创建表时可以自己指定目录位置，location字段可以指定，也可以不指定。指定就是数据存放的具体目录，不指定就是使用默认目录 /user/hive/warehouse。外部表因为是指定其他的hdfs路径的数据加载到表当中来，所以hive表会认为自己不完全独占这份数据，所以删除hive表的时候，数据仍然存放在hdfs当中，不会删掉。</p>
+<p>内部表和外部表的区别：</p>
+<ul>
+<li>创建内部表时：会将数据移动到数据仓库指向的路径；</li>
+<li>创建外部表时：仅记录数据所在路径，不对数据的位置做出改变；</li>
+<li>删除内部表时：删除表元数据和数据；</li>
+<li>删除外部表时，删除元数据，不删除数据。</li>
+</ul>
+<p>内部表和外部表的使用时机：</p>
+<ul>
+<li>
+<p>内部表由于删除表的时候会同步删除HDFS的数据文件，所以如果一个表仅仅是你独占使用，其他人不使用的时候就可以创建内部表；如果一个表的文件数据其他人也要使用，那么就创建外部表。</p>
+</li>
+<li>
+<p>一般外部表都是用在数据仓库的ODS层。</p>
+</li>
+<li>
+<p>内部表都是用在数据仓库的DW层。</p>
+</li>
+</ul>
+<h3 id="24-分区表和分桶表">2.4 分区表和分桶表</h3>
+<p>如果hive当中所有的数据都存入到一个文件夹下面，那么在使用MR计算程序的时候，读取一整个目录下面的所有文件来进行计算，就会变得特别慢，因为数据量太大了。实际工作当中一般都是计算前一天的数据，所以我们只需要将前一天的数据挑出来放到一个文件夹下面即可，专门去计算前一天的数据。这样就可以使用hive当中的分区表，通过分文件夹的形式，将每一天的数据都分成为一个文件夹，然后我们计算数据的时候，通过指定前一天的文件夹即可只计算前一天的数据。在大数据中，最常用的一种思想就是分治，我们可以把大的文件切割划分成一个个小的文件，这样每次操作一个小的文件就会很容易了。同样的道理，在hive当中也是支持这种思想的，就是我们可以把大的数据，按照每天，或者每小时进行切分成一个个的小的文件，这样去操作小的文件就会容易得多了。</p>
+<p><strong>分桶是相对分区进行更细粒度的划分</strong>。分区在HDFS上的表现形式是一个目录，分桶则是一个单独的文件。分桶则是指定分桶表的某一列，让该列数据按照哈希取模的方式随机、均匀地分发到各个桶文件中。</p>
+<blockquote>
+<p><strong>因此，分区就是分目录，分桶就是分文件。目的都是细化数据管理，加快查询速度。</strong></p>
+</blockquote>
+<h3 id="25-hive表的数据压缩格式">2.5 Hive表的数据压缩格式</h3>
+<h4 id="251-压缩格式的评级标准">2.5.1 压缩格式的评级标准</h4>
+<ul>
+<li>压缩比：压缩比越高，压缩后文件越小，所以压缩比越高越好。</li>
+<li>压缩时间：越快越好。</li>
+<li>压缩的格式文件是否可切割：可以分割的格式允许单一文件由多个Mapper程序处理，可以更好的并行化。</li>
+</ul>
+<h4 id="252-常见的压缩格式">2.5.2 常见的压缩格式</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">压缩方式</th>
+<th style="text-align:center">压缩比</th>
+<th style="text-align:center">压缩速度</th>
+<th style="text-align:center">解压缩速度</th>
+<th style="text-align:center">是否可分割</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">gzip</td>
+<td style="text-align:center">13.4%</td>
+<td style="text-align:center">21 MB/s</td>
+<td style="text-align:center">118 MB/s</td>
+<td style="text-align:center">否</td>
+</tr>
+<tr>
+<td style="text-align:center">bzip2</td>
+<td style="text-align:center">13.2%</td>
+<td style="text-align:center">2.4MB/s</td>
+<td style="text-align:center">9.5MB/s</td>
+<td style="text-align:center">是</td>
+</tr>
+<tr>
+<td style="text-align:center">lzo</td>
+<td style="text-align:center">20.5%</td>
+<td style="text-align:center">135 MB/s</td>
+<td style="text-align:center">410 MB/s</td>
+<td style="text-align:center">否</td>
+</tr>
+<tr>
+<td style="text-align:center">snappy</td>
+<td style="text-align:center">22.2%</td>
+<td style="text-align:center">172 MB/s</td>
+<td style="text-align:center">409 MB/s</td>
+<td style="text-align:center">否</td>
+</tr>
+</tbody>
+</table>
+<h4 id="253-hadoop编解码器方式">2.5.3 Hadoop编/解码器方式</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">压缩格式</th>
+<th style="text-align:center">对应的编码/解码器</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">DEFLATE</td>
+<td style="text-align:center">org.apache.hadoop.io.compress.DefaultCodec</td>
+</tr>
+<tr>
+<td style="text-align:center">Gzip</td>
+<td style="text-align:center">org.apache.hadoop.io.compress.GzipCodec</td>
+</tr>
+<tr>
+<td style="text-align:center">BZip2</td>
+<td style="text-align:center">org.apache.hadoop.io.compress.BZip2Codec</td>
+</tr>
+<tr>
+<td style="text-align:center">LZO</td>
+<td style="text-align:center">com.hadoop.compress.lzo.LzopCodec</td>
+</tr>
+<tr>
+<td style="text-align:center">Snappy</td>
+<td style="text-align:center">org.apache.hadoop.io.compress.SnappyCodec</td>
+</tr>
+</tbody>
+</table>
+<h3 id="26-hive表的文件存储格式">2.6 Hive表的文件存储格式</h3>
+<p>目前大数据存储有两种方案可供选择：行存储（Row-Based）和列存储（Column-Based）。Hive支持的存储数据的格式主要有：TEXTFILE（行式存储） 、SEQUENCEFILE(行式存储)、<strong>ORC</strong>（列式存储）、<strong>PARQUET</strong>（列式存储）。</p>
+<h4 id="261-行式存储和列式存储">2.6.1 行式存储和列式存储</h4>
+<figure data-type="image" tabindex="6"><img src="D:%5CDocument%5CKKB%5C12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive%5C%E7%AC%AC%E4%B8%89%E8%8A%82%EF%BC%9Ahive%E4%BC%81%E4%B8%9A%E7%BA%A7%E8%B0%83%E4%BC%98%5Chive%E8%AF%BE%E5%89%8D%E8%B5%84%E6%96%996.8%5Cassets%5Cclip_image002.jpg" alt="clip_image002" loading="lazy"></figure>
+<p>行式存储下一张表的数据都是放在一起的，但列式存储下都被分开保存了。列式存储是相对于传统关系型数据库的行式存储来说的。简单来说两者的区别就是<strong>如何组织表</strong>：<br>
+Row-based storage storesatable in a sequence of rows.<br>
+基于行的存储按行顺序存放数据。<br>
+Column-based storage storesatable in a sequence of columns.<br>
+基于列的存储可按列顺序存放数据。</p>
+<p>优缺点：</p>
+<ul>
+<li>数据写入：
+<ul>
+<li>写入效率高。行存储的写入是一次性的，消耗的时间比列式存储少，并且能保证数据的完整性。</li>
+<li>写入效率低。列存储需要把一行数据拆成单列保存，写入的次数明显比行存储多，时间消耗大。</li>
+</ul>
+</li>
+<li>数据读取：
+<ul>
+<li>存在冗余。行存储在读取数据时，通常将一行数据全部读出，如果只需要部分列，就会存在冗余列。</li>
+<li>不存在冗余。列存储在读取数据时，每次读取的数据是集合的一段或者全部，不存在冗余性问题。这对数据完整性要求不高的大数据处理领域，比如互联网，尤为重要。</li>
+</ul>
+</li>
+<li>数据压缩：
+<ul>
+<li>列存储中每一列的数据类型一致，数据特征相似，可以高效压缩。有利于数据存储和网络传输。</li>
+</ul>
+</li>
+</ul>
+<p>在实际的项目开发当中，hive表的数据存储格式一般选择：orc或parquet。压缩方式一般选择snappy。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/hive-ru-he-cha-kan-hive-de-zhi-xing-ji-hua/" class="post-title gt-a-link">
+                    Hive——如何查看hive的执行计划
+                </a>
+            </div>
+        
+
+        
+            
+                <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '739e90a8be2ceb4495bc',
+    clientSecret: '3432bb21b5e66759f6e4ccfc61391c3b5194ca35',
+    repo: 'DoCherish.github.io',
+    owner: 'DoCherish',
+    admin: ['DoCherish'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+            
+
+            
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">困而学之 学思并重</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
