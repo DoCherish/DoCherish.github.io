@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Hive——大数据分析利器 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1649171843015">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1649255787065">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -106,8 +106,10 @@
 <li>介绍OLAP和OLTP区别</li>
 <li>介绍Hive的概念、架构，对比内部表和外部表，行存储和列存储</li>
 </ul>
+<!-- more -->
+<figure data-type="image" tabindex="1"><img src="https://images.pexels.com/photos/747964/pexels-photo-747964.jpeg?cs=srgb&amp;dl=pexels-s-migaj-747964.jpg&amp;fm=jpg" alt="" loading="lazy"></figure>
 <h2 id="1-数据仓库">1、数据仓库</h2>
-<figure data-type="image" tabindex="1"><img src="https://1.cms.s81c.com/sites/default/files/2021-01-06/ICLH_Diagram_Batch_02_15-DataWarehouse-WHITEBG.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://1.cms.s81c.com/sites/default/files/2021-01-06/ICLH_Diagram_Batch_02_15-DataWarehouse-WHITEBG.png" alt="" loading="lazy"></figure>
 <ul>
 <li><a href="https://zh.wikipedia.org/wiki/%E8%B3%87%E6%96%99%E5%80%89%E5%84%B2">数据仓库</a>的英文名称为Data Warehouse，可简写为DW。作为商业智能的核心组件，数据仓库将来自许多不同来源的数据汇集到一个数据存储中心，以支持数据分析、数据挖掘、人工智能 (AI) 和机器学习。数据仓库使组织能够以标准数据库无法做到的方式，对大量历史数据进行强大的分析。在企业中，数据仓库作为企业全部业务数据的集中存储中心（解决数据孤岛问题），并在数仓中进行数据指标迭代开发计算。</li>
 <li>数据仓库的目的是构建<strong>面向分析</strong>的集成化数据环境，为企业提供<strong>决策支持</strong>（Decision Support）。</li>
@@ -131,12 +133,12 @@
 <li>hive是基于hadoop的一个数据仓库工具，可以将结构化的数据文件映射为一张数据库表，并提供类SQL查询功能。</li>
 <li>其本质是将SQL转化为MR任务进行运算，底层由HDFS来提供数据的存储支持。</li>
 </ul>
-<figure data-type="image" tabindex="2"><img src="D:%5CDocument%5CKKB%5C12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive%5C%E7%AC%AC%E4%B8%80%E8%8A%82%EF%BC%9Ahive%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7%E5%85%A5%E9%97%A8%5C%E8%AF%BE%E4%BB%B6%5Cassets%5CSnipaste_2019-07-10_23-23-31.png" alt="Snipaste_2019-07-10_23-23-31" loading="lazy"></figure>
-<p>hive与数据库的区别：</p>
-<figure data-type="image" tabindex="3"><img src="D:%5CDocument%5CKKB%5C12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive%5C%E7%AC%AC%E4%B8%80%E8%8A%82%EF%BC%9Ahive%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7%E5%85%A5%E9%97%A8%5C%E8%AF%BE%E4%BB%B6%5Cassets%5C2018040319335283.png" alt="2018040319335283" loading="lazy"></figure>
+<p><img src="D:/Document/KKB/12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive/%E7%AC%AC%E4%B8%80%E8%8A%82%EF%BC%9Ahive%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7%E5%85%A5%E9%97%A8/%E8%AF%BE%E4%BB%B6/assets/Snipaste_2019-07-10_23-23-31.png" alt="Snipaste_2019-07-10_23-23-31" loading="lazy"><br>
+hive与数据库的区别：</p>
+<figure data-type="image" tabindex="3"><img src="D:/Document/KKB/12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive/%E7%AC%AC%E4%B8%80%E8%8A%82%EF%BC%9Ahive%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7%E5%85%A5%E9%97%A8/%E8%AF%BE%E4%BB%B6/assets/2018040319335283.png" alt="2018040319335283" loading="lazy"></figure>
 <h3 id="22-hive的架构原理">2.2 Hive的架构原理</h3>
-<figure data-type="image" tabindex="4"><img src="D:%5CDocument%5CKKB%5C12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive%5C%E7%AC%AC%E4%B8%80%E8%8A%82%EF%BC%9Ahive%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7%E5%85%A5%E9%97%A8%5C%E8%AF%BE%E4%BB%B6%5Cassets%5C2019-07-11_11-08-35.png" alt="2019-07-11_11-08-35" loading="lazy"></figure>
-<figure data-type="image" tabindex="5"><img src="D:%5CDocument%5CKKB%5C12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive%5C%E7%AC%AC%E4%B8%80%E8%8A%82%EF%BC%9Ahive%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7%E5%85%A5%E9%97%A8%5C%E8%AF%BE%E4%BB%B6%5Cassets%5Chive1.png" alt="hive1" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="D:/Document/KKB/12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive/%E7%AC%AC%E4%B8%80%E8%8A%82%EF%BC%9Ahive%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7%E5%85%A5%E9%97%A8/%E8%AF%BE%E4%BB%B6/assets/2019-07-11_11-08-35.png" alt="2019-07-11_11-08-35" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="D:/Document/KKB/12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive/%E7%AC%AC%E4%B8%80%E8%8A%82%EF%BC%9Ahive%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7%E5%85%A5%E9%97%A8/%E8%AF%BE%E4%BB%B6/assets/hive1.png" alt="hive1" loading="lazy"></figure>
 <h3 id="23-内部表和外部表">2.3 内部表和外部表</h3>
 <p>默认创建的都是内部表，也叫管理表（Managed Table）。因为这种表，hive控制着数据的生命周期。默认情况下，内部表的数据存储在hive.metastore.warehouse.dir（默认/user/hive/warehouse）。外部表在创建的时候需要加上external关键字。在创建表时可以自己指定目录位置，location字段可以指定，也可以不指定。指定就是数据存放的具体目录，不指定就是使用默认目录 /user/hive/warehouse。外部表因为是指定其他的hdfs路径的数据加载到表当中来，所以hive表会认为自己不完全独占这份数据，所以删除hive表的时候，数据仍然存放在hdfs当中，不会删掉。</p>
 <p>内部表和外部表的区别：</p>
@@ -247,7 +249,7 @@
 <h3 id="26-hive表的文件存储格式">2.6 Hive表的文件存储格式</h3>
 <p>目前大数据存储有两种方案可供选择：行存储（Row-Based）和列存储（Column-Based）。Hive支持的存储数据的格式主要有：TEXTFILE（行式存储） 、SEQUENCEFILE(行式存储)、<strong>ORC</strong>（列式存储）、<strong>PARQUET</strong>（列式存储）。</p>
 <h4 id="261-行式存储和列式存储">2.6.1 行式存储和列式存储</h4>
-<figure data-type="image" tabindex="6"><img src="D:%5CDocument%5CKKB%5C12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive%5C%E7%AC%AC%E4%B8%89%E8%8A%82%EF%BC%9Ahive%E4%BC%81%E4%B8%9A%E7%BA%A7%E8%B0%83%E4%BC%98%5Chive%E8%AF%BE%E5%89%8D%E8%B5%84%E6%96%996.8%5Cassets%5Cclip_image002.jpg" alt="clip_image002" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="D:/Document/KKB/12-%E6%95%B0%E4%BB%93%E5%B7%A5%E5%85%B7hive/%E7%AC%AC%E4%B8%89%E8%8A%82%EF%BC%9Ahive%E4%BC%81%E4%B8%9A%E7%BA%A7%E8%B0%83%E4%BC%98/hive%E8%AF%BE%E5%89%8D%E8%B5%84%E6%96%996.8/assets/clip_image002.jpg" alt="clip_image002" loading="lazy"></figure>
 <p>行式存储下一张表的数据都是放在一起的，但列式存储下都被分开保存了。列式存储是相对于传统关系型数据库的行式存储来说的。简单来说两者的区别就是<strong>如何组织表</strong>：<br>
 Row-based storage storesatable in a sequence of rows.<br>
 基于行的存储按行顺序存放数据。<br>
