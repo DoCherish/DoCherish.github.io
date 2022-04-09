@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2022-04-09T10:35:34.877Z</updated>
+    <updated>2022-04-09T17:03:52.304Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,27 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2022, Do&apos;s blog</rights>
+    <entry>
+        <title type="html"><![CDATA[Hive——关于物化视图]]></title>
+        <id>https://DoCherish.github.io/post/hive-guan-yu-wu-hua-shi-tu/</id>
+        <link href="https://DoCherish.github.io/post/hive-guan-yu-wu-hua-shi-tu/">
+        </link>
+        <updated>2022-04-09T17:00:48.000Z</updated>
+        <summary type="html"><![CDATA[<h1 id="关于视图">关于视图</h1>
+<p>主要内容：</p>
+<ul>
+<li>介绍视图，普通视图和物化视图</li>
+<li>介绍Hive中的物化视图</li>
+</ul>
+]]></summary>
+        <content type="html"><![CDATA[<h1 id="关于视图">关于视图</h1>
+<p>主要内容：</p>
+<ul>
+<li>介绍视图，普通视图和物化视图</li>
+<li>介绍Hive中的物化视图</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Hive——大数据分析利器]]></title>
         <id>https://DoCherish.github.io/post/hive-da-shu-ju-fen-xi-li-qi/</id>
@@ -154,23 +175,6 @@
         <content type="html"><![CDATA[<p>主要内容：</p>
 <ul>
 <li>介绍实时计算PVUV项目</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Flink——状态管理]]></title>
-        <id>https://DoCherish.github.io/post/flink-zhuang-tai-guan-li/</id>
-        <link href="https://DoCherish.github.io/post/flink-zhuang-tai-guan-li/">
-        </link>
-        <updated>2020-05-04T16:11:22.000Z</updated>
-        <summary type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>介绍有状态计算及状态后端</li>
-</ul>
-]]></summary>
-        <content type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>介绍有状态计算及状态后端</li>
 </ul>
 ]]></content>
     </entry>
