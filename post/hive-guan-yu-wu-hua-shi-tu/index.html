@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Hive——关于物化视图 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1649524031801">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1649524178917">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -214,33 +214,33 @@ WHERE empid = 1;
 <pre><code class="language-sql">SELECT deptno
 FROM emps
 WHERE deptno &gt; 10
-GROUP BY deptno
+GROUP BY deptno;
 </code></pre>
 <p>如果创建了如下物化视图：</p>
 <pre><code class="language-sql">CREATE MATERIALIZED VIEW mv AS
 SELECT empid, deptno
 FROM emps
 WHERE deptno &gt; 5
-GROUP BY empid, deptno
+GROUP BY empid, deptno;
 </code></pre>
 <p>则会将原查询<code>Rewriting</code>为：</p>
 <pre><code class="language-sql">SELECT deptno
 FROM mv
 WHERE deptno &gt; 10
-GROUP BY deptno
+GROUP BY deptno;
 </code></pre>
 <h4 id="333-union-rewriting">3.3.3 Union rewriting</h4>
 <p><strong>案例2</strong>：查询出工资大于10000的员工id和部门名称。则原查询如下：</p>
 <pre><code class="language-sql">SELECT empid, deptname
 FROM emps
 JOIN depts ON emps.deptno = depts.deptno
-WHERE salary &gt; 10000
+WHERE salary &gt; 10000;
 </code></pre>
 <p>如果创建了如下物化视图：</p>
 <pre><code class="language-sql">SELECT empid, deptname
 FROM emps
 JOIN depts ON emps.deptno = depts.deptno
-WHERE salary &gt; 12000
+WHERE salary &gt; 12000;
 </code></pre>
 <p>则会将原查询<code>Rewriting</code>为：</p>
 <pre><code class="language-sql">SELECT empid, deptname
@@ -249,7 +249,7 @@ UNION ALL
 SELECT empid, deptname
 FROM emps
 JOIN depts ON emps.deptno = depts.deptno
-WHERE salary &gt; 10000 AND salary &lt;= 12000
+WHERE salary &gt; 10000 AND salary &lt;= 12000;
 </code></pre>
 
                 </div>
