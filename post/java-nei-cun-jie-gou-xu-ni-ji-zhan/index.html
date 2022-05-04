@@ -1,0 +1,303 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Java内存结构——虚拟机栈 | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1651656469983">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            Home
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            Posts
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            Tags
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            About
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Java内存结构——虚拟机栈
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-05-04 17:26:37 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/lGIpYMDn4/" class="post-tags">
+                            # JVM
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>主要内容：</p>
+<ul>
+<li>介绍程序计数器</li>
+</ul>
+<!-- more -->
+<figure data-type="image" tabindex="1"><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gg9kuge8ovj32150tt7cd.jpg" alt="" loading="lazy"></figure>
+<h2 id="1-概述">1、概述</h2>
+<p>每个线程在创建的时候都会创建一个虚拟机栈，其内部保存了一个个的栈帧(Stack Frame），对应着一次次 Java 方法调用，是线程私有的，生命周期和线程一致。首先要明确：<strong>栈是运行时的单位，而堆是存储的单位。</strong></p>
+<ul>
+<li>栈解决程序的运行问题，即程序如何执行，或者说程序如何处理数据。</li>
+<li>堆解决数据的存储问题，即数据怎么放、放哪里。</li>
+</ul>
+<h3 id="11-生命周期">1.1 生命周期</h3>
+<p>与程序计数器一样，Java虚拟机栈也是线程私有的，生命周期与线程相同。</p>
+<h3 id="12-作用">1.2 作用</h3>
+<p>主管Java程序的运行。Java虚拟机栈保存方法的局部变量、部分结果，并参与方法的调用和返回。</p>
+<h3 id="13-特点">1.3 特点</h3>
+<ul>
+<li>
+<p>栈是一种快速有效的分配存储方式，其访问速度仅次于程序计数器。</p>
+</li>
+<li>
+<p>JVM对栈的操作只有两个：</p>
+<ul>
+<li>方法执行，入栈。</li>
+<li>方法结束，出栈。</li>
+</ul>
+</li>
+<li>
+<p>栈不存在垃圾回收的问题。</p>
+</li>
+</ul>
+<h3 id="14-栈中可能出现的异常">1.4 栈中可能出现的异常</h3>
+<p>Java虚拟机规范允许栈的大小可以动态设置，也可以是固定的大小。</p>
+<ul>
+<li>StackOverFlow：线程请求的栈容量超过了栈的最大容量。</li>
+<li>OutOfMemory：栈在动态扩展时，无法申请到足够的内存，或者在创建的时候，没有足够的内存。</li>
+</ul>
+<h3 id="15-栈的存储单位">1.5 栈的存储单位</h3>
+<ul>
+<li>栈中的存储单位是：栈帧。</li>
+<li>每个方法都有自己各自的栈帧。</li>
+<li>栈帧是一块内存区域，是一个数据集，维系着方法执行过程中的各种数据信息。</li>
+</ul>
+<h3 id="16-栈的运行原理">1.6 栈的运行原理</h3>
+<ul>
+<li>在一个活动线程中，一个时间点上，只会有一个活动的栈帧，即只有当前正在执行的方法的栈帧是有效的，这个栈帧称为当前栈帧。与当前栈帧对应的方法就是当前方法，定义这个方法的类就是当前类。</li>
+<li>执行引擎运行的字节码指令，只针对当前栈帧进行操作。</li>
+<li>如果在方法中调用了其他方法，对应的新的栈帧会被创建出来，放在栈的顶端，作为新的当前栈帧。</li>
+<li>不同线程中所包含的栈帧是不存在相互引用的，不可能在一个栈帧中引用另外一个线程的栈帧。</li>
+<li>如果方法1调用了方法2，在方法1返回之际，会将执行结果传递给栈帧1，接着栈帧2出栈，使得栈帧1成为当前栈帧。</li>
+<li>方法有两种返回函数的方式。一种是正常的函数返回（return指令），一种是抛出异常。无论是哪种方式，都会导致栈帧出栈。</li>
+</ul>
+<h3 id="16-栈帧的内部结构">1.6 栈帧的内部结构</h3>
+<figure data-type="image" tabindex="2"><img src="https://tva1.sinaimg.cn/large/0082zybply1gc8tjehg8bj318m0lbtbu.jpg" alt="" loading="lazy"></figure>
+<p>每个栈帧中存储着：</p>
+<ul>
+<li><strong>局部变量表</strong>（Local Variables）。</li>
+<li><strong>操作数栈</strong>（Operand Stack），或称为表达式栈。</li>
+<li><strong>动态链接</strong>（Dynamic Linking），指向运行时常量池的方法引用。</li>
+<li><strong>方法返回地址</strong>（Return Address），正常或异常退出时的地址。</li>
+<li><strong>一些附件信息</strong>。</li>
+</ul>
+<h4 id="161-局部变量表">1.6.1 局部变量表</h4>
+<ul>
+<li>局部变量表也被称为局部变量数组或本地变量表。</li>
+<li>局部变量表是建立在线程的栈上，属于线程私有数据，不存在数据安全问题。</li>
+<li>主要用于存储方法参数和定义在方法体内的局部变量。包括编译期可知的8种基本数据类型（boolean、byte、char、short、int、float、long、double）、对象引用、returnAddress类型。</li>
+<li>局部变量表的大小是编译期确定的。在方法运行期间是不会改变局部变量表的大小的。</li>
+<li>方法嵌套调用的次数是由栈的大小决定的。一般来说，栈越大，方法嵌套调用次数越多。对于一个函数而言，参数和局部变量越多，局部变量表就越膨胀，栈帧就越大，进而函数调用就会占用更多的栈空间，嵌套调用次数就越少。</li>
+<li>局部变量表中的变量只在当前方法调用中有效。当方法调用结束后，随着方法栈帧的销毁，局部变量表也会随之销毁。</li>
+</ul>
+<h4 id="162-操作数栈">1.6.2 操作数栈</h4>
+<ul>
+<li>操作数栈主要用保存计算过程的中间结果，同时作为计算过程中变量的临时存储空间。</li>
+<li>操作数栈是JVM执行引擎的一个工作区，当一个方法开始执行时，一个新的栈帧会被创建出来，此时这个方法的操作数栈是空的。</li>
+<li>每一个操作数栈都有一个明确的栈深度，在编译期就确定了。</li>
+<li>操作数栈中的元素可以是任意的Java数据类型。</li>
+<li>如果调用的方法带有返回值的话，其返回值将会被压入当前栈帧的操作数栈中，并更新PC寄存器中下一条需要执行的字节码指令。</li>
+<li>操作数栈中元素的数据类型必须与字节码指令的序列严格匹配，这由编译器在编译期间进行验证，同时在类加载过程中的类检验阶段的数据流分析阶段要再次验证。</li>
+<li>另外，我们说的：Java虚拟机的解释引擎是基于栈的执行引擎，其中栈就是指的操作数栈。</li>
+<li>栈顶缓存技术：HotSpot虚拟机的执行引擎是基于栈的架构，并非是基于寄存器的架构，但这并不代表HotSpot虚拟机没有用到寄存器资源。寄存器是物理CPU的组成部分之一，同时也是CPU中非常重要的高速存储资源，主要是用来缓存本地机器指令、数值和下一条要执行的指令地址等数据。一般来说，寄存器的读写速度甚至比内存的读写速度快几十倍不止，不过寄存器资源非常有限，而且不用平台下的CPU寄存器的数量是不同和不规律的。基于栈式架构的虚拟机所使用的零地址指令更加紧凑，但完成一项操作的时候必然需要使用更多的入栈和出栈指令，这同时也意味着需要更多的指令分派次数和内存读写次数。由于操作数是存储在内存中的，因此频繁地执行内存的读写操作必然会影响执行速度。<strong>为了解决这个问题，设计者们提出了栈顶缓存技术：将栈顶元素全部缓存在物理CPU的寄存器中，以此降低对内存的读写次数，提升执行引擎的执行效率。</strong></li>
+</ul>
+<h4 id="163-动态链接">1.6.3 动态链接</h4>
+<figure data-type="image" tabindex="3"><img src="https://tva1.sinaimg.cn/large/0082zybply1gca4k4gndgj31d20o2td0.jpg" alt="" loading="lazy"></figure>
+<ul>
+<li>每一个栈帧内部都包含了一个指向运行时常量池中该栈帧所属方法的引用。包含这个引用的目的就是为了支持当前方法的代码能够实现动态链接。</li>
+<li>Java源文件被编译到字节码文件时，所有的变量和方法都作为符号引用Class文件的常量池中。<strong>动态链接的作用就是将这些符号引用转化为调用方法的直接引用。</strong></li>
+<li>Class文件的编译过程中不包括传统编译器中的连接步骤，一切方法调用在Class文件里面存储的都是符号引用，而不是方法在实际运行时内存布局中的入口地址（直接引用）。也就是需要在类加载阶段，甚至是运行时才能确定方法的直接引用。</li>
+</ul>
+<p>在JVM中，将符号引用转换为调用方法的直接引用，与方法的绑定机制有关。</p>
+<ul>
+<li>静态链接：当一个字节码文件被装载到JVM内部时，<strong>如果被调用的目标方法在编译期可知，且运行期保持不变</strong>，这种情况下将调用方法的符号引用转换为直接引用的过程称之为静态链接。</li>
+<li>动态链接：**如果被调用的目标方法在编译期无法确定下来，只能在运行期将调用的目标方法的符号引用转化为直接引用。**由于这种引用转化过程具备动态性，因此也就被称之为动态链接。</li>
+</ul>
+<p>对应的方法的绑定机制分为：</p>
+<ul>
+<li>早期绑定：被调用的目标方法在编译期可知，且运行期保持不变，即可将这个方法与所属的类型进行绑定，这样一来由于明确了被调用的目标方法究竟是哪一个，因此也就可以使用静态链接的方式将符号引用转换为直接引用。</li>
+<li>晚期绑定：被调用的目标方法在编译期无法被确定下来，只能在程序运行期根据实际的类型绑定相关的方法。</li>
+</ul>
+<blockquote>
+<p>什么是动态类型语言？<br>
+动态类型语言的关键特征是它的类型检查的主体过程是在运行期而不是编译期进行的，在编译期就进行类型检查过程的语言是静态类型语言。说的再直白一点就是，静态类型语言是判断变量自身的类型信息；动态类型语言是判断变量值的类型信息，变量没有类型信息，变量值才有类型信息，这是动态语言的一个重要特征。例如：python、Javascript、Ruby语言是动态类型语言。</p>
+</blockquote>
+<p>虚方法和非虚方法：</p>
+<ul>
+<li>如果方法在编译期就确定了具体的调用版本，这个版本在运行时是不可变的。这样的方法称为非虚方法。比如静态方法、私有方法、final方法、实例构造器、父类方法都是非虚方法。</li>
+<li>其他方法称为虚方法。</li>
+</ul>
+<p>虚方法表：</p>
+<ul>
+<li>在面向对象的编程中，会很频繁的使用到动态分派，如果在每次动态分派的过程中都要重新在类的方法元数据中搜索合适的目标的话就可能影响到执行效率。因此，<strong>为了提高性能，JVM采用在类的方法区建立一个虚方法表</strong> （virtual method table）（非虚方法不会出现在表中）来实现，使用索引表来代替查找。</li>
+<li>每个类中都有一个虚方法表，表中存放着各个方法的实际入口。</li>
+<li>虚方法表会在类加载的链接阶段被创建并开始初始化，类的变量初始值准备完成之后，JVM会把该类的方法表也初始化完毕。</li>
+</ul>
+<h4 id="164-方法返回地址">1.6.4 方法返回地址</h4>
+<ul>
+<li>方法返回地址中存放的是：调用该方法的上级方法的PC寄存器中所存的值。</li>
+<li>一个方法的结束，有两种方式：正常执行完成，或者出现未处理的异常，程序非正常退出。无论哪种方式退出，在方法退出后都返回到该方法被调用的位置。</li>
+<li>执行引擎遇到任何一个方法返回的字节码指令时，会有返回值传递给上层调用者，称为正常完成出口。</li>
+<li>在方法的执行过程中遇到了异常，并且这个异常没有在方法内进行处理，也就是只要在本方法的异常表中没有搜索到匹配的异常处理器，就会导致方法退出，称为异常完成出口。</li>
+<li>正常完成出口和异常完成出口的区别在于：<strong>通过异常完成出口退出的不会给他的上层调用者产生任何的返回值</strong>。</li>
+<li>本质上，方法的退出就是当前栈帧出栈的过程。此时，需要恢复上层方法的局部变量表、操作数栈，将返回值压入调用者栈帧的操作数栈、设置PC寄存器值等，让调用者方法继续执行下去。</li>
+</ul>
+<h4 id="165-附件信息">1.6.5 附件信息</h4>
+<p>栈帧中还允许携带与 Java 虚拟机实现相关的一些附加信息。例如，对程序调试提供支持的信息，但这些信息取决于具体的虚拟机实现。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/jvm-nei-cun-jie-gou-cheng-xu-ji-shu-qi/" class="post-title gt-a-link">
+                    JVM内存结构——程序计数器
+                </a>
+            </div>
+        
+
+        
+            
+                <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '739e90a8be2ceb4495bc',
+    clientSecret: '3432bb21b5e66759f6e4ccfc61391c3b5194ca35',
+    repo: 'DoCherish.github.io',
+    owner: 'DoCherish',
+    admin: ['DoCherish'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+            
+
+            
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">Learning&Thinking</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
