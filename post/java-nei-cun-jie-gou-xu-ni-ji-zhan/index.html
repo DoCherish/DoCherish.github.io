@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Java内存结构——虚拟机栈 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1651656469983">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1651657106901">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -102,7 +102,7 @@
                 <div class="post-content">
                     <p>主要内容：</p>
 <ul>
-<li>介绍程序计数器</li>
+<li>介绍虚拟机栈</li>
 </ul>
 <!-- more -->
 <figure data-type="image" tabindex="1"><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gg9kuge8ovj32150tt7cd.jpg" alt="" loading="lazy"></figure>
@@ -193,7 +193,7 @@
 <p>在JVM中，将符号引用转换为调用方法的直接引用，与方法的绑定机制有关。</p>
 <ul>
 <li>静态链接：当一个字节码文件被装载到JVM内部时，<strong>如果被调用的目标方法在编译期可知，且运行期保持不变</strong>，这种情况下将调用方法的符号引用转换为直接引用的过程称之为静态链接。</li>
-<li>动态链接：**如果被调用的目标方法在编译期无法确定下来，只能在运行期将调用的目标方法的符号引用转化为直接引用。**由于这种引用转化过程具备动态性，因此也就被称之为动态链接。</li>
+<li>动态链接：<strong>如果被调用的目标方法在编译期无法确定下来，只能在运行期将调用的目标方法的符号引用转化为直接引用</strong>。由于这种引用转化过程具备动态性，因此也就被称之为动态链接。</li>
 </ul>
 <p>对应的方法的绑定机制分为：</p>
 <ul>
