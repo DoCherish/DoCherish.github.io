@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2022-05-04T09:38:29.870Z</updated>
+    <updated>2022-05-07T14:56:49.604Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -11,7 +11,24 @@
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2022, Do&apos;s blog</rights>
     <entry>
-        <title type="html"><![CDATA[Java内存结构——虚拟机栈]]></title>
+        <title type="html"><![CDATA[Spark——RDD和DataFrame]]></title>
+        <id>https://DoCherish.github.io/post/spark-rdd-he-dataframe/</id>
+        <link href="https://DoCherish.github.io/post/spark-rdd-he-dataframe/">
+        </link>
+        <updated>2022-05-07T14:55:29.000Z</updated>
+        <summary type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>介绍RDD和DataFrame</li>
+</ul>
+]]></summary>
+        <content type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>介绍RDD和DataFrame</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[JVM内存结构——虚拟机栈]]></title>
         <id>https://DoCherish.github.io/post/java-nei-cun-jie-gou-xu-ni-ji-zhan/</id>
         <link href="https://DoCherish.github.io/post/java-nei-cun-jie-gou-xu-ni-ji-zhan/">
         </link>
@@ -166,22 +183,5 @@
         <link href="https://DoCherish.github.io/post/hadoop-fen-bu-shi-wen-jian-xi-tong/">
         </link>
         <updated>2020-07-05T05:25:09.000Z</updated>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[埋点信息]]></title>
-        <id>https://DoCherish.github.io/post/mai-dian-xin-xi/</id>
-        <link href="https://DoCherish.github.io/post/mai-dian-xin-xi/">
-        </link>
-        <updated>2020-05-19T14:57:46.000Z</updated>
-        <summary type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>介绍埋点相关信息</li>
-</ul>
-]]></summary>
-        <content type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>介绍埋点相关信息</li>
-</ul>
-]]></content>
     </entry>
 </feed>
