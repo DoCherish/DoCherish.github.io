@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>关于 | Do&#39;s blog</title>
+<title>Kafka——Page Cache 设计思想 | Do&#39;s blog</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1652542987064">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,45 +87,66 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    关于
+                    Kafka——Page Cache 设计思想
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2019-01-25 19:09:48 ·
+                        · 2022-05-14 23:13:50 ·
                     </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/spark/" class="post-tags">
+                            # Spark
+                        </a>
                     
                 </div>
                 <div class="post-content">
-                    <blockquote>
-<p>Welcome to my station. Nice to meet you！😄</p>
-</blockquote>
-<figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1587259293020.jpg" alt="" loading="lazy"></figure>
-<h2 id="name">Name</h2>
-<p>Do</p>
-<h2 id="i-am">I Am</h2>
-<p>A Program Developer<br>
-2015-2018 studied in Xi'an University of Posts and Telecommunications<br>
-Entered the big data platform development team of a company in 2018<br>
-Research direction: real-time computing</p>
-<h2 id="contact">Contact</h2>
-<p>GitHub:https://github.com/DoCherish<br>
-Email:mrduxu@163.com</p>
-<h2 id="recommend">Recommend</h2>
-<p>In the era of information fragmentation, we should insist on independent thinking and systematic learning. If you are also studying Flink, the following websites are highly recommended：</p>
+                    <p>主要内容：</p>
 <ul>
-<li><a href="https://flink.apache.org/">官方文档</a></li>
-<li><a href="https://github.com/flink-china/flink-training-course">Flink 中文社区视频课程</a></li>
-<li><a href="%5Bhttps://zh.ververica.com/%5D(http://link.zhihu.com/?target=https%3A//zh.ververica.com/)">Flink 中文社区</a></li>
-<li><a href="https://training.ververica.com/">ververica 教程</a></li>
-<li><a href="https://github.com/apache/flink">源码</a></li>
-<li><a href="https://ververica.cn/developers/special-issue/">Flink 知识图谱</a></li>
-<li><a href="https://space.bilibili.com/33807709/">B站视频</a></li>
+<li>介绍 Page Cache</li>
+<li>介绍 Kafka Page Cache 的思想</li>
 </ul>
+<!-- more -->
+<figure data-type="image" tabindex="1"><img src="https://images.unsplash.com/photo-1651592753269-7d661e4a9899?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=1170&amp;q=80" alt="" loading="lazy"></figure>
+<h2 id="1-什么是-page-cache">1、什么是 Page Cache ？</h2>
+<p>CPU 要想访问外存（磁盘）文件，就需要先将磁盘文件数据 Copy 到内存中。而磁盘的访问和传输速度相比于内存慢了几个数量级。操作系统将用来缓存数据的空闲内存就叫做 Page Cache。应用程序产生 Page Cache 的逻辑示意图如下。很明显，Page Cache 是内核管理的内存，也就是说，它属于内核态不属于用户态。</p>
+<figure data-type="image" tabindex="2"><img src="https://static001.geekbang.org/resource/image/f3/1b/f344917f3cacd5bc06ae7c743a217f1b.png?wh=2860*2440" alt="" loading="lazy"></figure>
+<p>用户进程启动 read() 系统调用后，内核会首先查看 Page Cache 里有没有用户要读取的文件内容，如果有（Cache Hit），那就直接读取，没有的话（Cache Miss）再启动 I/O 操作从磁盘上读取，然后放到 Page Cache 中，下次再访问这部分内容的时候，就可以直接从 Page Cache 中取了。</p>
+<h2 id="2-kafka-pagecache-思想">2、Kafka PageCache 思想</h2>
+<figure data-type="image" tabindex="3"><img src="file://C:/Users/86134/OneDrive/PageCache.png" alt="" loading="lazy"></figure>
+<p>**Kafka 重度依赖底层操作系统提供的 Page Cache 功能，借力于 Linux 内核的 Page Cache，不(显式)用内存，胜用内存。**当写操作发生时，它只是将数据写入 Page Cache 中，并将该页置上 Dirty 标志。当读操作发生时，它会首先在 Page Cache 中查找内容，如果有就直接返回了，没有的话就会从磁盘读取文件再写回 Page Cache。实际上 Page Cache 是把尽可能多的空闲内存都当做了磁盘缓存来使用。同时如果有其他进程申请内存，回收 Page Cache 的代价又很小，所以现代的 OS 都支持 Page Cache。</p>
+<ul>
+<li>Kafka 在运行过程中，会尽可能多的把空闲内存都当做了磁盘缓存来使用。</li>
+<li>**如果 Kafka Producer 的生产速率与 Consumer 的消费速率相差不大，那么就能几乎只靠对 Broker Page Cache 的读写就可以完成整个生产-消费过程，所有的数据都在内存中。**这是 Kafka 的高吞吐量的保证。</li>
+<li>Kafka 使用 Page Cache 功能同时可以避免在 JVM 内部缓存数据。
+<ul>
+<li>如果在 Heap 内管理缓存，JVM 的 GC 线程会频繁扫描 Heap 空间，带来不必要的开销，</li>
+<li>JVM 对象头会带来很多空间浪费，内存的有效空间利用率会因此降低。</li>
+</ul>
+</li>
+<li>Kafka 重启后，OS 管理的 Page Cache 不会被释放，依然可以继续使用。</li>
+<li>Kafka 的刷盘机制，会将 Page Cache 中 的消息数据刷到磁盘当中，保证数据不会丢失。</li>
+</ul>
+<blockquote>
+<p>曾经，我碰到过一个线上环境的问题：该集群上 Consumer 程序一直表现良好，但是某一天，它的性能突然下降，表现为吞吐量显著降低。我在查看磁盘读 I/O 使用率时，发现其明显上升，但之前该 Consumer Lag 很低，消息读取应该都能直接命中页缓存。此时磁盘读突然飙升，我就怀疑有其他程序写入了页缓存。后来经过排查，我发现果然有一个测试 Console Consumer 程序启动，“污染”了部分页缓存，导致主业务 Consumer 读取消息不得不走物理磁盘，因此吞吐量下降。找到了真实原因，解决起来就简单多了。</p>
+</blockquote>
+<p>相关阅读：</p>
+<ol>
+<li><a href="https://shiyueqi.github.io/2017/04/27/Kafka-Pagecache%E5%8E%9F%E7%90%86/">Kafka-Pagecache原理</a></li>
+<li><a href="https://www.jianshu.com/p/92f33aa0ff52">聊聊page cache与Kafka之间的事儿</a></li>
+<li><a href="https://learn.lianglianglee.com/%E4%B8%93%E6%A0%8F/Kafka%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E6%88%98/38%20%20%E8%B0%83%E4%BC%98Kafka%EF%BC%8C%E4%BD%A0%E5%81%9A%E5%88%B0%E4%BA%86%E5%90%97%EF%BC%9F.md">38 调优Kafka，你做到了吗？</a></li>
+</ol>
 
                 </div>
             </article>
         </div>
 
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/spark-rdd-he-dataframe/" class="post-title gt-a-link">
+                    Spark——RDD和DataFrame
+                </a>
+            </div>
         
 
         
