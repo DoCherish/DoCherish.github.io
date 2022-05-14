@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Kafka——如何理解Kafka的“快”？ | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1651935403739">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1652537125966">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -104,9 +104,18 @@
 <!-- more -->
 <h3 id="1-应用层面的优化">1 应用层面的优化</h3>
 <ul>
-<li><strong>使用批次</strong>：producer和consumer都使用批次进行读写——避免在网络上频繁传输单个消息带来的延迟和宽带开销；</li>
-<li><strong>高效压缩</strong>：将多条消息压缩在一起，而不是分别压缩每条消息，自带压缩方式：<code>GZIP</code>和<code>Snappy</code>。消息在写入时进行压缩，消息在传输和存储均为压缩状态，只有在消费时由consumer解压缩——减少网络传输压力；</li>
-<li><strong>水平扩展</strong>：分区——多分区同时读写。</li>
+<li>
+<p><strong>使用批次</strong>：producer和consumer都使用批次进行读写——避免在网络上频繁传输单个消息带来的延迟和宽带开销；</p>
+</li>
+<li>
+<p><strong>高效压缩</strong>：将多条消息压缩在一起，而不是分别压缩每条消息，牺牲部分CPU性能换取IO吞吐量的提升。自带压缩方式：<code>GZIP</code>和<code>Snappy</code>。消息在写入时进行压缩，消息在传输和存储均为压缩状态，只有在消费时由consumer解压缩——减少网络传输压力；</p>
+</li>
+<li>
+<p><strong>水平扩展</strong>：分区——多分区同时读写。</p>
+</li>
+<li>
+<p><strong>高效的存储结构</strong>：topic、partition、segment、索引文件、稀疏存储等。</p>
+</li>
 </ul>
 <h3 id="2-写得快">2 写得快</h3>
 <ul>
@@ -115,7 +124,12 @@
 </ul>
 <h3 id="3-读得快">3 读得快</h3>
 <ul>
-<li><strong>零拷贝</strong>：数据直接在内核空间完成输入和输出，不需要拷贝到用户空间。Kafka写数据前，先写到进程的内存空间。零拷贝并非不需要拷贝，而是<strong>减少不必要的拷贝</strong>，主要指在<strong>内核空间</strong>和<strong>用户空间</strong>之间的拷贝，进而提高效率。从磁盘获取数据并通过网络发送数据时，一般流程：</li>
+<li>
+<p><strong>Page Cache</strong>：kafka 在设计时以 page cache 为中心, 充分利用操作系统提供的 page cache , 而不是在 JVM 内存中维护对象。借力于Linux内核的Page Cache，不(显式)用内存，胜用内存——<strong>空中接力</strong>。</p>
+</li>
+<li>
+<p><strong>零拷贝</strong>：数据直接在内核空间完成输入和输出，不需要拷贝到用户空间。Kafka写数据前，先写到进程的内存空间。零拷贝并非不需要拷贝，而是<strong>减少不必要的拷贝</strong>，主要指在<strong>内核空间</strong>和<strong>用户空间</strong>之间的拷贝，进而提高效率。从磁盘获取数据并通过网络发送数据时，一般流程：</p>
+</li>
 </ul>
 <figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/1586449339527.png" alt="" loading="lazy"></figure>
 <ol>
