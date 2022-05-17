@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Kafka——Page Cache 设计思想 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1652543925067">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1652802062508">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -112,8 +112,8 @@
 <figure data-type="image" tabindex="2"><img src="https://static001.geekbang.org/resource/image/f3/1b/f344917f3cacd5bc06ae7c743a217f1b.png?wh=2860*2440" alt="" loading="lazy"></figure>
 <p>用户进程启动 read() 系统调用后，内核会首先查看 Page Cache 里有没有用户要读取的文件内容，如果有（Cache Hit），那就直接读取，没有的话（Cache Miss）再启动 I/O 操作从磁盘上读取，然后放到 Page Cache 中，下次再访问这部分内容的时候，就可以直接从 Page Cache 中取了。</p>
 <h2 id="2-kafka-pagecache-思想">2、Kafka PageCache 思想</h2>
-<figure data-type="image" tabindex="3"><img src="https://DoCherish.github.io/post-images/PageCache.png" alt="" loading="lazy"></figure>
 <p><strong>Kafka 重度依赖底层操作系统提供的 Page Cache 功能，借力于 Linux 内核的 Page Cache，不(显式)用内存，胜用内存</strong>。当写操作发生时，它只是将数据写入 Page Cache 中，并将该页置上 Dirty 标志。当读操作发生时，它会首先在 Page Cache 中查找内容，如果有就直接返回了，没有的话就会从磁盘读取文件再写回 Page Cache。实际上 Page Cache 是把尽可能多的空闲内存都当做了磁盘缓存来使用。同时如果有其他进程申请内存，回收 Page Cache 的代价又很小，所以现代的 OS 都支持 Page Cache。</p>
+<figure data-type="image" tabindex="3"><img src="https://DoCherish.github.io/post-images/PageCache.png" alt="" loading="lazy"></figure>
 <ul>
 <li>Kafka 在运行过程中，会尽可能多的把空闲内存都当做了磁盘缓存来使用。</li>
 <li><strong>如果 Kafka Producer 的生产速率与 Consumer 的消费速率相差不大，那么就能几乎只靠对 Broker Page Cache 的读写就可以完成整个生产-消费过程，所有的数据都在内存中</strong>。这是 Kafka 的高吞吐量的保证。</li>

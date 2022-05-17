@@ -1,0 +1,362 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Spark——JoinSelection策略 | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1652802062508">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            Home
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            Posts
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            Tags
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            About
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Spark——JoinSelection策略
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-05-17 23:35:36 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/spark/" class="post-tags">
+                            # Spark
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>主要内容：</p>
+<ul>
+<li>介绍Join的三种实现方式</li>
+<li>介绍Spark中的Join策略</li>
+</ul>
+<!-- more -->
+<figure data-type="image" tabindex="1"><img src="https://images.unsplash.com/photo-1652700896351-3174534db580?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=1172&amp;q=80" alt="" loading="lazy"></figure>
+<p>在数据分析领域，Join操作是非常常见的数据处理操作。Spark作为一个统一的大数据处理引擎，提供了丰富的Join场景。</p>
+<h2 id="1-join的实现方式">1、Join的实现方式</h2>
+<figure data-type="image" tabindex="2"><img src="https://DoCherish.github.io/post-images/NLJ.jpg" alt="" loading="lazy"></figure>
+<p><strong>循环嵌套-Nested Loop Join（NLJ）</strong>：对于关联的两张表，大表作为外表或者驱动表；小表作为内表或者基表。NLJ是采用“循环嵌套”的方式实现关联。使用两个嵌套的for循环扫描数据，判断关联条件是否满足。外层for循环负责遍历外表中的每一条数据，内层for循环负责遍历内表中的每一条数据，即外表中的一条数据，就会遍历内表中的所有记录。假设外表有M行，内表有N行，那么NLJ算法的时间复杂度是O(M*N)。</p>
+<figure data-type="image" tabindex="3"><img src="https://DoCherish.github.io/post-images/SMJ.jpg" alt="" loading="lazy"></figure>
+<p><strong>排序归并-Sort Merge Join（SMJ）</strong>：SMJ的思路是先排序，后归并。具体来说，就是参与Join的两张表先分别按照Join Key进行排序，然后使用两个独立的游标对排好序的两张表完成归并关联。开始时，内外表的游标都会先指向各自表的第一行记录，然后对比游标所在记录的Join Key。对比结果以及后续操作主要分为三种情况：</p>
+<ul>
+<li>外表 Join Key 等于内表 Join Key，满足关联条件，把两边的数据记录拼接并输出，然后把外表的游标滑动到下一条记录</li>
+<li>外表 Join Key 小于内表 Join Key，不满足关联条件，把外表的游标滑动到下一条记录</li>
+<li>外表 Join Key 大于内表 Join Key，不满足关联条件，把内表的游标滑动到下一条记录</li>
+</ul>
+<p>SMJ对排序的要求比较苛刻。其能具有线性的时间复杂度，仰仗的是两张表已经事先排好序。而排序在大数据领域本身就是一项非常耗时的操作。由于SMJ中内表按Join Key升序排序，且扫描的起始位置为游标所在位置，因此，SMJ算法的时间复杂度是O(M+N)。</p>
+<figure data-type="image" tabindex="4"><img src="https://DoCherish.github.io/post-images/HJ.jpg" alt="" loading="lazy"></figure>
+<p><strong>哈希-Hash Join（HJ）</strong>：HJ的设计初衷：借助Hash Map，把内表扫描的时间复杂度降低至O(1)。具体做法：基于内表，根据给定的Hash函数构建哈希表。Hash表中的Key是Join Key应用哈希函数只有的哈希值。然后基于外表中的每一条数据，先使用同样的哈希函数以动态的方式计算Join Key的哈希值，用计算得到的哈希值去查询创建的哈希表。如果查询失败，说明外表中的这条记录与内表中的记录不存在关联关系；如果查询成功，就把两边的记录进行拼接输出。HJ算法的时间复杂度O(M)。</p>
+<h2 id="2-spark中的join策略-joinselection">2、Spark中的Join策略-JoinSelection</h2>
+<p>在 Spark 的物理计划（physical plan）阶段，Spark 的 JoinSelection 类会根据以下几种条件来选择最终的 Join 策略（join strategies）：</p>
+<ul>
+<li>Join hints 策略</li>
+<li>Join 表的大小</li>
+<li>Join 是否等值</li>
+<li>以及参与 Join 的 key 是否可以排序等</li>
+</ul>
+<p>当前 Spark（Apache Spark 3.0）一共支持五种 Join 策略：</p>
+<h3 id="21-broadcast-hash-join-bhj">2.1 Broadcast Hash Join (BHJ)</h3>
+<p>基本原理（过程）：</p>
+<ol>
+<li>将小表从各Executor端Collect到Driver端；</li>
+<li>Driver端调用sparkContext.broadcast将表数据广播到计算的executor端；</li>
+<li>在Executor端将广播的表加载到内存中，大表数据和内存中的Hash小表进行Join。</li>
+</ol>
+<p>使用条件与特点：</p>
+<ul>
+<li>仅支持等值连接，join key不需要排序。</li>
+<li>支持除了全外连接(full outer joins)之外的所有join类型。</li>
+<li>Broadcast Hash Join相比其他的JOIN机制而言，效率更高。但是，Broadcast Hash Join属于网络密集型的操作（数据冗余传输），除此之外，需要在Driver端缓存数据，所以当小表的数据量较大时，会出现OOM的情况。</li>
+<li>被广播的小表的数据量要小于spark.sql.autoBroadcastJoinThreshold值，默认是10MB（10485760）。</li>
+</ul>
+<h3 id="22-shuffle-hash-joinshj">2.2 Shuffle Hash Join（SHJ）</h3>
+<p>基本原理（过程）：</p>
+<ol>
+<li>对大表和小表的Join Key使用相同的分区算法和分区数进行分区（Shuffle），保证相同Join Key在同一个分区，方便分区内进行Join；</li>
+<li>将小表加载到内部才能构建Hash Map，本地进行Hash Join。</li>
+</ol>
+<p>使用条件与特点：</p>
+<ul>
+<li>仅支持等值连接，join key不需要排序。</li>
+<li>支持除了全外连接(full outer joins)之外的所有join类型。</li>
+<li>需要对小表构建Hash map，属于内存密集型的操作，如果构建Hash表的一侧数据比较大，可能会造成OOM。</li>
+<li>参数设置：将参数spark.sql.join.prefersortmergeJoin (default true)置为false。</li>
+<li>大表必须是小表的三倍以上。</li>
+</ul>
+<h3 id="23-shuffle-sort-merge-join-smj">2.3 Shuffle Sort Merge Join (SMJ)</h3>
+<p>基本原理（过程）：</p>
+<ol>
+<li>两张大表根据Join key进行Shuffle重分区；</li>
+<li>分区后对每个分区内的数据进行排序，排序后再对相应的分区内的记录进行连接，不需要将一个表加载到内存中；</li>
+<li>从头遍历，碰到key相同的就输出，如果不同，左边小就继续取左边，反之取右边。</li>
+</ol>
+<p>使用条件与特点：</p>
+<ul>
+<li>仅支持等值连接。</li>
+<li>支持所有join类型。</li>
+<li>Join Keys是排序的。</li>
+<li>参数设置：参数spark.sql.join.prefersortmergeJoin (默认true)设定为true。</li>
+<li>对表的大小没有限制：前两种策略都对小表有大小限制，而这种策略是不限制大小的；</li>
+</ul>
+<h3 id="24-cartesian-product-join-cpj">2.4 Cartesian Product Join (CPJ)</h3>
+<p>基本原理（过程）：</p>
+<ol>
+<li>如果 Spark 中两张参与 Join 的表没指定join key（ON 条件）那么会产生 Cartesian product join，这个 Join 得到的结果其实就是两张行数的乘积。</li>
+</ol>
+<p>使用条件与特点：</p>
+<ul>
+<li>仅支持内连接。</li>
+<li>支持等值和不等值连接。</li>
+<li>开启参数spark.sql.crossJoin.enabled=true。</li>
+</ul>
+<h3 id="25-broadcast-nested-loop-join-bnlj">2.5 Broadcast Nested Loop Join (BNLJ)</h3>
+<p>基本原理（过程）：</p>
+<ol>
+<li>与Broadcast Hash Join类似，先对小表进行广播，但是不对广播后的小表建立hash表，而是for循环遍历广播表。</li>
+</ol>
+<p>使用条件与特点：</p>
+<ul>
+<li>支持等值和非等值连接。</li>
+<li>支持所有Join类型。</li>
+<li>支持所有的JOIN类型，主要优化点如下：
+<ul>
+<li>当右外连接时要广播左表。</li>
+<li>当左外连接时要广播右表。</li>
+<li>当内连接时，要广播左右两张表。</li>
+</ul>
+</li>
+</ul>
+<figure data-type="image" tabindex="5"><img src="https://miro.medium.com/max/1400/1*EQOwbBV0AmDIvWfBtP4RCw.png" alt="" loading="lazy"></figure>
+<p><a href="https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/SparkStrategies.scala">SparkStrategies.scala</a>文件给出了各种Join方式的介绍：</p>
+<pre><code class="language-scala">  /**
+   * Select the proper physical plan for join based on join strategy hints, the availability of
+   * equi-join keys and the sizes of joining relations. Below are the existing join strategies,
+   * their characteristics and their limitations.
+   *
+   * - Broadcast hash join (BHJ):
+   *     Only supported for equi-joins, while the join keys do not need to be sortable.
+   *     Supported for all join types except full outer joins.
+   *     BHJ usually performs faster than the other join algorithms when the broadcast side is
+   *     small. However, broadcasting tables is a network-intensive operation and it could cause
+   *     OOM or perform badly in some cases, especially when the build/broadcast side is big.
+   *
+   * - Shuffle hash join:
+   *     Only supported for equi-joins, while the join keys do not need to be sortable.
+   *     Supported for all join types.
+   *     Building hash map from table is a memory-intensive operation and it could cause OOM
+   *     when the build side is big.
+   *
+   * - Shuffle sort merge join (SMJ):
+   *     Only supported for equi-joins and the join keys have to be sortable.
+   *     Supported for all join types.
+   *
+   * - Broadcast nested loop join (BNLJ):
+   *     Supports both equi-joins and non-equi-joins.
+   *     Supports all the join types, but the implementation is optimized for:
+   *       1) broadcasting the left side in a right outer join;
+   *       2) broadcasting the right side in a left outer, left semi, left anti or existence join;
+   *       3) broadcasting either side in an inner-like join.
+   *     For other cases, we need to scan the data multiple times, which can be rather slow.
+   *
+   * - Shuffle-and-replicate nested loop join (a.k.a. cartesian product join):
+   *     Supports both equi-joins and non-equi-joins.
+   *     Supports only inner like joins.
+   */
+</code></pre>
+<p>对于等值Join：</p>
+<pre><code class="language-scala">      // If it is an equi-join, we first look at the join hints w.r.t. the following order:
+      //   1. broadcast hint: pick broadcast hash join if the join type is supported. If both sides
+      //      have the broadcast hints, choose the smaller side (based on stats) to broadcast.
+      //   2. sort merge hint: pick sort merge join if join keys are sortable.
+      //   3. shuffle hash hint: We pick shuffle hash join if the join type is supported. If both
+      //      sides have the shuffle hash hints, choose the smaller side (based on stats) as the
+      //      build side.
+      //   4. shuffle replicate NL hint: pick cartesian product if join type is inner like.
+      //
+      // If there is no hint or the hints are not applicable, we follow these rules one by one:
+      //   1. Pick broadcast hash join if one side is small enough to broadcast, and the join type
+      //      is supported. If both sides are small, choose the smaller side (based on stats)
+      //      to broadcast.
+      //   2. Pick shuffle hash join if one side is small enough to build local hash map, and is
+      //      much smaller than the other side, and `spark.sql.join.preferSortMergeJoin` is false.
+      //   3. Pick sort merge join if the join keys are sortable.
+      //   4. Pick cartesian product if join type is inner like.
+      //   5. Pick broadcast nested loop join as the final solution. It may OOM but we don't have
+      //      other choice.
+</code></pre>
+<p>对于非等值Join：</p>
+<pre><code class="language-scala">      // If it is not an equi-join, we first look at the join hints w.r.t. the following order:
+      //   1. broadcast hint: pick broadcast nested loop join. If both sides have the broadcast
+      //      hints, choose the smaller side (based on stats) to broadcast for inner and full joins,
+      //      choose the left side for right join, and choose right side for left join.
+      //   2. shuffle replicate NL hint: pick cartesian product if join type is inner like.
+      //
+      // If there is no hint or the hints are not applicable, we follow these rules one by one:
+      //   1. Pick broadcast nested loop join if one side is small enough to broadcast. If only left
+      //      side is broadcast-able and it's left join, or only right side is broadcast-able and
+      //      it's right join, we skip this rule. If both sides are small, broadcasts the smaller
+      //      side for inner and full joins, broadcasts the left side for right join, and broadcasts
+      //      right side for left join.
+      //   2. Pick cartesian product if join type is inner like.
+      //   3. Pick broadcast nested loop join as the final solution. It may OOM but we don't have
+      //      other choice. It broadcasts the smaller side for inner and full joins, broadcasts the
+      //      left side for right join, and broadcasts right side for left join.
+</code></pre>
+<p>相关阅读：</p>
+<ol>
+<li><a href="https://blog.clairvoyantsoft.com/apache-spark-join-strategies-e4ebc7624b06">Apache Spark Join Strategies</a></li>
+<li><a href="https://nivedita-mondal.medium.com/spark-join-strategies-fb984b50441d">Spark Join Strategies</a></li>
+<li><a href="https://time.geekbang.org/column/article/373070">Join Hints指南：不同场景下，如何选择Join策略？</a></li>
+<li><a href="https://www.1024sou.com/article/569986.html">Spark中 join的原理</a></li>
+<li><a href="https://jiamaoxiang.top/2020/11/01/Spark%E7%9A%84%E4%BA%94%E7%A7%8DJOIN%E6%96%B9%E5%BC%8F%E8%A7%A3%E6%9E%90/#%E5%BD%B1%E5%93%8DJOIN%E6%93%8D%E4%BD%9C%E7%9A%84%E5%9B%A0%E7%B4%A0">Spark的五种JOIN策略解析</a></li>
+</ol>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/kafka-page-cache-she-ji-si-xiang/" class="post-title gt-a-link">
+                    Kafka——Page Cache 设计思想
+                </a>
+            </div>
+        
+
+        
+            
+                <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '739e90a8be2ceb4495bc',
+    clientSecret: '3432bb21b5e66759f6e4ccfc61391c3b5194ca35',
+    repo: 'DoCherish.github.io',
+    owner: 'DoCherish',
+    admin: ['DoCherish'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+            
+
+            
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">Learning&Thinking</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
