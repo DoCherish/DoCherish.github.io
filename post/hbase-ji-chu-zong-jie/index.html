@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>HBase——基础总结 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1657125765679">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1657206224321">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -169,6 +169,7 @@
 <blockquote>
 <p>注意数据写入时 WAL 和 MemStore 更新的顺序，不能调换，必须先 WAL 再 MemStore。如果反过来，先更新完 MemStore，此时 Region Server 发生 crash，内存中的更新就丢失了，而此时数据还未被持久化到 WAL，就无法恢复了。理论上 WAL 就是 MemStore 中数据的一个镜像，应该保持一致，除非发生系统 Crash。另外注意更新 WAL 是在文件尾部追加的方式，这种磁盘操作性能很高，不会太影响请求的整体响应时间。</p>
 </blockquote>
+<p>![hbase写数据流程](D:\Document\KKB\13-hbase\第二节：HBase核心原理\HBase day02\assets\hbase写数据流程.png)</p>
 <h2 id="8-hbase-memstore">8、Hbase MemStore</h2>
 <figure data-type="image" tabindex="9"><img src="https://segmentfault.com/img/bVbvPRZ" alt="" loading="lazy"></figure>
 <ul>
