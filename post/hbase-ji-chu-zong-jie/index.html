@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>HBase——基础总结 | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1657206608954">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1657247235769">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -116,15 +116,15 @@
 <li><strong>HDFS</strong>：DataNode负责存储 RegionServer 所管理的 Region。所有的 HBase 数据都存储在 HDFS 文件中。Region Server 和 HDFS DataNode 往往是分布在一起的，这样 Region Server 就能够实现<strong>数据本地化</strong>（data locality，即将数据放在离需要者尽可能近的地方）。</li>
 </ul>
 <h2 id="2-region">2、Region</h2>
-<p><img src="https://segmentfault.com/img/bVbvOFR" alt="" loading="lazy"><br>
-<img src="https://image-static.segmentfault.com/306/611/3066114017-5d41c07a13cf7_fix732" alt="" loading="lazy"></p>
+<figure data-type="image" tabindex="3"><img src="https://image-static.segmentfault.com/306/611/3066114017-5d41c07a13cf7_fix732" alt="" loading="lazy"></figure>
 <ul>
 <li>HBase 表根据RowKey 的范围被水平拆分成多个 Region。每个 Region 都包含了开始键 StartKey 和结束键 EndKey 之间的所有行，且是按 RowKey 排好序的。</li>
 <li>一个 Region 的大小可根据需要进行配置。</li>
 <li>Region 被分配给集群中的某些节点来管理，即 Region Server，由它们来负责处理数据的读写请求。每个 Region Server 大约可以管理 1000 个 Region。</li>
 </ul>
 <h2 id="3-hmaster">3、HMaster</h2>
-<figure data-type="image" tabindex="3"><img src="https://segmentfault.com/img/bVbvOGh" alt="" loading="lazy"></figure>
+<p><img src="https://segmentfault.com/img/bVbvOGh" alt="" loading="lazy"><br>
+<img src="https://image-static.segmentfault.com/366/897/3668972731-5d41c1df005ee_fix732" alt="" loading="lazy"></p>
 <ul>
 <li>所有 Region Server 的管理者。类似于 Hadoop 集群中 DataNode 的角色。</li>
 <li>负责 Region 的分配，DDL（创建，删除表）等操作。</li>
@@ -134,7 +134,8 @@
 <li>处理 RegionServer 故障转移。发现失效的 Region，并将失效的 Region 分配到正常的 RegionServer 上。</li>
 </ul>
 <h2 id="4-zookeeper">4、ZooKeeper</h2>
-<figure data-type="image" tabindex="4"><img src="https://segmentfault.com/img/bVbvOGw" alt="" loading="lazy"></figure>
+<p><img src="https://segmentfault.com/img/bVbvOGw" alt="" loading="lazy"><br>
+<img src="https://image-static.segmentfault.com/226/111/2261117063-5d41c2d575446_fix732" alt="" loading="lazy"></p>
 <ul>
 <li>HBase 使用 Zookeeper 做分布式管理服务，来维护集群中所有服务的状态。Zookeeper 在 HBase 分布式环境中充当 Coordinator（协调器）。它通过 Session（会话通信）来帮助维护集群内的服务器状态。</li>
 <li>每个 Region Server 和 HMaster Server 都会定期向 Zookeeper 发送连续的心跳，并检查哪个服务器处于活动状态且可用。它还提供服务器故障通知，以便可以执行恢复措施。</li>
@@ -142,7 +143,7 @@
 <li>Zookeeper 还维护了 .META 表，可以帮助客户端迅速定位到需要访问的 Region 所谓的 RegionServer。</li>
 </ul>
 <h2 id="5-meta-table">5、Meta Table</h2>
-<figure data-type="image" tabindex="5"><img src="https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2016/11/Meta-Table-HBase-Architecture-Edureka.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2016/11/Meta-Table-HBase-Architecture-Edureka.png" alt="" loading="lazy"></figure>
 <p>Meta Table 是一个特殊的 Hbase 表，用于保存集群中 Regions 的位置信息。Meta Table 是一张系统表，其存储路径在 Zookeeper 的 HBase 节点下面。</p>
 <p>HBase  Meta 表结构：</p>
 <ul>
@@ -150,7 +151,8 @@
 <li>Value：region server</li>
 </ul>
 <h2 id="6-region-server">6、Region Server</h2>
-<figure data-type="image" tabindex="6"><img src="https://segmentfault.com/img/bVbvOI1" alt="" loading="lazy"></figure>
+<p><img src="https://segmentfault.com/img/bVbvOI1" alt="" loading="lazy"><br>
+<img src="https://image-static.segmentfault.com/294/807/2948079759-5d41d0ce66841_fix732" alt="" loading="lazy"></p>
 <p>Region Server 运行在 HDFS DataNode 上，由以下组件组成：</p>
 <ul>
 <li><strong>WAL</strong>：Write Ahead Log 是分布式文件系统上的一个文件，用于存储新的还未被持久化存储的数据，它被用来做故障恢复。</li>
@@ -159,7 +161,7 @@
 <li><strong>HFile</strong> ：在硬盘上（HDFS）以有序 KeyValue 的形式存储 HBase 数据。</li>
 </ul>
 <h2 id="7-hbase-write">7、HBase Write</h2>
-<figure data-type="image" tabindex="7"><img src="https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2016/11/HBase-Write-Mechanism-HBase-Architecture-Edureka.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2016/11/HBase-Write-Mechanism-HBase-Architecture-Edureka.png" alt="" loading="lazy"></figure>
 <p>HBase 写数据的步骤：</p>
 <ul>
 <li>Client 首先从 ZK 中查询到 Meta 表的 Region 位置，去对应的 Region Server 上找读取 Meta 表的数据，Meta 表存储了用户表的 Region 信息。</li>
@@ -172,7 +174,8 @@
 </blockquote>
 <p>![hbase写数据流程](D:\Document\KKB\13-hbase\第二节：HBase核心原理\HBase day02\assets\hbase写数据流程.png)</p>
 <h2 id="8-hbase-memstore">8、Hbase MemStore</h2>
-<figure data-type="image" tabindex="8"><img src="https://segmentfault.com/img/bVbvPRZ" alt="" loading="lazy"></figure>
+<p><img src="https://segmentfault.com/img/bVbvPRZ" alt="" loading="lazy"><br>
+<img src="https://image-static.segmentfault.com/412/367/412367163-5d42737cc1a95_fix732" alt="" loading="lazy"></p>
 <ul>
 <li>MemStore 总是按字典顺序将存储在其中的数据更新为排序的 KeyValue。 每个列族都有一个 MemStore，因此每个列族的更新以排序的方式存储。</li>
 <li>MemStore 中累积了足够多的的数据后，整个有序数据集就会被写入一个新的 HFile 文件到 HDFS 上。HBase 为每个 Column Family 都创建一个 HFile，里面存储了具体的 <strong>Cell</strong>，也即 KeyValue 数据。随着时间推移，HFile 会不断产生，因为 KeyValue 会不断地从 MemStore 中被刷写到硬盘上。</li>
@@ -180,17 +183,20 @@
 <li>这里有个序列号的概念，每次 HBase 数据更新都会绑定一个新的自增序列号。而每个 HFile 则会存储它所保存的数据的最大序列号，这个元信息非常重要，它相当于一个 commit point，告诉我们在这个序列号之前的数据已经被持久化到硬盘了。它不仅在 region 启动时会被用到，在故障恢复时，也能告诉我们应该从 WAL 的什么位置开始回放数据的历史更新记录。</li>
 </ul>
 <h2 id="9-hbase-hfile">9、HBase HFile</h2>
-<figure data-type="image" tabindex="9"><img src="https://segmentfault.com/img/bVbvROk" alt="" loading="lazy"></figure>
+<p><img src="https://segmentfault.com/img/bVbvROk" alt="" loading="lazy"><br>
+<img src="https://image-static.segmentfault.com/370/563/3705631725-5d430cc76b0b9_fix732" alt="" loading="lazy"></p>
 <ul>
 <li>数据存储在 HFile 中，以 Key/Value 形式。</li>
 <li>当 MemStore 累积了足够多的数据后，整个有序数据集就会被写入一个新的 HFile 文件到 HDFS 上。整个过程是一个顺序写的操作，速度非常快，因为它不需要移动磁盘头。（注意 HDFS 不支持随机修改文件操作，但支持 append 操作。）</li>
 </ul>
-<figure data-type="image" tabindex="10"><img src="https://segmentfault.com/img/bVbvRO4" alt="" loading="lazy"></figure>
+<p><img src="https://segmentfault.com/img/bVbvRO4" alt="" loading="lazy"><br>
+<img src="https://image-static.segmentfault.com/260/833/2608334842-5d431099cc21d_fix732" alt="" loading="lazy"></p>
 <ul>
 <li>HFile 使用多层索引来查询数据而不必读取整个文件，这种多层索引类似于一个 B+ tree。索引文件在 HFile 被打开时会被载入内存，这样数据查询只要一次硬盘查询。</li>
 </ul>
 <h2 id="10-hbase-read-合并">10、HBase Read 合并</h2>
-<figure data-type="image" tabindex="11"><img src="https://segmentfault.com/img/bVbvRP4" alt="" loading="lazy"></figure>
+<p><img src="https://segmentfault.com/img/bVbvRP4" alt="" loading="lazy"><br>
+<img src="https://image-static.segmentfault.com/212/171/2121718143-5d43132e13043_fix732" alt="" loading="lazy"></p>
 <p>每行的 KeyValue cells 可能位于不同的地方：</p>
 <ul>
 <li>可能被写入了 HFile</li>
@@ -204,13 +210,15 @@
 <li>如果 scanner 没有在 BlockCache 和 MemStore 都没找到对应的 cells，则 HBase 会使用 Block Cache 中的索引和布隆过滤器来加载对应的 HFile 到内存，查找到请求的 row cells。每个 MemStore 可能会有多个 HFile，所以一次 read 请求可能需要多读个文件，这可能会影响性能，这被称为<strong>读放大</strong>（<strong>read amplification</strong>）。</li>
 </ul>
 <h2 id="11-hbase-minor-compaction">11、HBase Minor Compaction</h2>
-<figure data-type="image" tabindex="12"><img src="https://segmentfault.com/img/bVbvRQB" alt="" loading="lazy"></figure>
+<p><img src="https://segmentfault.com/img/bVbvRQB" alt="" loading="lazy"><br>
+<img src="https://image-static.segmentfault.com/269/379/2693798435-5d4314bf65e26_fix732" alt="" loading="lazy"></p>
 <p>HBase 会自动合并一些小的 HFile，重写成少量更大的 HFiles。这个过程被称为 <strong>minor compaction</strong>。它使用归并排序算法，将小文件合并成大文件，有效减少 HFile 的数量。</p>
 <h2 id="12-hbase-major-compaction">12、HBase Major Compaction</h2>
-<figure data-type="image" tabindex="13"><img src="https://segmentfault.com/img/bVbvRQ5" alt="" loading="lazy"></figure>
+<p><img src="https://segmentfault.com/img/bVbvRQ5" alt="" loading="lazy"><br>
+<img src="https://image-static.segmentfault.com/407/016/4070161180-5d4316aa249f0_fix732" alt="" loading="lazy"></p>
 <p><strong>Major Compaction</strong> 合并重写每个 Column Family 下的所有的 HFiles，成为一个单独的大 HFile，在这个过程中，被删除的和过期的 cell 会被真正从物理上删除，这能提高读的性能。但是因为 major compaction 会重写所有的 HFile，会产生大量的硬盘 I/O 和网络开销。这被称为<strong>写放大</strong>（<strong>Write Amplification</strong>）。Major compaction 可以被设定为自动调度。因为存在 write amplification 的问题，major compaction 一般都安排在周末和半夜。</p>
 <h2 id="13-hbase-故障恢复">13、HBase 故障恢复</h2>
-<figure data-type="image" tabindex="14"><img src="https://segmentfault.com/img/bVbvUvO" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://segmentfault.com/img/bVbvUvO" alt="" loading="lazy"></figure>
 <p>当某个 Region Server 发生 crash 时，它所管理的 region 就无法被访问了，直到 crash 被检测到，然后故障恢复完成，这些 region 才能恢复访问。Zookeeper 依靠心跳检测发现节点故障，然后 HMaster 会收到 region server 故障的通知。</p>
 <p>当 HMaster 发现某个 region server 故障，HMaster 会将这个 region server 所管理的 regions 分配给其它健康的 region servers。为了恢复出现故障的 region server 的 MemStore 中还未被持久化到 HFile 的数据，HMaster 会将 WAL 分割成几个文件，将它们保存在新的 region server 上。每个 region server 然后回放各自拿到的 WAL 碎片中的数据，来为它所分配到的新 region 建立 MemStore。</p>
 <p>WAL 包含了一系列的修改操作，每个修改都表示一个 put 或者 delete 操作。这些修改按照时间顺序依次写入，持久化时它们被依次写入 WAL 文件的尾部。</p>
