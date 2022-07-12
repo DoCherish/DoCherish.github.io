@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>Do&apos;s blog</title>
-    <updated>2022-07-08T02:27:20.956Z</updated>
+    <updated>2022-07-12T16:50:55.321Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,23 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2022, Do&apos;s blog</rights>
+    <entry>
+        <title type="html"><![CDATA[Spark——数据倾斜场景及解决方案]]></title>
+        <id>https://DoCherish.github.io/post/spark-shu-ju-qing-xie-chang-jing-ji-jie-jue-fang-an/</id>
+        <link href="https://DoCherish.github.io/post/spark-shu-ju-qing-xie-chang-jing-ji-jie-jue-fang-an/">
+        </link>
+        <updated>2022-07-12T15:47:21.000Z</updated>
+        <summary type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>Spark数据倾斜的几种场景以及对应的解决方案</li>
+</ul>
+]]></summary>
+        <content type="html"><![CDATA[<p>主要内容：</p>
+<ul>
+<li>Spark数据倾斜的几种场景以及对应的解决方案</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[HBase——基础总结]]></title>
         <id>https://DoCherish.github.io/post/hbase-ji-chu-zong-jie/</id>
@@ -176,23 +193,6 @@
 <ul>
 <li>介绍OLAP和OLTP区别</li>
 <li>介绍Hive的概念、架构，对比内部表和外部表，行存储和列存储</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Hive——如何查看hive的执行计划]]></title>
-        <id>https://DoCherish.github.io/post/hive-ru-he-cha-kan-hive-de-zhi-xing-ji-hua/</id>
-        <link href="https://DoCherish.github.io/post/hive-ru-he-cha-kan-hive-de-zhi-xing-ji-hua/">
-        </link>
-        <updated>2022-04-05T14:41:53.000Z</updated>
-        <summary type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>介绍hive的执行计划</li>
-</ul>
-]]></summary>
-        <content type="html"><![CDATA[<p>主要内容：</p>
-<ul>
-<li>介绍hive的执行计划</li>
 </ul>
 ]]></content>
     </entry>
