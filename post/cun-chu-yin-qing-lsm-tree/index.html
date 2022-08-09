@@ -1,0 +1,267 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>存储引擎——LSM-Tree | Do&#39;s blog</title>
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1660056760571">
+<link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
+<link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+<!-- DEMO JS -->
+<script src="media/scripts/index.js"></script>
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Do&#39;s blog
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            Home
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            Posts
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            Tags
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://DoCherish.github.io/post/about" class="menu gt-a-link">
+                            About
+                        </a>
+                    
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    存储引擎——LSM-Tree
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-08-09 22:37:22 ·
+                    </time>
+                    
+                        <a href="https://DoCherish.github.io/tag/MDiHigLLM/" class="post-tags">
+                            # Algorithm
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>主要内容：</p>
+<ul>
+<li>介绍 LSM-Tree</li>
+</ul>
+<!-- more -->
+<figure data-type="image" tabindex="1"><img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=1170&amp;q=80" alt="" loading="lazy"></figure>
+<p>LSM-Tree，全称 Log-Structured Merge-Tree，日志结构合并树。广泛应用于 NoSQL 数据库，如 Hbase，RocksDB，Leveldb，Cassandra，MongoDB，TiDB等等，还包括 Kafka。它是 Google <a href="https://static.googleusercontent.com/media/research.google.com/zh-CN//archive/bigtable-osdi06.pdf">BigTable</a> 文论思想的一个开源实现。LSM-Tree 是一种分层、有序、面向磁盘的数据结构，或者说是一种数据结构的设计思想。大多 NoSQL 数据库核心思想都是基于 LSM 来做的，只是具体的实现不同。其核心思想是充分了利用了：磁盘批量的顺序写要远比随机写性能高出很多。</p>
+<h2 id="1-三种基本的存储引擎">1、三种基本的存储引擎</h2>
+<ul>
+<li>哈希存储引擎：支持增、删、改、随机读操作，但是不支持顺序扫描。使用时需要全部加载到内存。</li>
+<li>B（B+） 树存储引擎：支持增、删、改、读操作，B+ 树还支持顺序扫描、事务。但存在随机读写IO性能问题。适用于业务数据的写入，同时要求事务。</li>
+<li>LSM 存储引擎：和B（B+） 树一样，支持增、删、改、顺序读操作。通过批量写入规避了随机写入磁盘问题。LSM 树牺牲了部分读性能，用来大幅提高写性能，并且不容易支持事务。 适用于事务性不是非常强，吞吐量巨大的场景。</li>
+</ul>
+<h2 id="2-为什么要有-lsm-tree">2、为什么要有 LSM-Tree？</h2>
+<p>论文<a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf">《 Log-Structured Merge-Tree》</a>开发列举了多个写多读少的例子，对于大量写入操作的场景下，B-Tree 的写入会带来额外的 I/O 开销，所以需要引入一种新的算法来应对这种场景，所以 LSM-Tree 应运而生。LSM-Tree 的核心思想就是将写入推迟并转换为批量写：首先将大量写入缓存在内存，当积攒到一定程度后，将他们批量写入文件中。这样一次 I/O 可以进行多条数据的写入，充分利用每一次 I/O。当然文章也如实提出，LSM-Tree在读取时会有短板，比如Compaction 过程、Key 多版本等。</p>
+<h2 id="3-lsm-tree-结构">3、LSM-Tree 结构？</h2>
+<figure data-type="image" tabindex="2"><img src="https://kernelmaker.github.io/public/images/2017-08-11/1.png" alt="" loading="lazy"></figure>
+<p>LSM 树由两个或以上的存储结构组成，比如在论文中为了方便说明使用了最简单的两个存储结构。</p>
+<ul>
+<li>
+<p>C0 tree：常驻内存中，具体可以是任何方便健值查找的数据结构，比如红黑树、 map 之类，甚至可以是跳表。</p>
+</li>
+<li>
+<p>C1 tree：常驻在硬盘，具体结构类似 B 树。</p>
+</li>
+</ul>
+<p>当内存 C0 的大小大到一定程度的时候，就需要进行 Rolling Merge，它将其内的部分内容 Dump 到 C1 中，它会将其数据从左到右（从小到大），一次追加写到 C1 的一个 Multi-Page Block 页节点 Buffer 中，如果这个叶节点Buffer 满了，就将其写入到磁盘，以此类推，直到 C0 扫描到最右（最大），此时 C1 首次生成。</p>
+<p>之后如果 C0 又满了，后续的 Rolling Merge 就需要建立 C0 和 C1 的类似 Merge Iterator 的迭代器，顺序迭代数据到 C1 新的叶节点的 Buffer 中（满了会写入磁盘），直到 C0 大小恢复到阈值之下，然后下次再满了，就接着上次 Merge 的位置接着向下迭代 Merge，直到 C0 继续到达最右，再将 C0 和 C1 重新从最左开始建立新的 Merge Iterator。</p>
+<p>这个就是 LSM 的核心设计思想，非常朴素，就是将对数据的修改增量保持在内存中，达到指定的大小限制后将这些修改操作批量写入磁盘，从而大幅度提升性能。</p>
+<figure data-type="image" tabindex="3"><img src="https://segmentfault.com/img/remote/1460000041198409" alt="" loading="lazy"></figure>
+<h2 id="4-sstable">4、SSTable？</h2>
+<figure data-type="image" tabindex="4"><img src="https://s2.51cto.com/images/blog/202105/01/a5b568287d93716a1ec7410ef6e903c2.png" alt="" loading="lazy"></figure>
+<p>SSTable （ Sorted String Table ）是一种拥有持久化、有序且不可变的的键值存储结构，它的 key 和 value 都是任意的字节数组，并且提供了按指定 key 查找和指定范围的 key 区间迭代遍历的功能。SSTable 内部包含了一系列可配置大小的 Block 块，典型的大小是 64KB ，关于这些 Block 块的 index 存储在 SSTable 的尾部，用于帮助快速查找特定的 Block 。</p>
+<p>当一个 SSTable 被打开的时候， index 会被加载到内存，然后根据 key 在内存 index 里面进行一个二分查找，查到该 key 对应的磁盘的 offset 之后，然后去磁盘把响应的块数据读取出来。当然如果内存足够大的话，可以直接把 SSTable 直接映射到内存中，从而提供更快的查找。在 LSM-Tree 里， SSTable 有一份在内存里面，其他的多级在磁盘上。</p>
+<figure data-type="image" tabindex="5"><img src="https://s2.51cto.com/images/blog/202105/01/845609b570aef327eb9316b48a58e849.png" alt="" loading="lazy"></figure>
+<p>SSTable 在后台是要经过不断地排序合并，文件随着层次的加深，其大小也逐步变大。同时它也是可以启用压缩功能的，并且这种压缩不是将整个 SSTable 一起压缩，而是根据 locality 将数据分组，每个组分别压缩，这样的好处当读取数据的时候，我们不需要解压缩整个文件而是解压缩部分 Group 就可以读取。如图上图所示的情况， leve0 的 SSTable 达到数据量的阀值之后，会经过排序合并形成 Level1 的 SSTable ， Level1 的 SSTable 达到阀值之后，会经过排序合并成为 Level2 的 SSTable 文件。</p>
+<h2 id="5-lsm-tree-的增删改查">5、LSM-Tree 的增删改查？</h2>
+<h3 id="51-写入过程">5.1 写入过程</h3>
+<p>总体上，包括实时写入、溢写磁盘、合并。</p>
+<ol>
+<li>顺序写 WAL：顺序追加，没有检索过程，速度快。</li>
+<li>写 MemTable：内存操作，速度快。</li>
+<li>刷写磁盘：当内存 Memtable 当中的数据达到一定的规模触及阀值条件的时候，后台会启动排序及合并操作，将 MemTable 当中的数据排序并刷入磁盘形成 SSTable ，同时周期性的将 SSTable 文件再进行排序分组，形成更大的 SSTable 文件，并转入下一个 Level 存储。</li>
+</ol>
+<h3 id="52-修改过程">5.2 修改过程</h3>
+<p>LSM-Tree 的更新过程并不像B（B+）树那样，先经过检索再修改值，而是经过追加数据的方式间接实现的。只是在读取的时候，会从 Level0 层的 SSTable 文件开始查找数据，数据在低层的 SSTable 文件中必然比高层的文件中要新，所以总能读取到最新的那条数据。也就是说此时在整个 LSM Tree 中可能会同时存在多个 key 值相同的数据，只有在之后合并 SSTable 文件的时候，才会将旧的值删除。</p>
+<h3 id="53-删除过程">5.3 删除过程</h3>
+<p>LSM-Tree 对数据的删除过程与追加数据的过程基本一样，区别在于追加数据的时候，是有具体的数据值的，而删除的时候，追加的数据值是删除标记。同样在读取的时候，会从 Level0 层的 SSTable 文件开始查找数据，数据在低层的 SSTable 文件中必然比高层的文件中要新，所以如果有删除操作，那么一定会最先读到带删除标记的那条数据。后期合并 SSTable 文件的时候，才会把数据删除。</p>
+<h3 id="54-读取过程">5.4 读取过程</h3>
+<p>对于 LSM-Tree 的读取操作，按照 Memtable 、 SSTable 的架构来讲，那么肯定是先扫描 MemTable 当中的元素，然后扫描 SSTable 文件当中的数据，然后找到相应数据。</p>
+<p>思考查询步骤，会发现如果 SSTable 的分层越多，那么最坏的情况下要把所有的分层扫描一遍，对于这种情况肯定是需要优化的，如何优化？在 Bigtable 论文中提出了几种方式：</p>
+<ul>
+<li>压缩</li>
+</ul>
+<p>SSTable 是可以启用压缩功能的，并且这种压缩不是将整个 SSTable 一起压缩，而是根据 locality 将数据分组，每个组分别压缩，这样的好处当读取数据的时候，我们不需要解压缩整个文件而是解压缩部分 Group 就可以读取。</p>
+<ul>
+<li>缓存</li>
+</ul>
+<p>因为 SSTable 在写入磁盘后，除了 Compaction 之外，是不会变化的，所以可以将 Scan 的 Block 进行缓存，从而提高检索的效率。</p>
+<ul>
+<li>索引，Bloom filters</li>
+</ul>
+<p>正常情况下，一个读操作是需要读取所有的 SSTable 将结果合并后返回的，但是对于某些 key 而言，有些 SSTable 是根本不包含对应数据的，因此，我们可以对每一个 SSTable 添加 Bloom Filter，因为布隆过滤器在判断一个SSTable 不存在某个 key 的时候，那么就一定不会存在，利用这个特性可以减少不必要的磁盘扫描。</p>
+<ul>
+<li>合并</li>
+</ul>
+<p>通过定期合并瘦身， 可以有效的清除无效数据，缩短读取路径，提高磁盘利用空间。但 Compaction 操作是非常消耗 CPU 和磁盘 IO 的，尤其是在业务高峰期，如果发生了 Major Compaction，则会降低整个系统的吞吐量，这也是一些 NoSQL 数据库，比如 Hbase 里面常常会禁用 Major Compaction，并在凌晨业务低峰期进行合并的原因。</p>
+<h2 id="6-lsm-tree-vs-btree">6、LSM-Tree VS B+Tree？</h2>
+<p>同样是面向磁盘存储的数据结构 LSM-Tree 相比 B+ 树有什么异同之处呢？</p>
+<ul>
+<li>LSM-Tree的设计思路是，将数据拆分为几百M大小的Segments，顺序写入磁盘；B+Tree 则是将数据拆分为固定大小的 Block 或 Page, 一般是 4KB 大小，和磁盘一个扇区的大小对应，Page 是读写的最小单位。</li>
+<li>更新和删除：B+Tree 可以做到原地更新和删除，这种方式对数据库事务支持更加友好；但由于 LSM-Tree 只能追加写，并且在 L0 层 key 的 rang 会重叠，所以对事务支持较弱，只能在 Compaction 的时候进行真正地更新和删除。</li>
+<li>LSM-Tree的优点是支持高吞吐的写，复杂度O(1)，这个特点在分布式系统上更为看重。普通读取是O(N)的复杂度，在使用索引或者缓存优化后的也可以达到O(logN)的复杂度；B+Tree 的优点是支持高效的读，复杂度稳定在O(logN)，但是在大规模的写请求下，复杂度O(logN)，效率会变得比较低。因为随着 Insert 的操作，为了维护 B+ 树结构，节点会不断的分裂和合并。操作磁盘的随机读写概率会变大，故导致性能降低。</li>
+</ul>
+<p>在大量写入场景下 LSM-Tree 之所以比 B+Tree 要好，得益于一下两个原因：</p>
+<ul>
+<li>multi-page block：不同于 B+Tree，LSM-Tree 的延时写可以有效的利用 multi-page block，在 Rolling Merge 的过程中，一次从 C1 中读出多个连续 pages ，与 C0 进行 Merge，然后一次向 C1 写回这些连续 pages，这样有效利用单次 I/O 完成多个 pages 的读写（B+Tree 在此场景下无法利用 multi-page 的优势）。</li>
+<li>batch：同样因为延迟写，LSM-Tree 可以在 Rolling Merge 中，通过一次 I/O 批量向 C1 写入 C0 多条数据，那么这多条数据就均摊了这一次 I/O，减少磁盘的 I/O 开销。</li>
+<li>无论怎样，尽可能减少数据写入的 I/O 开销，这也就是 LSM-Tree 的核心竞争力。</li>
+</ul>
+<p>LSM-Tree 的缺点：</p>
+<ul>
+<li>写入量越大， Compaction 的过程越频繁。可禁用自动 Major Compaction，在每天系统低峰期定期触发合并，来避免这个问题。</li>
+<li>Key 存在多版本，消耗存储，不具备事务性。更新、删除操作都是通过增加新数据间接实现。</li>
+</ul>
+<p>相关阅读：</p>
+<ol>
+<li><a href="https://cloud.tencent.com/developer/article/1441835">深入理解什么是LSM-Tree</a></li>
+<li><a href="https://blog.51cto.com/u_15127582/2749141">LSM-Tree 存储引擎详细分解</a></li>
+</ol>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://DoCherish.github.io/post/spark-shu-ju-qing-xie-chang-jing-ji-jie-jue-fang-an/" class="post-title gt-a-link">
+                    Spark——数据倾斜场景及解决方案
+                </a>
+            </div>
+        
+
+        
+            
+                <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '739e90a8be2ceb4495bc',
+    clientSecret: '3432bb21b5e66759f6e4ccfc61391c3b5194ca35',
+    repo: 'DoCherish.github.io',
+    owner: 'DoCherish',
+    admin: ['DoCherish'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+            
+
+            
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">Learning&Thinking</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/DoCherish" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a href="https://DoCherish.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+</div>
+</body>
+</html>
