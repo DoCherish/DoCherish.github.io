@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Kafka——Consumer提交偏移量 | Do&#39;s blog</title>
+<title>大数据处理架构——Lamada架构和Kappa架构 | Do&#39;s blog</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1700673169870">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,155 +87,20 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    Kafka——Consumer提交偏移量
+                    大数据处理架构——Lamada架构和Kappa架构
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2020-03-19 23:38:49 ·
+                        · 2022-09-28 22:10:04 ·
                     </time>
                     
-                        <a href="https://DoCherish.github.io/tag/kafka/" class="post-tags">
-                            # Kafka
+                        <a href="https://DoCherish.github.io/tag/jia-gou/" class="post-tags">
+                            # 架构
                         </a>
                     
                 </div>
                 <div class="post-content">
-                    <p>Kafka提交偏移量的方式：</p>
-<ul>
-<li>自动提交</li>
-<li>手动提交——同步</li>
-<li>手动提交——异步</li>
-</ul>
-<!-- more -->
-<h2 id="自动提交">自动提交</h2>
-<pre><code>package test.kafka
-
-import java.util.Properties
-
-import org.apache.kafka.common.serialization.StringSerializer
-
-class kafkaProperities {
-  private val KFK_BROKERS = &quot;host1:port1,host2:port2,post3:port3&quot;
-
-  def getKakConPros:Properties = {
-    val kfkConProps: Properties = new Properties()
-    kfkConProps.setProperty(&quot;bootstrap.servers&quot;, KFK_BROKERS)
-    kfkConProps.setProperty(&quot;group.id&quot;, &quot;kafka_consumer&quot;)
-    kfkConProps.setProperty(&quot;enable.auto.commit&quot;, &quot;true&quot;)
-    kfkConProps.setProperty(&quot;auto.commit.interval.ms&quot;, &quot;5000&quot;)
-    kfkConProps.setProperty(&quot;key.deserializer&quot;, classOf[StringSerializer].getName)
-    kfkConProps.setProperty(&quot;value.deserializer&quot;, classOf[StringSerializer].getName)
-
-    kfkConProps
-  }
-}
-</code></pre>
-<pre><code>package test.kafka.kafkaconsumer
-
-import java.util
-import java.util.Properties
-
-import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords, KafkaConsumer}
-import test.kafka.kafkaProperities
-
-object autoCommitOffsets {
-  private val KAFKA_PROPERITIES = new kafkaProperities()
-
-  def main(args: Array[String]): Unit = {
-    val kfkConProps: Properties = KAFKA_PROPERITIES.getKakConPros
-    val consumer: KafkaConsumer[String, String] = new KafkaConsumer(kfkConProps)
-    consumer.subscribe(util.Arrays.asList(KAFKA_PROPERITIES.TOPIC))
-    try {
-      while(true) {
-        val consumerRecords: ConsumerRecords[String, String] = consumer.poll(100)
-        val records: util.Iterator[ConsumerRecord[String, String]] = consumerRecords.iterator()
-        while (records.hasNext){
-          val record: ConsumerRecord[String, String] = records.next()
-          println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
-        }
-      }
-    } finally {
-      consumer.close()
-    }
-  }
-}
-</code></pre>
-<h2 id="手动提交同步">手动提交——同步</h2>
-<p>修改getKakConPros的参数：</p>
-<pre><code>	kfkConProps.setProperty(&quot;enable.auto.commit&quot;, &quot;false&quot;)
-    //kfkConProps.setProperty(&quot;auto.commit.interval.ms&quot;, &quot;5000&quot;)
-</code></pre>
-<pre><code>package test.kafka.kafkaconsumer
-
-import java.util
-import java.util.Properties
-import java.util.logging.Logger
-
-import org.apache.kafka.clients.consumer.{CommitFailedException, ConsumerRecord, ConsumerRecords, KafkaConsumer}
-import test.kafka.kafkaProperities
-
-object syncCommitOffsets {
-  private val KAFKA_PROPERITIES = new kafkaProperities()
-  def main(args: Array[String]): Unit = {
-    val kfkConProps: Properties = KAFKA_PROPERITIES.getKakConPros
-    val consumer: KafkaConsumer[String, String] = new KafkaConsumer(kfkConProps)
-    consumer.subscribe(util.Arrays.asList(KAFKA_PROPERITIES.TOPIC))
-    while(true) {
-      val consumerRecords: ConsumerRecords[String, String] = consumer.poll(100)
-      val records: util.Iterator[ConsumerRecord[String, String]] = consumerRecords.iterator()
-      while (records.hasNext) {
-        val record: ConsumerRecord[String, String] = records.next()
-        println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
-      }
-    try {
-      consumer.commitSync()
-    } catch {
-      case e: CommitFailedException =&gt; {
-        println(&quot;commit failed!&quot; + e)
-      }
-    }
-    }
-  }
-}
-</code></pre>
-<h2 id="手动提交异步提交">手动提交——异步提交</h2>
-<pre><code>package test.kafka.kafkaconsumer
-
-import java.util
-import java.util.Properties
-
-import org.apache.kafka.clients.consumer._
-import org.apache.kafka.common.TopicPartition
-import test.kafka.kafkaProperities
-
-object asyncCommitOffsets {
-  private val KAFKA_PROPERITIES = new kafkaProperities()
-  def main(args: Array[String]): Unit = {
-    val kfkConProps: Properties = KAFKA_PROPERITIES.getKakConPros
-    val consumer: KafkaConsumer[String, String] = new KafkaConsumer(kfkConProps)
-    consumer.subscribe(util.Arrays.asList(KAFKA_PROPERITIES.TOPIC))
-    while(true) {
-      val consumerRecords: ConsumerRecords[String, String] = consumer.poll(100)
-      val records: util.Iterator[ConsumerRecord[String, String]] = consumerRecords.iterator()
-      while (records.hasNext){
-        val record: ConsumerRecord[String, String] = records.next()
-        println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
-      }
-    //consumer.commitAsync()
-    //也支持回调
-    consumer.commitAsync(new OffsetCommitCallback {
-      override def onComplete(offsets: util.Map[TopicPartition, OffsetAndMetadata], exception: Exception): Unit = {
-        if (exception != null) {
-          println(&quot;Commit failed for offset &quot; + offsets.values().iterator().next().offset())
-        } else {
-          println(&quot;Commit succeeded!&quot;)
-        }
-      }
-    })
-    }
-  }
-}
-</code></pre>
+                    <figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E6%9E%B6%E6%9E%84.png" alt="" loading="lazy"></figure>
 
                 </div>
             </article>
@@ -244,8 +109,8 @@ object asyncCommitOffsets {
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://DoCherish.github.io/post/kafka-sheng-chan-zhe-kafkaproducer/" class="post-title gt-a-link">
-                    kafka——Producer
+                <a href="https://DoCherish.github.io/post/SLA评估分布式系统/" class="post-title gt-a-link">
+                    SLA评估分布式系统
                 </a>
             </div>
         
