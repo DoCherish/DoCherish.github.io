@@ -4,7 +4,7 @@
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>SQL每日一练(1) | Do&#39;s blog</title>
-<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1701366067064">
+<link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1701878673538">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -176,7 +176,6 @@ SELECT
 FROM live_events) a) b
 GROUP BY live_id
 </code></pre>
-<figure data-type="image" tabindex="1"><img src="https://carbon.now.sh/?bg=rgba%28171%2C+184%2C+195%2C+1%29&amp;t=material&amp;wt=none&amp;l=sql&amp;width=680&amp;ds=true&amp;dsyoff=20px&amp;dsblur=68px&amp;wc=true&amp;wa=true&amp;pv=56px&amp;ph=56px&amp;ln=false&amp;fl=1&amp;fm=Hack&amp;fs=14px&amp;lh=133%25&amp;si=false&amp;es=2x&amp;wm=false&amp;code=SELECT%250A%2520%2520live_id%252C%250A%2520%2520MAX%28user_count%29%2520max_user_count%250AFROM%2520%28SELECT%250A%2520%2520live_id%252C%250A%2520%2520SUM%28user_change%29%2520OVER%2520%28PARTITION%2520BY%2520live_id%2520ORDER%2520BY%2520event_time%29%2520user_count%250AFROM%2520%28SELECT%250A%2520%2520user_id%252C%250A%2520%2520live_id%252C%250A%2520%2520in_datetime%2520event_time%252C%250A%2520%25201%2520user_change%250AFROM%2520live_events%250AUNION%250ASELECT%250A%2520%2520user_id%252C%250A%2520%2520live_id%252C%250A%2520%2520out_datetime%2520event_time%252C%250A%2520%2520-1%2520user_change%250AFROM%2520live_events%29%2520a%29%2520b%250AGROUP%2520BY%2520live_id" alt="" loading="lazy"></figure>
 
                 </div>
             </article>
