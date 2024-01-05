@@ -2,14 +2,28 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>静水深流</title>
-    <updated>2023-12-24T15:55:51.598Z</updated>
+    <updated>2024-01-05T14:45:32.491Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
     <subtitle>Learning&amp;Thinking</subtitle>
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2023, 静水深流</rights>
+    <rights>All rights reserved 2024, 静水深流</rights>
+    <entry>
+        <title type="html"><![CDATA[开发过程中如何使Spark作业执行速度更快，性能更高？]]></title>
+        <id>https://DoCherish.github.io/post/kai-fa-guo-cheng-zhong-ru-he-shi-spark-zuo-ye-zhi-xing-su-du-geng-kuai-xing-neng-geng-gao/</id>
+        <link href="https://DoCherish.github.io/post/kai-fa-guo-cheng-zhong-ru-he-shi-spark-zuo-ye-zhi-xing-su-du-geng-kuai-xing-neng-geng-gao/">
+        </link>
+        <updated>2022-11-05T14:44:05.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[理解Spark中的RDD、DataFrame、Dataset]]></title>
+        <id>https://DoCherish.github.io/post/dui-rdd-dataframe-dataset-de-li-jie/</id>
+        <link href="https://DoCherish.github.io/post/dui-rdd-dataframe-dataset-de-li-jie/">
+        </link>
+        <updated>2022-10-31T14:37:45.000Z</updated>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Linux基础篇——文本处理（2）]]></title>
         <id>https://DoCherish.github.io/post/linux-ji-chu-pian-wen-ben-chu-li-2/</id>
@@ -65,19 +79,5 @@
         <link href="https://DoCherish.github.io/post/sql-mei-ri-yi-lian-1/">
         </link>
         <updated>2022-10-06T16:23:29.000Z</updated>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[窗口函数]]></title>
-        <id>https://DoCherish.github.io/post/chuang-kou-han-shu/</id>
-        <link href="https://DoCherish.github.io/post/chuang-kou-han-shu/">
-        </link>
-        <updated>2022-10-06T02:56:37.000Z</updated>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Hive性能调优总结]]></title>
-        <id>https://DoCherish.github.io/post/hive-xing-neng-diao-you-zong-jie/</id>
-        <link href="https://DoCherish.github.io/post/hive-xing-neng-diao-you-zong-jie/">
-        </link>
-        <updated>2022-10-02T15:45:13.000Z</updated>
     </entry>
 </feed>

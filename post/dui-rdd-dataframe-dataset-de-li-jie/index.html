@@ -3,7 +3,7 @@
     <meta charset="utf-8"/>
 <meta name="description" content=""/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Kafka——再均衡监听器 | 静水深流</title>
+<title>理解Spark中的RDD、DataFrame、Dataset | 静水深流</title>
 <link rel="shortcut icon" href="https://DoCherish.github.io/favicon.ico?v=1704465921128">
 <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.css" rel="stylesheet">
 <link rel="stylesheet" href="https://DoCherish.github.io/styles/main.css">
@@ -87,90 +87,20 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    Kafka——再均衡监听器
+                    理解Spark中的RDD、DataFrame、Dataset
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2020-03-20 23:28:33 ·
+                        · 2022-10-31 22:37:45 ·
                     </time>
                     
-                        <a href="https://DoCherish.github.io/tag/kafka/" class="post-tags">
-                            # Kafka
+                        <a href="https://DoCherish.github.io/tag/spark/" class="post-tags">
+                            # Spark
                         </a>
                     
                 </div>
                 <div class="post-content">
-                    <p>在为消费者分配新分区或者移除旧分区时，可以通过消费者API执行一些应用程序代码，在调用subscribe方法时，传进去一个ConsumerRebalanceListener实例就可以了。ConsumerRebalanceListener有两个需要实现的方法。</p>
-<!-- more -->
-<ul>
-<li>onPartitionsRevoked方法会在再均衡开始之前和消费者停止读取消息之后被调用。如果在这里提交偏移量，下一个接管分区的消费者就知道该从哪里开始读取了。要注意，提交的是最近处理过的偏移量，而不是批次中还在处理的最后一个偏移量。因为分区有可能在我们还在处理消息的时候被撤回。我们要提交所有分区的偏移量，而不只是那些即将失去所有权的分区的偏移量——因为提交的偏移量时已经处理过的，所以不会有什么问题。调用commitSync方法，确保在再均衡发生之前提交偏移量。</li>
-<li>onPartitionsAssigned方法会在重新分配分区之后和消费者开始读取消息之前被调用。</li>
-</ul>
-<pre><code>package test.kafka.kafkaconsumer
-
-import java.util
-
-import org.apache.kafka.clients.consumer.{ConsumerRebalanceListener, KafkaConsumer, OffsetAndMetadata}
-import org.apache.kafka.common.TopicPartition
-
-class HandleRebalance(
-                       consumer:KafkaConsumer[String, String],
-                       currentOffsets: util.HashMap[TopicPartition, OffsetAndMetadata]
-                     ) extends ConsumerRebalanceListener {
-  override def onPartitionsRevoked(partitions: util.Collection[TopicPartition]): Unit = {
-//    println(&quot;Lost partitions in rebalance. Committing current offsets: &quot; + currentOffsets)
-    consumer.commitSync(currentOffsets)
-  }
-  override def onPartitionsAssigned(partitions: util.Collection[TopicPartition]): Unit = {}
-}
-</code></pre>
-<pre><code>package test.kafka.kafkaconsumer
-
-import java.util
-import java.util.Properties
-
-import org.apache.kafka.clients.consumer._
-import org.apache.kafka.common.TopicPartition
-import org.apache.kafka.common.errors.WakeupException
-import test.kafka.kafkaProperities
-
-object RebalanceListener {
-  private val KAFKA_PROPERITIES = new kafkaProperities()
-
-  def main(args: Array[String]): Unit = {
-    val kfkConProps: Properties = KAFKA_PROPERITIES.getKakConPros
-    val currentOffsets: util.HashMap[TopicPartition, OffsetAndMetadata] = new util.HashMap[TopicPartition, OffsetAndMetadata]()
-
-    val consumer: KafkaConsumer[String, String] = new KafkaConsumer(kfkConProps)
-
-    try {
-      consumer.subscribe(util.Arrays.asList(KAFKA_PROPERITIES.TOPIC), new HandleRebalance(consumer, currentOffsets))
-      while (true) {
-        val consumerRecords: ConsumerRecords[String, String] = consumer.poll(100)
-        val records: util.Iterator[ConsumerRecord[String, String]] = consumerRecords.iterator()
-        while (records.hasNext){
-          val record: ConsumerRecord[String, String] = records.next()
-          println(&quot;topic: &quot; + record.topic() + &quot; partition: &quot; + record.partition() + &quot; offset: &quot; + record.offset())
-          currentOffsets.put(
-            new TopicPartition(record.topic(), record.partition()),
-            new OffsetAndMetadata(record.offset() + 1, &quot;&quot;))
-        }
-        consumer.commitAsync(currentOffsets, null)
-      }
-    } catch {
-      case e: WakeupException =&gt; println(e)
-      case e: Exception =&gt; println(&quot;Unexpected error:&quot; + e)
-    } finally {
-      try {
-        consumer.commitSync(currentOffsets)
-      } finally {
-        consumer.close()
-      }
-    }
-  }
-}
-
-</code></pre>
+                    <figure data-type="image" tabindex="1"><img src="https://DoCherish.github.io/post-images/%E5%AF%B9RDD-DataFrame-Dataset%E7%9A%84%E7%90%86%E8%A7%A3.png" alt="" loading="lazy"></figure>
 
                 </div>
             </article>
@@ -179,8 +109,8 @@ object RebalanceListener {
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://DoCherish.github.io/post/kafka-consumer-ti-jiao-pian-yi-liang/" class="post-title gt-a-link">
-                    Kafka——Consumer提交偏移量
+                <a href="https://DoCherish.github.io/post/linux-ji-chu-pian-wen-ben-chu-li-2/" class="post-title gt-a-link">
+                    Linux基础篇——文本处理（2）
                 </a>
             </div>
         
