@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DoCherish.github.io</id>
     <title>静水深流</title>
-    <updated>2024-03-06T13:38:25.140Z</updated>
+    <updated>2024-03-19T13:29:19.739Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DoCherish.github.io"/>
     <link rel="self" href="https://DoCherish.github.io/atom.xml"/>
@@ -10,6 +10,13 @@
     <logo>https://DoCherish.github.io/images/avatar.png</logo>
     <icon>https://DoCherish.github.io/favicon.ico</icon>
     <rights>All rights reserved 2024, 静水深流</rights>
+    <entry>
+        <title type="html"><![CDATA[《程序员的职业规划之问》之关键抉择]]></title>
+        <id>https://DoCherish.github.io/post/lesslesscheng-xu-yuan-de-zhi-ye-gui-hua-zhi-wen-greatergreater-guan-jian-jue-ze/</id>
+        <link href="https://DoCherish.github.io/post/lesslesscheng-xu-yuan-de-zhi-ye-gui-hua-zhi-wen-greatergreater-guan-jian-jue-ze/">
+        </link>
+        <updated>2024-03-10T13:27:03.000Z</updated>
+    </entry>
     <entry>
         <title type="html"><![CDATA[《程序员的职业规划》之规划之问]]></title>
         <id>https://DoCherish.github.io/post/gui-hua-zhi-wen/</id>
@@ -72,12 +79,5 @@
         <link href="https://DoCherish.github.io/post/spark-shu-ju-qing-xie-zong-jie/">
         </link>
         <updated>2022-10-11T16:04:12.000Z</updated>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Flink状态基础总结]]></title>
-        <id>https://DoCherish.github.io/post/flink-zhuang-tai-ji-chu-zong-jie/</id>
-        <link href="https://DoCherish.github.io/post/flink-zhuang-tai-ji-chu-zong-jie/">
-        </link>
-        <updated>2022-10-08T16:02:32.000Z</updated>
     </entry>
 </feed>
